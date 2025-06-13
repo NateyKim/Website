@@ -1,3 +1,7 @@
+<!--
+cd "C:\Users\Nathaniel Kim\my-website"
+-->
+
 <!-- 
  git add .
 git commit -m "Your descriptive message here"
