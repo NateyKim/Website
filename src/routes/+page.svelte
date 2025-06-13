@@ -12,7 +12,7 @@ npx vercel deploy --prod
 -->
 
 <script>
-  let name = 'Natey Kim';
+  let name = 'Nathaniel Kim';
 </script>
 
 <main>
