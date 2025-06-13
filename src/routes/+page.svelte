@@ -1,5 +1,14 @@
+<!-- 
+ git add .
+git commit -m "Your descriptive message here"
+git push
+-->
+<!-- 
+npx vercel deploy --prod
+-->
+
 <script>
-  let name = 'Nate';
+  let name = 'Natey Kim';
 </script>
 
 <main>
