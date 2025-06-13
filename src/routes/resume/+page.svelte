@@ -1,7 +1,19 @@
-<h1>Resume</h1>
-<p>Showcase your work here.</p>
-<h1>My Resume</h1>
+<svelte:head>
+  <style>
+    html, body, main {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
 
-<a href="/Resume2025.pdf" target="_blank" rel="noopener">
-  View My Resume (PDF)
-</a>
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</svelte:head>
+
+<main>
+  <iframe src="/Resume2025.pdf" title="Resume PDF"></iframe>
+</main>

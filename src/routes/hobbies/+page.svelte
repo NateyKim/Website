@@ -1,2 +1,2 @@
-<h1>Projects</h1>
-<p>Showcase your work here.</p>
+<h1>Hobbies</h1>
+<p>gaming, anime, piano, guitar, hiking, photosynthesizing</p>
