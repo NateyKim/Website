@@ -1,199 +1,257 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
 
-  const mookieModules = import.meta.glob('/static/mookie/*.jpg', { eager: true });
+  type CarouselType = 'mookie' | 'clementine' | 'photosilike';
+  type BaseImage = { src: string; alt: string };
+  type CarouselImage = BaseImage & { id: string };
+
+  const mookieModules = import.meta.glob('/static/mookie/*.jpg', {
+    eager: true
+  });
+
   const mookieBaseImages = Object.entries(mookieModules).map(([path]) => {
-    const filename = path.split('/').pop();
+    const filename = path.split('/').pop() ?? 'Mookie photo';
     const src = path.replace('/static', '');
     const alt = filename
       .replace(/\.jpg$/i, '')
       .replace(/[-_]/g, ' ')
-      .replace(/\b\w/g, c => c.toUpperCase());
+      .replace(/\b\w/g, (character) => character.toUpperCase());
+
     return { src, alt };
   });
 
-  const clementineModules = import.meta.glob('/static/clementine/*.jpg', { eager: true });
-  const clementineBaseImages = Object.entries(clementineModules).map(([path]) => {
-    const filename = path.split('/').pop();
-    const src = path.replace('/static', '');
-    const alt = filename
-      .replace(/\.jpg$/i, '')
-      .replace(/[-_]/g, ' ')
-      .replace(/\b\w/g, c => c.toUpperCase());
-    return { src, alt };
-  });
+  const clementineModules = import.meta.glob(
+    '/static/clementine/*.jpg',
+    { eager: true }
+  );
 
-  console.log('Mookie modules:', mookieModules);
-  console.log('Clementine modules:', clementineModules);
+  const clementineBaseImages = Object.entries(clementineModules).map(
+    ([path]) => {
+      const filename = path.split('/').pop() ?? 'Clementine photo';
+      const src = path.replace('/static', '');
+      const alt = filename
+        .replace(/\.jpg$/i, '')
+        .replace(/[-_]/g, ' ')
+        .replace(/\b\w/g, (character) => character.toUpperCase());
 
-  let mookieCarousel, clementineCarousel;
-  let mookieScrollPosition = 0, clementineScrollPosition = 0;
-  let mookieImages = [];
-  let clementineImages = [];
-  
-  const cardWidth = 300 + 32; // card width + gap
-  const bufferZone = cardWidth * 3; // Add more images when within 3 cards of edge
-  
-  // Create initial image array with multiple copies for smooth infinite scroll
-  function initializeImages(baseImages) {
-    const copies = 5; // Start with 5 copies of each direction
-    const images = [];
-    
-    // Add multiple copies to ensure smooth scrolling in both directions
-    for (let i = 0; i < copies; i++) {
-      images.push(...baseImages.map((img, idx) => ({ 
-        ...img, 
-        id: `${i}-${idx}` 
-      })));
+      return { src, alt };
     }
-    
+  );
+
+  const photosilikeModules = import.meta.glob(
+    '/static/photosilike/*.jpg',
+    { eager: true }
+  );
+
+  const photosilikeBaseImages = Object.entries(photosilikeModules).map(
+    ([path]) => {
+      const filename = path.split('/').pop() ?? 'Camera roll photo';
+      const src = path.replace('/static', '');
+      const alt = filename
+        .replace(/\.jpg$/i, '')
+        .replace(/[-_]/g, ' ')
+        .replace(/\b\w/g, (character) => character.toUpperCase());
+
+      return { src, alt };
+    }
+  );
+
+  const mookieBirthday = new Date(2019, 9, 9);
+
+  // Only the birth month was provided, so Clementine's age changes May 1.
+  const clementineBirthday = new Date(2025, 4, 1);
+
+  function calculateAge(birthday: Date, today: Date = new Date()) {
+    let age = today.getFullYear() - birthday.getFullYear();
+
+    const birthdayHasPassed =
+      today.getMonth() > birthday.getMonth() ||
+      (today.getMonth() === birthday.getMonth() &&
+        today.getDate() >= birthday.getDate());
+
+    if (!birthdayHasPassed) {
+      age -= 1;
+    }
+
+    return age;
+  }
+
+  let mookieAge = calculateAge(mookieBirthday);
+  let clementineAge = calculateAge(clementineBirthday);
+  let ageUpdateInterval: ReturnType<typeof setInterval>;
+
+  let mookieCarousel: HTMLDivElement;
+  let clementineCarousel: HTMLDivElement;
+  let photosilikeCarousel: HTMLDivElement;
+
+  let mookieScroll = 0;
+  let clementineScroll = 0;
+  let photosilikeScroll = 0;
+
+  let mookieImages: CarouselImage[] = [];
+  let clementineImages: CarouselImage[] = [];
+  let photosilikeImages: CarouselImage[] = [];
+
+  const cardWidth = 300 + 32;
+  const COPIES = 21;
+
+  let touchStartX = 0;
+
+  function setupCarousel(baseImages: BaseImage[]) {
+    const images: CarouselImage[] = [];
+
+    for (let i = 0; i < COPIES; i++) {
+      images.push(
+        ...baseImages.map((image, index) => ({
+          ...image,
+          id: `${i}-${index}`
+        }))
+      );
+    }
+
     return {
       images,
-      startPosition: Math.floor(copies / 2) * baseImages.length * cardWidth
+      start: Math.floor(COPIES / 2) * baseImages.length * cardWidth
     };
   }
 
-  function addImagesAtEnd(baseImages, currentImages) {
-    const newImages = baseImages.map((img, idx) => ({ 
-      ...img, 
-      id: `end-${Date.now()}-${idx}` 
-    }));
-    return [...currentImages, ...newImages];
+  function update(type: CarouselType, delta: number) {
+    let scroll: number;
+    let carousel: HTMLDivElement;
+    let baseLength: number;
+
+    if (type === 'mookie') {
+      scroll = mookieScroll;
+      carousel = mookieCarousel;
+      baseLength = mookieBaseImages.length;
+    } else if (type === 'clementine') {
+      scroll = clementineScroll;
+      carousel = clementineCarousel;
+      baseLength = clementineBaseImages.length;
+    } else if (type === 'photosilike') {
+      scroll = photosilikeScroll;
+      carousel = photosilikeCarousel;
+      baseLength = photosilikeBaseImages.length;
+    } else {
+      return;
+    }
+
+    let newScroll = scroll + delta;
+    const totalWidth = COPIES * baseLength * cardWidth;
+    const resetZone = cardWidth * baseLength;
+
+    if (newScroll < resetZone) {
+      newScroll += totalWidth / 2;
+    } else if (newScroll > totalWidth - resetZone) {
+      newScroll -= totalWidth / 2;
+    }
+
+    carousel.style.transform = `translateX(-${newScroll}px)`;
+
+    if (type === 'mookie') {
+      mookieScroll = newScroll;
+    } else if (type === 'clementine') {
+      clementineScroll = newScroll;
+    } else if (type === 'photosilike') {
+      photosilikeScroll = newScroll;
+    }
   }
 
-  function addImagesAtStart(baseImages, currentImages) {
-    const newImages = baseImages.map((img, idx) => ({ 
-      ...img, 
-      id: `start-${Date.now()}-${idx}` 
-    }));
-    return [...newImages, ...currentImages];
-  }
-
-  function handleMookieWheel(event) {
+  function handleWheel(event: WheelEvent, type: CarouselType) {
     event.preventDefault();
-    
-    const scrollSpeed = 2;
-    mookieScrollPosition += event.deltaY * scrollSpeed;
-    
-    // Ensure we don't go negative
-    if (mookieScrollPosition < 0) {
-      mookieScrollPosition = 0;
-    }
-    
-    const totalWidth = mookieImages.length * cardWidth;
-    let adjustPosition = 0;
-    
-    // If scrolling right and approaching the end
-    if (mookieScrollPosition > totalWidth - bufferZone) {
-      mookieImages = addImagesAtEnd(mookieBaseImages, mookieImages);
-    }
-    
-    // If scrolling left and approaching the start
-    if (mookieScrollPosition < bufferZone) {
-      mookieImages = addImagesAtStart(mookieBaseImages, mookieImages);
-      adjustPosition = mookieBaseImages.length * cardWidth;
-      mookieScrollPosition += adjustPosition;
-    }
-    
-    // Apply the transform
-    if (mookieCarousel) {
-      mookieCarousel.style.transform = `translateX(-${mookieScrollPosition}px)`;
-    }
+    update(type, event.deltaY * 2);
   }
 
-  function handleClementineWheel(event) {
-    event.preventDefault();
-    
-    const scrollSpeed = 2;
-    clementineScrollPosition += event.deltaY * scrollSpeed;
-    
-    // Ensure we don't go negative
-    if (clementineScrollPosition < 0) {
-      clementineScrollPosition = 0;
-    }
-    
-    const totalWidth = clementineImages.length * cardWidth;
-    let adjustPosition = 0;
-    
-    // If scrolling right and approaching the end
-    if (clementineScrollPosition > totalWidth - bufferZone) {
-      clementineImages = addImagesAtEnd(clementineBaseImages, clementineImages);
-    }
-    
-    // If scrolling left and approaching the start
-    if (clementineScrollPosition < bufferZone) {
-      clementineImages = addImagesAtStart(clementineBaseImages, clementineImages);
-      adjustPosition = clementineBaseImages.length * cardWidth;
-      clementineScrollPosition += adjustPosition;
-    }
-    
-    // Apply the transform
-    if (clementineCarousel) {
-      clementineCarousel.style.transform = `translateX(-${clementineScrollPosition}px)`;
-    }
+  function handleTouchStart(event: TouchEvent) {
+    touchStartX = event.touches[0].clientX;
+  }
+
+  function handleTouchMove(event: TouchEvent, type: CarouselType) {
+    const touchX = event.touches[0].clientX;
+    const delta = (touchStartX - touchX) * 2;
+
+    update(type, delta);
+    touchStartX = touchX;
   }
 
   onMount(() => {
-    console.log('Mookie images found:', mookieBaseImages.length);
-    console.log('Clementine images found:', clementineBaseImages.length);
-    console.log('Sample mookie image:', mookieBaseImages[0]);
-    console.log('Sample clementine image:', clementineBaseImages[0]);
-    
-    // Initialize Mookie carousel
-    if (mookieBaseImages.length > 0) {
-      const mookieInit = initializeImages(mookieBaseImages);
-      mookieImages = mookieInit.images;
-      mookieScrollPosition = mookieInit.startPosition;
-      
-      if (mookieCarousel) {
-        mookieCarousel.style.transform = `translateX(-${mookieScrollPosition}px)`;
-      }
-    } else {
-      console.warn('No Mookie images found in /static/mookie/');
-    }
-    
-    // Initialize Clementine carousel
-    if (clementineBaseImages.length > 0) {
-      const clementineInit = initializeImages(clementineBaseImages);
-      clementineImages = clementineInit.images;
-      clementineScrollPosition = clementineInit.startPosition;
-      
-      if (clementineCarousel) {
-        clementineCarousel.style.transform = `translateX(-${clementineScrollPosition}px)`;
-      }
-    } else {
-      console.warn('No Clementine images found in /static/clementine/');
-    }
+    const updateAges = () => {
+      const today = new Date();
+
+      mookieAge = calculateAge(mookieBirthday, today);
+      clementineAge = calculateAge(clementineBirthday, today);
+    };
+
+    updateAges();
+    ageUpdateInterval = setInterval(updateAges, 60 * 60 * 1000);
+
+    const mookieSetup = setupCarousel(mookieBaseImages);
+    mookieImages = mookieSetup.images;
+    mookieScroll = mookieSetup.start;
+    mookieCarousel.style.transform = `translateX(-${mookieScroll}px)`;
+
+    const clementineSetup = setupCarousel(clementineBaseImages);
+    clementineImages = clementineSetup.images;
+    clementineScroll = clementineSetup.start;
+    clementineCarousel.style.transform =
+      `translateX(-${clementineScroll}px)`;
+
+    const photosSetup = setupCarousel(photosilikeBaseImages);
+    photosilikeImages = photosSetup.images;
+    photosilikeScroll = photosSetup.start;
+    photosilikeCarousel.style.transform =
+      `translateX(-${photosilikeScroll}px)`;
+
+    return () => clearInterval(ageUpdateInterval);
   });
 </script>
 
-<h1>Mookie (age: 5)</h1>
+<h1>Mookie (age: {mookieAge})</h1>
 
-<div class="carousel-container" on:wheel={handleMookieWheel}>
-  <div class="carousel-track" bind:this={mookieCarousel}>
+<div
+  class="carousel"
+  on:wheel={(event) => handleWheel(event, 'mookie')}
+  on:touchstart={handleTouchStart}
+  on:touchmove={(event) => handleTouchMove(event, 'mookie')}
+>
+  <div class="track" bind:this={mookieCarousel}>
     {#each mookieImages as image (image.id)}
       <div class="card">
-        <img 
-          src={image.src} 
-          alt={image.alt}
-          loading="lazy"
-        />
+        <img src={image.src} alt={image.alt} />
       </div>
     {/each}
   </div>
 </div>
 
-<h1>Clementine (age: 2 months)</h1>
+<h1>Clementine (age: {clementineAge})</h1>
 
-<div class="carousel-container" on:wheel={handleClementineWheel}>
-  <div class="carousel-track" bind:this={clementineCarousel}>
+<div
+  class="carousel"
+  on:wheel={(event) => handleWheel(event, 'clementine')}
+  on:touchstart={handleTouchStart}
+  on:touchmove={(event) => handleTouchMove(event, 'clementine')}
+>
+  <div class="track" bind:this={clementineCarousel}>
     {#each clementineImages as image (image.id)}
       <div class="card">
-        <img 
-          src={image.src} 
-          alt={image.alt}
-          loading="lazy"
-        />
+        <img src={image.src} alt={image.alt} />
+      </div>
+    {/each}
+  </div>
+</div>
+
+<h1>Camera Roll Top Picks</h1>
+
+<div
+  class="carousel"
+  on:wheel={(event) => handleWheel(event, 'photosilike')}
+  on:touchstart={handleTouchStart}
+  on:touchmove={(event) => handleTouchMove(event, 'photosilike')}
+>
+  <div class="track" bind:this={photosilikeCarousel}>
+    {#each photosilikeImages as image (image.id)}
+      <div class="card">
+        <img src={image.src} alt={image.alt} />
       </div>
     {/each}
   </div>
@@ -201,60 +259,39 @@
 
 <style>
   h1 {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #333;
-    margin: 2rem 0 1rem 0;
     font-size: 2rem;
-    font-weight: 600;
+    margin: 2rem 0 1rem;
   }
-  
-  h1:first-of-type {
-    margin-top: 1rem;
-  }
-  
-  .carousel-container {
-    width: 100%;
-    height: 400px;
+
+  .carousel {
     overflow: hidden;
-    position: relative;
-    cursor: grab;
+    height: 400px;
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     margin-bottom: 2rem;
+    touch-action: pan-y;
   }
-  
-  .carousel-container:active {
-    cursor: grabbing;
-  }
-  
-  .carousel-track {
+
+  .track {
     display: flex;
     gap: 32px;
     height: 100%;
     transition: transform 0.1s ease-out;
     will-change: transform;
   }
-  
+
   .card {
     min-width: 300px;
     height: 100%;
-    background: white;
+    flex-shrink: 0;
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    flex-shrink: 0;
   }
-  
+
   .card img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 8px;
-  }
-  
-  @media (prefers-reduced-motion: no-preference) {
-    .carousel-track {
-      transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-    }
   }
 </style>

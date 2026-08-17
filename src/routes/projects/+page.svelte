@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   // Load all images from /static/ADAPT folder once
   const adaptImages = Object.keys(import.meta.glob('/static/ADAPT/*.{jpg,jpeg,png}', { eager: true }))
     .map(path => path.replace('/static', ''));
@@ -101,7 +101,7 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
   // Track current image index per project
   let currentIndexes = projects.map(() => 0);
 
-  function nextSlide(projIdx) {
+  function nextSlide(projIdx: number) {
     currentIndexes[projIdx] = (currentIndexes[projIdx] + 1) % projects[projIdx].images.length;
   }
 </script>
