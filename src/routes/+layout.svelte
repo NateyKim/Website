@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
 
   import HomePage from './home/+page.svelte';
@@ -17,7 +17,7 @@
     { label: 'Resume', id: 'resume' }
   ];
 
-  function scrollToSection(sectionId) {
+  function scrollToSection(sectionId: string) {
     const element = document.getElementById(sectionId);
 
     if (element) {

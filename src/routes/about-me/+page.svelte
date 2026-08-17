@@ -1,12 +1,16 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
+
+  type CarouselType = 'mookie' | 'clementine' | 'photosilike';
+  type BaseImage = { src: string; alt: string };
+  type CarouselImage = BaseImage & { id: string };
 
   const mookieModules = import.meta.glob('/static/mookie/*.jpg', {
     eager: true
   });
 
   const mookieBaseImages = Object.entries(mookieModules).map(([path]) => {
-    const filename = path.split('/').pop();
+    const filename = path.split('/').pop() ?? 'Mookie photo';
     const src = path.replace('/static', '');
     const alt = filename
       .replace(/\.jpg$/i, '')
@@ -23,7 +27,7 @@
 
   const clementineBaseImages = Object.entries(clementineModules).map(
     ([path]) => {
-      const filename = path.split('/').pop();
+      const filename = path.split('/').pop() ?? 'Clementine photo';
       const src = path.replace('/static', '');
       const alt = filename
         .replace(/\.jpg$/i, '')
@@ -41,7 +45,7 @@
 
   const photosilikeBaseImages = Object.entries(photosilikeModules).map(
     ([path]) => {
-      const filename = path.split('/').pop();
+      const filename = path.split('/').pop() ?? 'Camera roll photo';
       const src = path.replace('/static', '');
       const alt = filename
         .replace(/\.jpg$/i, '')
@@ -57,7 +61,7 @@
   // Only the birth month was provided, so Clementine's age changes May 1.
   const clementineBirthday = new Date(2025, 4, 1);
 
-  function calculateAge(birthday, today = new Date()) {
+  function calculateAge(birthday: Date, today: Date = new Date()) {
     let age = today.getFullYear() - birthday.getFullYear();
 
     const birthdayHasPassed =
@@ -74,27 +78,27 @@
 
   let mookieAge = calculateAge(mookieBirthday);
   let clementineAge = calculateAge(clementineBirthday);
-  let ageUpdateInterval;
+  let ageUpdateInterval: ReturnType<typeof setInterval>;
 
-  let mookieCarousel;
-  let clementineCarousel;
-  let photosilikeCarousel;
+  let mookieCarousel: HTMLDivElement;
+  let clementineCarousel: HTMLDivElement;
+  let photosilikeCarousel: HTMLDivElement;
 
   let mookieScroll = 0;
   let clementineScroll = 0;
   let photosilikeScroll = 0;
 
-  let mookieImages = [];
-  let clementineImages = [];
-  let photosilikeImages = [];
+  let mookieImages: CarouselImage[] = [];
+  let clementineImages: CarouselImage[] = [];
+  let photosilikeImages: CarouselImage[] = [];
 
   const cardWidth = 300 + 32;
   const COPIES = 21;
 
   let touchStartX = 0;
 
-  function setupCarousel(baseImages) {
-    const images = [];
+  function setupCarousel(baseImages: BaseImage[]) {
+    const images: CarouselImage[] = [];
 
     for (let i = 0; i < COPIES; i++) {
       images.push(
@@ -111,10 +115,10 @@
     };
   }
 
-  function update(type, delta) {
-    let scroll;
-    let carousel;
-    let baseLength;
+  function update(type: CarouselType, delta: number) {
+    let scroll: number;
+    let carousel: HTMLDivElement;
+    let baseLength: number;
 
     if (type === 'mookie') {
       scroll = mookieScroll;
@@ -153,16 +157,16 @@
     }
   }
 
-  function handleWheel(event, type) {
+  function handleWheel(event: WheelEvent, type: CarouselType) {
     event.preventDefault();
     update(type, event.deltaY * 2);
   }
 
-  function handleTouchStart(event) {
+  function handleTouchStart(event: TouchEvent) {
     touchStartX = event.touches[0].clientX;
   }
 
-  function handleTouchMove(event, type) {
+  function handleTouchMove(event: TouchEvent, type: CarouselType) {
     const touchX = event.touches[0].clientX;
     const delta = (touchStartX - touchX) * 2;
 
@@ -232,7 +236,7 @@
       <div class="card">
         <img src={image.src} alt={image.alt} />
       </div>
-    {/eacheach}
+    {/each}
   </div>
 </div>
 

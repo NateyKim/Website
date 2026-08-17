@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
 
   const bio = [
@@ -20,7 +20,7 @@
   });
 
   let currentIndex = 0;
-  let interval;
+  let interval: ReturnType<typeof setInterval>;
 
   function cycleImages() {
     if (youImages.length > 0) {
