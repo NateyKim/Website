@@ -4,6 +4,7 @@
   type CarouselType = 'mookie' | 'clementine' | 'photosilike';
   type BaseImage = { src: string; alt: string };
   type CarouselImage = BaseImage & { id: string };
+  type Age = { years: number; months: number };
 
   const mookieModules = import.meta.glob('/static/mookie/*.jpg', {
     eager: true
@@ -61,23 +62,31 @@
   // Only the birth month was provided, so Clementine's age changes May 1.
   const clementineBirthday = new Date(2025, 4, 1);
 
-  function calculateAge(birthday: Date, today: Date = new Date()) {
-    let age = today.getFullYear() - birthday.getFullYear();
+  function calculateAge(birthday: Date, today: Date = new Date()): Age {
+    let years = today.getFullYear() - birthday.getFullYear();
+    let months = today.getMonth() - birthday.getMonth();
 
-    const birthdayHasPassed =
-      today.getMonth() > birthday.getMonth() ||
-      (today.getMonth() === birthday.getMonth() &&
-        today.getDate() >= birthday.getDate());
-
-    if (!birthdayHasPassed) {
-      age -= 1;
+    if (today.getDate() < birthday.getDate()) {
+      months -= 1;
     }
 
-    return age;
+    if (months < 0) {
+      years -= 1;
+      months += 12;
+    }
+
+    return { years, months };
   }
 
-  let mookieAge = calculateAge(mookieBirthday);
-  let clementineAge = calculateAge(clementineBirthday);
+  function formatAge(age: Age) {
+    const yearLabel = age.years === 1 ? 'year' : 'years';
+    const monthLabel = age.months === 1 ? 'month' : 'months';
+
+    return `${age.years} ${yearLabel}, ${age.months} ${monthLabel}`;
+  }
+
+  let mookieAge = formatAge(calculateAge(mookieBirthday));
+  let clementineAge = formatAge(calculateAge(clementineBirthday));
   let ageUpdateInterval: ReturnType<typeof setInterval>;
 
   let mookieCarousel: HTMLDivElement;
@@ -178,8 +187,8 @@
     const updateAges = () => {
       const today = new Date();
 
-      mookieAge = calculateAge(mookieBirthday, today);
-      clementineAge = calculateAge(clementineBirthday, today);
+      mookieAge = formatAge(calculateAge(mookieBirthday, today));
+      clementineAge = formatAge(calculateAge(clementineBirthday, today));
     };
 
     updateAges();
