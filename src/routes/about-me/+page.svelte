@@ -234,7 +234,7 @@
 <header class="personal-header">
   <p class="eyebrow">A little less formal</p>
   <h1>Beyond the Work</h1>
-  <p>The pets, sounds, games, and places that fill the space outside engineering.</p>
+  <p>The pets, music, games, food, and places that fill the space outside engineering.</p>
 </header>
 
 <section class="personal-category pets-category">
@@ -282,17 +282,42 @@
 </div>
 </section>
 
-<section class="personal-category interest-grid">
-  <div class="interest-card">
-    <p class="interest-number">01</p>
-    <h2>Music</h2>
-    <p>Piano and guitar are where I slow down, experiment, and make something without an engineering specification.</p>
+<section class="personal-category personal-media-section">
+  <div class="media-heading">
+    <div>
+      <p class="interest-number">01</p>
+      <h2>Music</h2>
+    </div>
+    <p>Piano and guitar performances, collected as a compilation of videos.</p>
   </div>
+  <div class="future-carousel" aria-label="Music video carousel">
+    <div class="future-card">Music videos coming soon</div>
+  </div>
+</section>
 
-  <div class="interest-card">
-    <p class="interest-number">02</p>
-    <h2>Games</h2>
-    <p>Games and anime are a steady source of imaginative worlds, clever systems, and stories worth getting lost in.</p>
+<section class="personal-category personal-media-section">
+  <div class="media-heading">
+    <div>
+      <p class="interest-number">02</p>
+      <h2>Games</h2>
+    </div>
+    <p>A future mix of photos and videos from games and the worlds around them.</p>
+  </div>
+  <div class="future-carousel" aria-label="Games media carousel">
+    <div class="future-card">Game photos and videos coming soon</div>
+  </div>
+</section>
+
+<section class="personal-category personal-media-section">
+  <div class="media-heading">
+    <div>
+      <p class="interest-number">03</p>
+      <h2>Food</h2>
+    </div>
+    <p>Favorite meals, memorable finds, and things worth ordering twice.</p>
+  </div>
+  <div class="future-carousel" aria-label="Food photo carousel">
+    <div class="future-card">Food photos coming soon</div>
   </div>
 </section>
 
@@ -369,26 +394,27 @@
     font-weight: 400;
   }
 
-  .interest-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.5rem;
+  .personal-media-section {
     margin-top: 3rem;
     margin-bottom: 3rem;
   }
 
-  .interest-card {
-    min-height: 200px;
-    padding: 1.5rem;
-    border: 1px solid #c9c9c9;
-    border-radius: 0.75rem;
+  .media-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 1rem;
   }
 
-  .interest-card h2 {
+  .media-heading h2 {
     margin-top: 0.4rem;
+    margin-bottom: 0;
   }
 
-  .interest-card p:last-child {
+  .media-heading > p {
+    max-width: 520px;
+    margin: 0;
     line-height: 1.6;
   }
 
@@ -398,6 +424,27 @@
     font-size: 0.8rem;
     font-weight: 700;
     letter-spacing: 0.1em;
+  }
+
+  .future-carousel {
+    display: flex;
+    min-height: 240px;
+    overflow-x: auto;
+    border: 1px solid #c9c9c9;
+    border-radius: 0.75rem;
+    background: rgba(0, 0, 0, 0.025);
+    scroll-snap-type: x mandatory;
+  }
+
+  .future-card {
+    display: grid;
+    min-width: 100%;
+    place-items: center;
+    padding: 2rem;
+    color: #777;
+    font-weight: 600;
+    text-align: center;
+    scroll-snap-align: start;
   }
 
   .carousel {
@@ -455,8 +502,10 @@
   }
 
   @media (max-width: 700px) {
-    .interest-grid {
-      grid-template-columns: 1fr;
+    .media-heading {
+      align-items: start;
+      flex-direction: column;
+      gap: 0.5rem;
     }
   }
 </style>
