@@ -109,12 +109,12 @@
     <CVPage />
   </section>
 
-  <section id="about-me">
-    <AboutMePage />
-  </section>
-
   <section id="other-projects">
     <OtherProjectsPage />
+  </section>
+
+  <section id="about-me">
+    <AboutMePage />
   </section>
 </main>
 
