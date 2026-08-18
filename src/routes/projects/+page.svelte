@@ -12,6 +12,46 @@
 
   const projects = [
     {
+      title: 'Hybrid Simulation and EMG-Controlled Upper-Limb Exoskeleton',
+      location: 'Penn GRASP Laboratory · Philadelphia, PA',
+      dates: 'Jan 2023 – Present',
+      description: `Developed a MuJoCo musculoskeletal digital twin using inverse dynamics, PD control, and quadratic programming, reproducing measured elbow kinematics with a mean tracking RMSE of 1.866°.
+Built a causal temporal convolutional network that predicts subject-specific biceps and triceps EMG for unseen controller configurations at real-time-capable latency.
+Integrated surface EMG, OptiTrack motion capture, motor torque, and exoskeleton encoder data across participants, external loads, and controller configurations.`,
+      images: adaptImages,
+      captions: adaptCaptions,
+    },
+    {
+      title: 'EMG-Based Achilles Tendinopathy Classification',
+      location: 'Penn GRASP Laboratory · Philadelphia, PA',
+      dates: 'Aug 2023 – Present',
+      description: `Developed a real-time high-density EMG collection pipeline using custom 3D-printed hardware and laser-cut MMX/silicon fabric electrodes.
+Built a 3D variational autoencoder to quantify injury severity, assess laterality, and classify rehabilitation exercises.
+Detected Achilles tendinopathy in an average of 20 of 21 held-out evaluations and classified healthy, unilateral, and bilateral pathology in 18 of 21.`,
+      images: adaptImages,
+      captions: adaptCaptions,
+    },
+    {
+      title: 'Verdigris: Assistive Ultrasound Guidance for Lumbar Puncture',
+      location: 'University of Pennsylvania · Philadelphia, PA',
+      dates: 'Aug 2025 – May 2026',
+      description: `Co-developed an assistive medical device using ultrasound-based bone detection and real-time angle feedback to guide lumbar-puncture needle trajectories.
+Designed the enclosure and interface, integrated the ultrasound transducer, motor, angle sensor, and control electronics, and tested acoustic acquisition on tissue and spinal phantoms.
+Validated angle sensing and LED feedback within 1° across controlled targets; the prototype achieved 80% optimal needle-path detection and 95% bone-detection accuracy.`,
+      images: adaptImages,
+      captions: adaptCaptions,
+    },
+    {
+      title: 'Ember Social Robotics Platform',
+      location: 'Tadashi Robotics · Philadelphia, PA',
+      dates: 'Aug 2025 – Present',
+      description: `Translating Ember from an academic social-robotics research platform into an early-stage product for rehabilitative patient support and naturalistic human–robot interaction.
+Designed the mechanical enclosure and embedded architecture across wireless communication, audio I/O, vision, display, power, and motor-control hardware.
+Developed LLM-based interaction logic for reminiscence dialogue and emergency guidance and supported human-subject research submissions.`,
+      images: adaptImages,
+      captions: adaptCaptions,
+    },
+    {
       title: 'PENN Assistive Devices and Prosthetic Technologies (ADAPT)',
       location: 'Philadelphia, PA',
       dates: 'Jan 2023 – Present',
@@ -34,9 +74,8 @@ Implemented real-time EMG feature extraction and hardware filtering using custom
       title: 'Rehabilitative Driving Simulator',
       location: 'Kingston, Jamaica',
       dates: 'Jan 2023 – May 2023',
-      description: `Collaborated with a Jamaican rehabilitation center to create a low-cost driving simulator for a hemiplegic patient.
-Created a responsive driving simulation game using Unity.
-Fabricated mechanical and electrical components, including 3D-printed, wooden, and sensor-integrated parts.`,
+      description: `Collaborated with engineers and clinicians in Jamaica to develop a Unity-based driving simulator for pediatric patients with hemiplegia.
+Created custom steering and pedal controls and fabricated the supporting mechanical, electrical, and sensor-integrated components.`,
       images: adaptImages,
       captions: adaptCaptions,
     },

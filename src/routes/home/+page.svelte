@@ -2,9 +2,9 @@
   import { onMount } from 'svelte';
 
   const bio = [
-    'I am a researcher in assistive robotics and human movement, with interests in upper-limb exoskeletons, EMG-informed musculoskeletal modeling, rehabilitation robotics, and intuitive human–robot control.',
-    'My experience includes EMG-based motion prediction, MuJoCo musculoskeletal simulation, machine learning for injury assessment, EMG-controlled bionic arms, and socially assistive robots. I am particularly interested in translating neuromuscular intent into adaptive, intuitive, and clinically meaningful assistive technologies.',
-    'I am currently pursuing PhD opportunities in wearable and assistive robotics, biomechanics, neuromuscular modeling, and human-centered robotic systems.'
+    'I am a research engineer at Penn’s GRASP Laboratory working at the intersection of assistive robotics, human movement, and human–robot interaction. I earned an M.S.E. in Robotics and a B.S.E. in Bioengineering from the University of Pennsylvania, both with a 4.0 GPA.',
+    'My research spans upper-limb exoskeletons, EMG-informed musculoskeletal digital twins, human-in-the-loop control, machine learning for injury assessment, and socially assistive robots. I build systems that translate neuromuscular intent into adaptive, intuitive, and clinically meaningful technologies.',
+    'Alongside my work at Penn, I am a research resident at Maingen, where I study machine-learning methods for robotic end-effector design, and a founding mechanical engineer at Tadashi Robotics, where I am helping translate the Ember social-robotics platform into a rehabilitative product.'
   ];
 
   const youModules = import.meta.glob('/static/koroks/*.png', {
@@ -37,7 +37,7 @@
 
 <section class="intro-wrapper">
   <h1 class="header-title">Natey Kim</h1>
-  <p class="job-title">Human Robotic Interaction Research Engineer @ UPenn GRASP</p>
+  <p class="job-title">Human–Robot Interaction Research Engineer @ Penn GRASP</p>
 
   <div class="intro-section">
     <div class="intro-left">
