@@ -62,7 +62,15 @@
     { src: '/photosilike/strawsburg.jpg', alt: 'Leaves overhanging the water', isVideo: false, caption: 'Strasbourg, France' },
     { src: '/photosilike/coloseeum.jpg', alt: 'The Colosseum', isVideo: false, caption: 'Rome, Italy' },
     { src: '/photosilike/IMG_20230730_211429627_HDR.jpg', alt: 'Florence skyline beneath orange clouds', isVideo: false, caption: 'Florence, Italy' },
-    { src: '/photosilike/IMG_20230725_172908282.jpg', alt: 'Clock in the Musée d’Orsay', isVideo: false, caption: 'Paris, France' }
+    { src: '/photosilike/IMG_20230725_172908282.jpg', alt: 'Clock in the Musée d’Orsay', isVideo: false, caption: 'Paris, France' },
+    { src: '/photosilike/kyoto.jpg', alt: 'Kinkaku-ji beside its reflecting pond', isVideo: false, caption: 'Kyoto, Japan' },
+    { src: '/photosilike/philly.jpg', alt: 'Garden surrounded by trees', isVideo: false, caption: 'Philadelphia, USA' },
+    { src: '/photosilike/kaiyukan.jpg', alt: 'Illuminated whale shark at Osaka Aquarium Kaiyukan', isVideo: false, caption: 'Osaka, Japan' },
+    { src: '/photosilike/poconos.jpg', alt: 'Waterfall surrounded by autumn trees', isVideo: false, caption: 'Poconos, USA' },
+    { src: '/photosilike/tokyo-flame.jpg', alt: 'Asahi Flame framed by trees and flowers', isVideo: false, caption: 'Tokyo, Japan' },
+    { src: '/photosilike/tokyo-skyline.jpg', alt: 'Tokyo skyline at night', isVideo: false, caption: 'Tokyo, Japan' },
+    { src: '/photosilike/wooded-lake.jpg', alt: 'Wooded lake in autumn', isVideo: false, caption: 'United States' },
+    { src: '/photosilike/gateway-arch.jpg', alt: 'Gateway Arch beneath a blue sky', isVideo: false, caption: 'St. Louis, USA' }
   ];
 
   const mookieBirthday = new Date(2019, 9, 9);
@@ -274,8 +282,8 @@
 >
   <div class="track" bind:this={photosilikeCarousel}>
     {#each photosilikeImages as image (image.id)}
-      <div class="card">
-        <img src={image.src} alt={image.alt} />
+      <div class="card camera-card">
+        <img src={image.src} alt={image.alt} class:upright-arch={image.src.endsWith('/gateway-arch.jpg')} />
         {#if image.caption}
           <div class="photo-caption">{image.caption}</div>
         {/if}
@@ -324,16 +332,23 @@
   }
 
   .photo-caption {
-    position: absolute;
-    right: 0.75rem;
-    bottom: 0.75rem;
-    left: 0.75rem;
-    padding: 0.55rem 0.75rem;
-    border-radius: 0.5rem;
-    background: rgba(0, 0, 0, 0.68);
-    color: white;
+    display: flex;
+    height: 3rem;
+    padding: 0 0.75rem;
+    align-items: center;
+    justify-content: center;
+    background: var(--background, white);
+    color: inherit;
     font-size: 0.95rem;
     text-align: center;
-    backdrop-filter: blur(4px);
+  }
+
+  .camera-card img {
+    height: calc(100% - 3rem);
+    border-radius: 8px 8px 0 0;
+  }
+
+  .camera-card img.upright-arch {
+    transform: rotate(180deg);
   }
 </style>
