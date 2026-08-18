@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
 
   type CarouselType = 'mookie' | 'clementine' | 'photosilike';
-  type BaseImage = { src: string; alt: string; isVideo: boolean };
+  type BaseImage = { src: string; alt: string; isVideo: boolean; caption?: string };
   type CarouselImage = BaseImage & { id: string };
   type Age = { years: number; months: number };
 
@@ -55,23 +55,15 @@
     { src: '/pets/clementine-video-h264.mp4', alt: 'Clementine video', isVideo: true }
   ];
 
-  const photosilikeModules = import.meta.glob(
-    '/static/photosilike/*.jpg',
-    { eager: true }
-  );
-
-  const photosilikeBaseImages = Object.entries(photosilikeModules).map(
-    ([path]) => {
-      const filename = path.split('/').pop() ?? 'Camera roll photo';
-      const src = path.replace('/static', '');
-      const alt = filename
-        .replace(/\.jpg$/i, '')
-        .replace(/[-_]/g, ' ')
-        .replace(/\b\w/g, (character) => character.toUpperCase());
-
-      return { src, alt, isVideo: false };
-    }
-  );
+  const photosilikeBaseImages: BaseImage[] = [
+    { src: '/photosilike/bench.jpg', alt: 'Bench overlooking the ocean', isVideo: false, caption: 'Some Beach, Jamaica' },
+    { src: '/photosilike/bluemountain.jpg', alt: 'Lush green mountains', isVideo: false, caption: 'Blue Mountains, Jamaica' },
+    { src: '/photosilike/Jamaica.jpg', alt: 'Orange sunset over the ocean', isVideo: false, caption: 'Montego Bay, Jamaica' },
+    { src: '/photosilike/strawsburg.jpg', alt: 'Leaves overhanging the water', isVideo: false, caption: 'Strasbourg, France' },
+    { src: '/photosilike/coloseeum.jpg', alt: 'The Colosseum', isVideo: false, caption: 'Rome, Italy' },
+    { src: '/photosilike/IMG_20230730_211429627_HDR.jpg', alt: 'Florence skyline beneath orange clouds', isVideo: false, caption: 'Florence, Italy' },
+    { src: '/photosilike/IMG_20230725_172908282.jpg', alt: 'Clock in the Musée d’Orsay', isVideo: false, caption: 'Paris, France' }
+  ];
 
   const mookieBirthday = new Date(2019, 9, 9);
 
@@ -284,6 +276,9 @@
     {#each photosilikeImages as image (image.id)}
       <div class="card">
         <img src={image.src} alt={image.alt} />
+        {#if image.caption}
+          <div class="photo-caption">{image.caption}</div>
+        {/if}
       </div>
     {/each}
   </div>
@@ -313,6 +308,7 @@
   }
 
   .card {
+    position: relative;
     min-width: 300px;
     height: 100%;
     flex-shrink: 0;
@@ -325,5 +321,19 @@
     height: 100%;
     object-fit: cover;
     border-radius: 8px;
+  }
+
+  .photo-caption {
+    position: absolute;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    left: 0.75rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 0.5rem;
+    background: rgba(0, 0, 0, 0.68);
+    color: white;
+    font-size: 0.95rem;
+    text-align: center;
+    backdrop-filter: blur(4px);
   }
 </style>
