@@ -8,6 +8,17 @@
   import CVPage from './cv/+page.svelte';
 
   let activeSection = 'home';
+  let projectsPage: ProjectsPage;
+
+  const otherProjectTitles = [
+    'PENN Assistive Devices and Prosthetic Technologies (ADAPT)',
+    'Cockroach Interface',
+    'AI Image to GPS Localization',
+    'PENN Tikkun Olam Makers',
+    'KUKA Arm Competition',
+    'AI Human Content Generator',
+    'HVAC Monitoring and Surveillance System'
+  ];
 
   const sections = [
     { label: 'Home', id: 'home' },
@@ -26,6 +37,11 @@
         block: 'start'
       });
     }
+  }
+
+  function showOtherProject(title: string) {
+    projectsPage.showOtherProject(title);
+    scrollToSection('projects');
   }
 
   function updateActiveSection() {
@@ -53,13 +69,31 @@
 
 <nav>
   {#each sections as section}
-    <button
-      class="nav-link"
-      class:active={activeSection === section.id}
-      on:click={() => scrollToSection(section.id)}
-    >
-      {section.label}
-    </button>
+    {#if section.id === 'projects'}
+      <div class="nav-item">
+        <button
+          class="nav-link"
+          class:active={activeSection === section.id}
+          on:click={() => scrollToSection(section.id)}
+          aria-haspopup="true"
+        >
+          {section.label}
+        </button>
+        <div class="project-menu" aria-label="Other projects">
+          {#each otherProjectTitles as title}
+            <button type="button" on:click={() => showOtherProject(title)}>{title}</button>
+          {/each}
+        </div>
+      </div>
+    {:else}
+      <button
+        class="nav-link"
+        class:active={activeSection === section.id}
+        on:click={() => scrollToSection(section.id)}
+      >
+        {section.label}
+      </button>
+    {/if}
   {/each}
 </nav>
 
@@ -69,7 +103,7 @@
   </section>
 
   <section id="projects">
-    <ProjectsPage />
+    <ProjectsPage bind:this={projectsPage} />
   </section>
 
   <section id="about-me">
@@ -117,6 +151,43 @@
 
   .nav-link:hover {
     background-color: #444;
+  }
+
+  .nav-item {
+    position: relative;
+  }
+
+  .project-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    display: none;
+    width: min(24rem, 90vw);
+    padding: 0.4rem;
+    border-radius: 0 0 0.5rem 0.5rem;
+    background: #333;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+  }
+
+  .nav-item:hover .project-menu,
+  .nav-item:focus-within .project-menu {
+    display: grid;
+  }
+
+  .project-menu button {
+    padding: 0.65rem 0.75rem;
+    border: 0;
+    border-radius: 0.3rem;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    font-size: 0.92rem;
+    text-align: left;
+  }
+
+  .project-menu button:hover,
+  .project-menu button:focus-visible {
+    background: #555;
   }
 
   main {

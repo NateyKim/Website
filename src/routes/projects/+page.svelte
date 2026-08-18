@@ -168,6 +168,11 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
 
   const featuredProjects = projects.filter((project) => featuredProjectTitles.has(project.title));
   const otherProjects = projects.filter((project) => !featuredProjectTitles.has(project.title));
+  let selectedOtherProject: (typeof projects)[number] | undefined;
+
+  export function showOtherProject(title: string) {
+    selectedOtherProject = otherProjects.find((project) => project.title === title);
+  }
 
   // Track current image index per project
   let currentIndexes = projects.map(() => 0);
@@ -289,36 +294,11 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
     background: #f0f0f0;
   }
 
-  .other-projects {
-    border-top: 1px solid #d0d0d0;
-    padding-top: 1.5rem;
-  }
-
-  .other-projects summary {
-    width: fit-content;
-    margin: 0 auto;
-    padding: 0.8rem 1.2rem;
-    border-radius: 0.5rem;
-    background: #333;
-    color: white;
-    cursor: pointer;
-    font-size: 1.1rem;
-    font-weight: 600;
-    user-select: none;
-  }
-
-  .other-projects summary:hover {
-    background: #555;
-  }
-
-  .other-projects[open] summary {
-    margin-bottom: 3rem;
-  }
-
-  .other-project-list {
-    display: flex;
-    flex-direction: column;
-    gap: 4rem;
+  .selected-project {
+    padding: 1.5rem;
+    border: 1px solid #d0d0d0;
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.45);
   }
 
   @media (max-width: 900px) {
@@ -335,6 +315,39 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
 </style>
 
 <div class="portfolio-wrapper">
+  {#if selectedOtherProject}
+    {@const projectIndex = projects.indexOf(selectedOtherProject)}
+    <div class="project-row selected-project">
+      <div class="text-block">
+        <div class="project-header">{selectedOtherProject.title}</div>
+        <div class="project-meta">{selectedOtherProject.location} &bull; {selectedOtherProject.dates}</div>
+        <div class="project-description">{selectedOtherProject.description}</div>
+      </div>
+
+      <div class="image-block">
+        <button
+          class="image-wrapper"
+          on:click={() => nextSlide(projectIndex)}
+          aria-label="Cycle project {selectedOtherProject.title} images"
+          title="Click or press Enter/Space to view next image"
+          type="button"
+        >
+          <img
+            src={selectedOtherProject.images[currentIndexes[projectIndex]]}
+            alt={`Image ${currentIndexes[projectIndex] + 1} for ${selectedOtherProject.title}`}
+          />
+        </button>
+        {#if selectedOtherProject.captions && selectedOtherProject.captions.length > 0}
+          <ul class="caption-list">
+            {#each selectedOtherProject.captions[currentIndexes[projectIndex]] as captionLine}
+              <li>{captionLine}</li>
+            {/each}
+          </ul>
+        {/if}
+      </div>
+    </div>
+  {/if}
+
   {#each featuredProjects as project, i}
     {@const projectIndex = projects.indexOf(project)}
     <div class="project-row {i % 2 === 0 ? 'even' : 'odd'}">
@@ -379,42 +392,4 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
     </div>
   {/each}
 
-  <details class="other-projects">
-    <summary>Other Projects ({otherProjects.length})</summary>
-
-    <div class="other-project-list">
-      {#each otherProjects as project, i}
-        {@const projectIndex = projects.indexOf(project)}
-        <div class="project-row {i % 2 === 0 ? 'even' : 'odd'}">
-          <div class="text-block">
-            <div class="project-header">{project.title}</div>
-            <div class="project-meta">{project.location} &bull; {project.dates}</div>
-            <div class="project-description">{project.description}</div>
-          </div>
-
-          <div class="image-block">
-            <button
-              class="image-wrapper"
-              on:click={() => nextSlide(projectIndex)}
-              aria-label="Cycle project {project.title} images"
-              title="Click or press Enter/Space to view next image"
-              type="button"
-            >
-              <img
-                src={project.images[currentIndexes[projectIndex]]}
-                alt={`Image ${currentIndexes[projectIndex] + 1} for ${project.title}`}
-              />
-            </button>
-            {#if project.captions && project.captions.length > 0}
-              <ul class="caption-list">
-                {#each project.captions[currentIndexes[projectIndex]] as captionLine}
-                  <li>{captionLine}</li>
-                {/each}
-              </ul>
-            {/if}
-          </div>
-        </div>
-      {/each}
-    </div>
-  </details>
 </div>
