@@ -1,29 +1,29 @@
 <script lang="ts">
-  const resumeUrl = '/Resume2025.pdf';
+  const cvUrl = '/CV.pdf';
 </script>
 
-<div class="resume-page">
-  <div class="resume-header">
-    <h2>Resume</h2>
-    <a href={resumeUrl} target="_blank" rel="noreferrer">Open PDF</a>
+<div class="cv-page">
+  <div class="cv-header">
+    <h2>CV</h2>
+    <a href={cvUrl} target="_blank" rel="noreferrer">Open CV</a>
   </div>
 
-  <iframe src={resumeUrl} title="Nathaniel Kim's resume"></iframe>
+  <iframe src={cvUrl} title="Nathaniel Kim's CV"></iframe>
 
-  <p class="resume-fallback">
-    If the PDF viewer does not load, <a href={resumeUrl} download>download the resume</a>.
+  <p class="cv-fallback">
+    If the PDF viewer does not load, <a href={cvUrl} download>download the CV</a>.
   </p>
 </div>
 
 <style>
-  .resume-page {
+  .cv-page {
     box-sizing: border-box;
     min-height: calc(100vh - 60px);
     padding: 2rem clamp(1rem, 4vw, 3rem) 3rem;
     background: #f5f5f5;
   }
 
-  .resume-header {
+  .cv-header {
     width: min(100%, 960px);
     margin: 0 auto 1rem;
     display: flex;
@@ -37,7 +37,7 @@
     font-size: clamp(1.75rem, 4vw, 2.5rem);
   }
 
-  .resume-header a {
+  .cv-header a {
     flex: none;
     padding: 0.65rem 1rem;
     border-radius: 0.4rem;
@@ -46,7 +46,7 @@
     text-decoration: none;
   }
 
-  .resume-header a:hover {
+  .cv-header a:hover {
     background: #555;
   }
 
@@ -61,7 +61,7 @@
     box-shadow: 0 4px 16px rgb(0 0 0 / 12%);
   }
 
-  .resume-fallback {
+  .cv-fallback {
     width: min(100%, 960px);
     margin: 0.75rem auto 0;
     color: #555;
@@ -69,7 +69,7 @@
   }
 
   @media (max-width: 600px) {
-    .resume-page {
+    .cv-page {
       padding: 1.25rem 0.75rem 2rem;
     }
 

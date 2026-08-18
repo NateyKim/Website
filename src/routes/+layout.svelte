@@ -5,7 +5,7 @@
   import ProjectsPage from './projects/+page.svelte';
   import AboutMePage from './about-me/+page.svelte';
   import HobbiesPage from './hobbies/+page.svelte';
-  import ResumePage from './resume/+page.svelte';
+  import CVPage from './cv/+page.svelte';
 
   let activeSection = 'home';
 
@@ -14,7 +14,7 @@
     { label: 'Projects', id: 'projects' },
     { label: 'About Me', id: 'about-me' },
     { label: 'Hobbies', id: 'hobbies' },
-    { label: 'Resume', id: 'resume' }
+    { label: 'CV', id: 'cv' }
   ];
 
   function scrollToSection(sectionId: string) {
@@ -80,8 +80,8 @@
     <HobbiesPage />
   </section>
 
-  <section id="resume">
-    <ResumePage />
+  <section id="cv">
+    <CVPage />
   </section>
 </main>
 
