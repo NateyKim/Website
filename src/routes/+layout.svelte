@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { page } from '$app/stores';
 
   import HomePage from './home/+page.svelte';
   import ProjectsPage from './projects/+page.svelte';
@@ -54,26 +53,19 @@
 </script>
 
 <nav>
-  {#if $page.url.pathname === '/other-projects'}
-    <a class="nav-link" href="/home">Home</a>
-  {/if}
   {#each sections as section}
-    {#if $page.url.pathname === '/other-projects' && section.id !== 'projects'}
-      <!-- The standalone Other Projects page keeps only the relevant navigation. -->
-    {:else}
     {#if section.id === 'projects'}
       <div class="nav-item">
-        <a
+        <button
           class="nav-link"
           class:active={activeSection === section.id}
-          href="/home#projects"
+          on:click={() => scrollToSection(section.id)}
           aria-haspopup="true"
         >
           {section.label}
-        </a>
+        </button>
         <div class="project-menu" aria-label="Other projects">
-          <a href="/home#projects">Main Projects</a>
-          <a href="/other-projects">Other Projects</a>
+          <button type="button" on:click={() => scrollToSection('other-projects')}>Other Projects</button>
         </div>
       </div>
     {:else}
@@ -85,15 +77,9 @@
         {section.label}
       </button>
     {/if}
-    {/if}
   {/each}
 </nav>
 
-{#if $page.url.pathname === '/other-projects'}
-  <main class="standalone-page">
-    <OtherProjectsPage />
-  </main>
-{:else}
 <main>
   <section id="home">
     <HomePage />
@@ -114,8 +100,11 @@
   <section id="cv">
     <CVPage />
   </section>
+
+  <section id="other-projects">
+    <OtherProjectsPage />
+  </section>
 </main>
-{/if}
 
 <style>
   nav {
@@ -172,9 +161,11 @@
     display: grid;
   }
 
-  .project-menu a {
+  .project-menu button {
     display: block;
+    width: 100%;
     padding: 0.65rem 0.75rem;
+    border: 0;
     border-radius: 0.3rem;
     background: transparent;
     color: white;
@@ -184,13 +175,9 @@
     text-decoration: none;
   }
 
-  .project-menu a:hover,
-  .project-menu a:focus-visible {
+  .project-menu button:hover,
+  .project-menu button:focus-visible {
     background: #555;
-  }
-
-  .standalone-page {
-    min-height: calc(100vh - 60px);
   }
 
   main {
