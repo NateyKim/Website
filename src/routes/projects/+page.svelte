@@ -179,6 +179,19 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
 
   // Track current image index per project
   let currentIndexes = projects.map(() => 0);
+  let expandedProjects = new Set<string>();
+
+  function toggleProjectDetails(title: string) {
+    const nextExpandedProjects = new Set(expandedProjects);
+
+    if (nextExpandedProjects.has(title)) {
+      nextExpandedProjects.delete(title);
+    } else {
+      nextExpandedProjects.add(title);
+    }
+
+    expandedProjects = nextExpandedProjects;
+  }
 
   function nextSlide(projIdx: number) {
     currentIndexes[projIdx] = (currentIndexes[projIdx] + 1) % projects[projIdx].images.length;
@@ -236,6 +249,29 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
   .project-description {
     white-space: pre-line;
     margin-bottom: 1rem;
+  }
+
+  .project-details {
+    margin: 0 0 1rem;
+    padding: 0.85rem 1rem;
+    border-left: 3px solid #777;
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  .read-more-button {
+    padding: 0.5rem 0.85rem;
+    border: 1px solid #777;
+    border-radius: 0.4rem;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 600;
+  }
+
+  .read-more-button:hover,
+  .read-more-button:focus-visible {
+    background: rgba(0, 0, 0, 0.08);
   }
 
   button.image-wrapper {
@@ -319,6 +355,17 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
         <div class="project-header">{project.title}</div>
         <div class="project-meta">{project.location} &bull; {project.dates}</div>
         <div class="project-description">{project.description}</div>
+        {#if expandedProjects.has(project.title)}
+          <div class="project-details">Work in progress</div>
+        {/if}
+        <button
+          class="read-more-button"
+          type="button"
+          aria-expanded={expandedProjects.has(project.title)}
+          on:click={() => toggleProjectDetails(project.title)}
+        >
+          {expandedProjects.has(project.title) ? 'Read less' : 'Read more'}
+        </button>
       </div>
 
       <div class="image-block">
