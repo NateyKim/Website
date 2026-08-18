@@ -5,7 +5,6 @@
   import WorkExperiencePage from './work-experience/WorkExperiencePage.svelte';
   import ProjectsPage from './projects/+page.svelte';
   import AboutMePage from './about-me/+page.svelte';
-  import HobbiesPage from './hobbies/+page.svelte';
   import CVPage from './cv/+page.svelte';
   import OtherProjectsPage from './other-projects/OtherProjectsPage.svelte';
 
@@ -24,9 +23,8 @@
     { label: 'Home', id: 'home' },
     { label: 'Work Experience', id: 'work-experience' },
     { label: 'Projects', id: 'projects' },
-    { label: 'About Me', id: 'about-me' },
-    { label: 'Hobbies', id: 'hobbies' },
-    { label: 'CV', id: 'cv' }
+    { label: 'CV', id: 'cv' },
+    { label: 'Beyond the Work', id: 'about-me' }
   ];
 
   function scrollToSection(sectionId: string) {
@@ -107,16 +105,12 @@
     <ProjectsPage />
   </section>
 
-  <section id="about-me">
-    <AboutMePage />
-  </section>
-
-  <section id="hobbies">
-    <HobbiesPage />
-  </section>
-
   <section id="cv">
     <CVPage />
+  </section>
+
+  <section id="about-me">
+    <AboutMePage />
   </section>
 
   <section id="other-projects">

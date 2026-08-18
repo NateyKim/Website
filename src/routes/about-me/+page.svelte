@@ -231,7 +231,16 @@
   });
 </script>
 
-<h1>Mookie (age: {mookieAge})</h1>
+<header class="personal-header">
+  <p class="eyebrow">A little less formal</p>
+  <h1>Beyond the Work</h1>
+  <p>The pets, sounds, games, and places that fill the space outside engineering.</p>
+</header>
+
+<section class="personal-category pets-category">
+<h2>Pets</h2>
+
+<h3>Mookie <span>(age: {mookieAge})</span></h3>
 
 <div
   class="carousel"
@@ -248,7 +257,7 @@
   </div>
 </div>
 
-<h1>Clementine (age: {clementineAge})</h1>
+<h3>Clementine <span>(age: {clementineAge})</span></h3>
 
 <div
   class="carousel"
@@ -271,8 +280,24 @@
     {/each}
   </div>
 </div>
+</section>
 
-<h1>Camera Roll Top Picks</h1>
+<section class="personal-category interest-grid">
+  <div class="interest-card">
+    <p class="interest-number">01</p>
+    <h2>Music</h2>
+    <p>Piano and guitar are where I slow down, experiment, and make something without an engineering specification.</p>
+  </div>
+
+  <div class="interest-card">
+    <p class="interest-number">02</p>
+    <h2>Games</h2>
+    <p>Games and anime are a steady source of imaginative worlds, clever systems, and stories worth getting lost in.</p>
+  </div>
+</section>
+
+<section class="personal-category">
+<h2>Camera Roll Top Picks</h2>
 
 <div
   class="carousel"
@@ -291,11 +316,88 @@
     {/each}
   </div>
 </div>
+</section>
 
 <style>
-  h1 {
+  .personal-header,
+  .personal-category {
+    max-width: 1200px;
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .personal-header {
+    padding: 3rem 1.5rem 1rem;
+  }
+
+  .personal-header h1 {
+    margin: 0 0 0.75rem;
+    font-size: clamp(2.5rem, 7vw, 4.5rem);
+  }
+
+  .personal-header p:last-child {
+    max-width: 660px;
+    line-height: 1.6;
+  }
+
+  .eyebrow {
+    margin: 0 0 0.35rem;
+    color: #666;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .personal-category {
+    padding: 0 1.5rem;
+  }
+
+  h2 {
     font-size: 2rem;
     margin: 2rem 0 1rem;
+  }
+
+  h3 {
+    margin: 2rem 0 1rem;
+    font-size: 1.45rem;
+  }
+
+  h3 span {
+    color: #666;
+    font-size: 1rem;
+    font-weight: 400;
+  }
+
+  .interest-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+  }
+
+  .interest-card {
+    min-height: 200px;
+    padding: 1.5rem;
+    border: 1px solid #c9c9c9;
+    border-radius: 0.75rem;
+  }
+
+  .interest-card h2 {
+    margin-top: 0.4rem;
+  }
+
+  .interest-card p:last-child {
+    line-height: 1.6;
+  }
+
+  .interest-number {
+    margin: 0;
+    color: #777;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
   }
 
   .carousel {
@@ -350,5 +452,11 @@
 
   .camera-card img.upright-arch {
     transform: rotate(180deg);
+  }
+
+  @media (max-width: 700px) {
+    .interest-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
