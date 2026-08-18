@@ -6,14 +6,11 @@
   type CarouselImage = BaseImage & { id: string };
   type Age = { years: number; months: number };
 
-  const mookieModules = import.meta.glob([
-    '/static/mookie/*.{jpg,jpeg,png,gif}',
-    '/static/pets/mookie-*'
-  ], {
+  const mookieModules = import.meta.glob('/static/mookie/*.{jpg,jpeg,png,gif}', {
     eager: true
   });
 
-  const mookieBaseImages = Object.entries(mookieModules).map(([path]) => {
+  const mookieExistingImages = Object.entries(mookieModules).map(([path]) => {
     const filename = path.split('/').pop() ?? 'Mookie photo';
     const src = path.replace('/static', '');
     const alt = filename
@@ -24,15 +21,20 @@
     return { src, alt, isVideo: src.endsWith('.mp4') };
   });
 
+  const mookieBaseImages: BaseImage[] = [
+    ...mookieExistingImages,
+    { src: '/pets/mookie-car.jpg', alt: 'Mookie in the car', isVideo: false },
+    { src: '/pets/mookie-yawn.gif', alt: 'Mookie yawning', isVideo: false },
+    { src: '/pets/mookie-reindeer.jpg', alt: 'Mookie dressed as a reindeer', isVideo: false },
+    { src: '/pets/mookie-costume.jpg', alt: 'Mookie in costume', isVideo: false }
+  ];
+
   const clementineModules = import.meta.glob(
-    [
-      '/static/clementine/*.{jpg,jpeg,png,gif,mp4}',
-      '/static/pets/clementine-*'
-    ],
+    '/static/clementine/*.{jpg,jpeg,png,gif,mp4}',
     { eager: true }
   );
 
-  const clementineBaseImages = Object.entries(clementineModules).map(
+  const clementineExistingImages = Object.entries(clementineModules).map(
     ([path]) => {
       const filename = path.split('/').pop() ?? 'Clementine photo';
       const src = path.replace('/static', '');
@@ -44,6 +46,14 @@
       return { src, alt, isVideo: src.endsWith('.mp4') };
     }
   );
+
+  const clementineBaseImages: BaseImage[] = [
+    ...clementineExistingImages,
+    { src: '/pets/clementine-portrait.jpg', alt: 'Clementine portrait', isVideo: false },
+    { src: '/pets/clementine-kitten.jpg', alt: 'Clementine as a kitten', isVideo: false },
+    { src: '/pets/clementine-halloween.jpg', alt: 'Clementine in a Halloween costume', isVideo: false },
+    { src: '/pets/clementine-video.mp4', alt: 'Clementine video', isVideo: true }
+  ];
 
   const photosilikeModules = import.meta.glob(
     '/static/photosilike/*.jpg',
