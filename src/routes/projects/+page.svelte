@@ -19,12 +19,12 @@
 Built a causal temporal convolutional network that predicts subject-specific biceps and triceps EMG for unseen controller configurations at real-time-capable latency.
 Integrated surface EMG, OptiTrack motion capture, motor torque, and exoskeleton encoder data across participants, external loads, and controller configurations.`,
       images: [
-        '/project-media/exoskeleton/exo.png',
-        '/project-media/exoskeleton/exosim.gif'
+        '/project-media/exoskeleton/exosim.gif',
+        '/project-media/exoskeleton/exo.png'
       ],
       captions: [
-        ['EMG-controlled upper-limb exoskeleton prototype'],
-        ['Digital-twin and musculoskeletal simulation comparison']
+        ['Digital-twin and musculoskeletal simulation comparison'],
+        ['EMG-controlled upper-limb exoskeleton prototype']
       ],
     },
     {
@@ -89,14 +89,14 @@ Implemented real-time EMG feature extraction and hardware filtering using custom
       description: `Collaborated with engineers and clinicians in Jamaica to develop a Unity-based driving simulator for pediatric patients with hemiplegia.
 Created custom steering and pedal controls and fabricated the supporting mechanical, electrical, and sensor-integrated components.`,
       images: [
+        '/rehab-driving/patient-first-use.mp4',
         '/rehab-driving/learning-tools.jpg',
-        '/rehab-driving/finished-steering-wheel.jpg',
-        '/rehab-driving/patient-first-use.mp4'
+        '/rehab-driving/finished-steering-wheel.jpg'
       ],
       captions: [
+        ['Patient using the device for the first time!'],
         ['Learning how to use tools'],
-        ['Finished steering wheel setup'],
-        ['Patient using the device for the first time!']
+        ['Finished steering wheel setup']
       ],
     },
     {
