@@ -468,6 +468,9 @@
 
   .card {
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     min-width: 300px;
     height: 100%;
     flex-shrink: 0;
@@ -475,14 +478,20 @@
     overflow: hidden;
   }
 
-  .card img, .card video {
-    width: 100%;
-    height: 100%;
+  .card img {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
     object-fit: contain;
     border-radius: 8px;
   }
 
   .card video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
     background: #111;
   }
 
@@ -499,8 +508,17 @@
   }
 
   .camera-card img {
-    height: calc(100% - 3rem);
+    max-height: calc(100% - 3rem);
     border-radius: 8px 8px 0 0;
+  }
+
+  .camera-card {
+    flex-direction: column;
+  }
+
+  .camera-card .photo-caption {
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .camera-card img.upright-arch {
