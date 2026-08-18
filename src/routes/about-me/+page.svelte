@@ -52,7 +52,7 @@
     { src: '/pets/clementine-portrait.jpg', alt: 'Clementine portrait', isVideo: false },
     { src: '/pets/clementine-kitten.jpg', alt: 'Clementine as a kitten', isVideo: false },
     { src: '/pets/clementine-halloween.jpg', alt: 'Clementine in a Halloween costume', isVideo: false },
-    { src: '/pets/clementine-video.mp4', alt: 'Clementine video', isVideo: true }
+    { src: '/pets/clementine-video-h264.mp4', alt: 'Clementine video', isVideo: true }
   ];
 
   const photosilikeModules = import.meta.glob(
