@@ -168,6 +168,15 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
 
   const featuredProjects = projects.filter((project) => featuredProjectTitles.has(project.title));
 
+  const projectIds: Record<string, string> = {
+    'Hybrid Simulation and EMG-Controlled Upper-Limb Exoskeleton': 'project-exoskeleton',
+    'EMG-Based Achilles Tendinopathy Classification': 'project-achilles',
+    'Verdigris: Assistive Ultrasound Guidance for Lumbar Puncture': 'project-verdigris',
+    'Ember Social Robotics Platform': 'project-ember',
+    'Rehabilitative Driving Simulator': 'project-rehab-driving',
+    'Social DinoBot': 'project-dinobot'
+  };
+
   // Track current image index per project
   let currentIndexes = projects.map(() => 0);
 
@@ -189,6 +198,7 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
     display: flex;
     gap: 2rem;
     align-items: center;
+    scroll-margin-top: 70px;
   }
 
   .project-row.even {
@@ -304,7 +314,7 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
 <div class="portfolio-wrapper">
   {#each featuredProjects as project, i}
     {@const projectIndex = projects.indexOf(project)}
-    <div class="project-row {i % 2 === 0 ? 'even' : 'odd'}">
+    <div id={projectIds[project.title]} class="project-row {i % 2 === 0 ? 'even' : 'odd'}">
       <div class="text-block">
         <div class="project-header">{project.title}</div>
         <div class="project-meta">{project.location} &bull; {project.dates}</div>

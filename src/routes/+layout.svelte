@@ -10,6 +10,15 @@
 
   let activeSection = 'home';
 
+  const mainProjectLinks = [
+    { label: 'Upper-Limb Exoskeleton', id: 'project-exoskeleton' },
+    { label: 'Achilles Classification', id: 'project-achilles' },
+    { label: 'Verdigris Ultrasound Guidance', id: 'project-verdigris' },
+    { label: 'Ember Social Robotics', id: 'project-ember' },
+    { label: 'Rehabilitative Driving Simulator', id: 'project-rehab-driving' },
+    { label: 'Social DinoBot', id: 'project-dinobot' }
+  ];
+
   const sections = [
     { label: 'Home', id: 'home' },
     { label: 'Projects', id: 'projects' },
@@ -64,8 +73,10 @@
         >
           {section.label}
         </button>
-        <div class="project-menu" aria-label="Other projects">
-          <button type="button" on:click={() => scrollToSection('projects')}>Main Projects</button>
+        <div class="project-menu" aria-label="Project navigation">
+          {#each mainProjectLinks as project}
+            <button type="button" on:click={() => scrollToSection(project.id)}>{project.label}</button>
+          {/each}
           <button type="button" on:click={() => scrollToSection('other-projects')}>Other Projects</button>
         </div>
       </div>
