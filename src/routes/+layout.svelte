@@ -65,6 +65,7 @@
           {section.label}
         </button>
         <div class="project-menu" aria-label="Other projects">
+          <button type="button" on:click={() => scrollToSection('projects')}>Main Projects</button>
           <button type="button" on:click={() => scrollToSection('other-projects')}>Other Projects</button>
         </div>
       </div>
