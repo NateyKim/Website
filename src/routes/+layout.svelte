@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
 
   import HomePage from './home/+page.svelte';
+  import WorkExperiencePage from './work-experience/WorkExperiencePage.svelte';
   import ProjectsPage from './projects/+page.svelte';
   import AboutMePage from './about-me/+page.svelte';
   import HobbiesPage from './hobbies/+page.svelte';
@@ -21,6 +22,7 @@
 
   const sections = [
     { label: 'Home', id: 'home' },
+    { label: 'Work Experience', id: 'work-experience' },
     { label: 'Projects', id: 'projects' },
     { label: 'About Me', id: 'about-me' },
     { label: 'Hobbies', id: 'hobbies' },
@@ -95,6 +97,10 @@
 <main>
   <section id="home">
     <HomePage />
+  </section>
+
+  <section id="work-experience">
+    <WorkExperiencePage />
   </section>
 
   <section id="projects">
@@ -199,5 +205,9 @@
   section {
     min-height: 100vh;
     scroll-margin-top: 60px;
+  }
+
+  :global(html) {
+    scroll-behavior: smooth;
   }
 </style>
