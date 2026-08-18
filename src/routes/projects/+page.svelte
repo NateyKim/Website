@@ -280,6 +280,8 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
   }
 
   button.image-wrapper {
+    display: block;
+    width: 100%;
     background: none;
     border: none;
     padding: 0;
@@ -288,8 +290,11 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
   }
 
   button.image-wrapper img {
-    max-width: 100%;
-    max-height: 350px;
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 520px;
+    object-fit: contain;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     transition: transform 0.3s ease;
@@ -319,7 +324,7 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
   .project-video {
     display: block;
     width: 100%;
-    max-height: 350px;
+    max-height: 520px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     background: #000;
@@ -340,6 +345,11 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
   }
 
   @media (max-width: 900px) {
+    .portfolio-wrapper {
+      margin-right: 1rem;
+      margin-left: 1rem;
+    }
+
     .project-row, .project-row.even, .project-row.odd {
       flex-direction: column !important;
       align-items: center;
@@ -348,6 +358,11 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
 
     .text-block, .image-block {
       width: 100%;
+    }
+
+    button.image-wrapper img,
+    .project-video {
+      max-height: 70vh;
     }
   }
 </style>

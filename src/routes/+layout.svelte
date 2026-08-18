@@ -123,7 +123,7 @@
     background-color: #333;
     color: white;
     display: flex;
-    padding: 0.5rem 1rem;
+    padding: calc(0.5rem + env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) 0.5rem max(1rem, env(safe-area-inset-left));
     position: fixed;
     top: 0;
     left: 0;
@@ -203,5 +203,48 @@
 
   :global(html) {
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  :global(body) {
+    margin: 0;
+    overflow-x: hidden;
+  }
+
+  @media (max-width: 700px) {
+    nav {
+      gap: 0.1rem;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-link,
+    .nav-item {
+      flex: 0 0 auto;
+    }
+
+    .nav-link {
+      padding-right: 0.7rem;
+      padding-left: 0.7rem;
+      white-space: nowrap;
+    }
+
+    .project-menu {
+      display: none !important;
+    }
+
+    main {
+      margin-top: calc(60px + env(safe-area-inset-top));
+    }
+
+    section {
+      scroll-margin-top: calc(60px + env(safe-area-inset-top));
+    }
   }
 </style>

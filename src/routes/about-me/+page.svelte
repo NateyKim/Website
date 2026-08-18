@@ -246,7 +246,7 @@
   class="carousel"
   on:wheel={(event) => handleWheel(event, 'mookie')}
   on:touchstart={handleTouchStart}
-  on:touchmove={(event) => handleTouchMove(event, 'mookie')}
+  on:touchmove|preventDefault={(event) => handleTouchMove(event, 'mookie')}
 >
   <div class="track" bind:this={mookieCarousel}>
     {#each mookieImages as image (image.id)}
@@ -263,7 +263,7 @@
   class="carousel"
   on:wheel={(event) => handleWheel(event, 'clementine')}
   on:touchstart={handleTouchStart}
-  on:touchmove={(event) => handleTouchMove(event, 'clementine')}
+  on:touchmove|preventDefault={(event) => handleTouchMove(event, 'clementine')}
 >
   <div class="track" bind:this={clementineCarousel}>
     {#each clementineImages as image (image.id)}
@@ -328,7 +328,7 @@
   class="carousel"
   on:wheel={(event) => handleWheel(event, 'photosilike')}
   on:touchstart={handleTouchStart}
-  on:touchmove={(event) => handleTouchMove(event, 'photosilike')}
+  on:touchmove|preventDefault={(event) => handleTouchMove(event, 'photosilike')}
 >
   <div class="track" bind:this={photosilikeCarousel}>
     {#each photosilikeImages as image (image.id)}
@@ -454,6 +454,8 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     margin-bottom: 2rem;
     touch-action: pan-y;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
   .track {
@@ -476,7 +478,8 @@
   .card img, .card video {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    background: #111;
     border-radius: 8px;
   }
 
@@ -502,6 +505,16 @@
   }
 
   @media (max-width: 700px) {
+    .personal-header,
+    .personal-category {
+      padding-right: 1rem;
+      padding-left: 1rem;
+    }
+
+    .carousel {
+      height: min(400px, 105vw);
+    }
+
     .media-heading {
       align-items: start;
       flex-direction: column;
