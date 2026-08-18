@@ -2,11 +2,14 @@
   import { onMount } from 'svelte';
 
   type CarouselType = 'mookie' | 'clementine' | 'photosilike';
-  type BaseImage = { src: string; alt: string };
+  type BaseImage = { src: string; alt: string; isVideo: boolean };
   type CarouselImage = BaseImage & { id: string };
   type Age = { years: number; months: number };
 
-  const mookieModules = import.meta.glob('/static/mookie/*.jpg', {
+  const mookieModules = import.meta.glob([
+    '/static/mookie/*.{jpg,jpeg,png,gif}',
+    '/static/pets/mookie-*'
+  ], {
     eager: true
   });
 
@@ -14,15 +17,18 @@
     const filename = path.split('/').pop() ?? 'Mookie photo';
     const src = path.replace('/static', '');
     const alt = filename
-      .replace(/\.jpg$/i, '')
+      .replace(/\.(jpg|jpeg|png|gif|mp4)$/i, '')
       .replace(/[-_]/g, ' ')
       .replace(/\b\w/g, (character) => character.toUpperCase());
 
-    return { src, alt };
+    return { src, alt, isVideo: src.endsWith('.mp4') };
   });
 
   const clementineModules = import.meta.glob(
-    '/static/clementine/*.jpg',
+    [
+      '/static/clementine/*.{jpg,jpeg,png,gif,mp4}',
+      '/static/pets/clementine-*'
+    ],
     { eager: true }
   );
 
@@ -31,11 +37,11 @@
       const filename = path.split('/').pop() ?? 'Clementine photo';
       const src = path.replace('/static', '');
       const alt = filename
-        .replace(/\.jpg$/i, '')
+        .replace(/\.(jpg|jpeg|png|gif|mp4)$/i, '')
         .replace(/[-_]/g, ' ')
         .replace(/\b\w/g, (character) => character.toUpperCase());
 
-      return { src, alt };
+      return { src, alt, isVideo: src.endsWith('.mp4') };
     }
   );
 
@@ -53,7 +59,7 @@
         .replace(/[-_]/g, ' ')
         .replace(/\b\w/g, (character) => character.toUpperCase());
 
-      return { src, alt };
+      return { src, alt, isVideo: false };
     }
   );
 
@@ -226,7 +232,7 @@
   <div class="track" bind:this={mookieCarousel}>
     {#each mookieImages as image (image.id)}
       <div class="card">
-        <img src={image.src} alt={image.alt} />
+        <img src={image.src} alt={image.alt} loading="lazy" />
       </div>
     {/each}
   </div>
@@ -243,7 +249,14 @@
   <div class="track" bind:this={clementineCarousel}>
     {#each clementineImages as image (image.id)}
       <div class="card">
-        <img src={image.src} alt={image.alt} />
+        {#if image.isVideo}
+          <video controls playsinline preload="none" aria-label={image.alt}>
+            <source src={image.src} type="video/mp4" />
+            <track kind="captions" src="/pets/clementine-video.vtt" srclang="en" label="English" default />
+          </video>
+        {:else}
+          <img src={image.src} alt={image.alt} loading="lazy" />
+        {/if}
       </div>
     {/each}
   </div>
@@ -297,7 +310,7 @@
     overflow: hidden;
   }
 
-  .card img {
+  .card img, .card video {
     width: 100%;
     height: 100%;
     object-fit: cover;
