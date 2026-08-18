@@ -479,8 +479,11 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
-    background: #111;
     border-radius: 8px;
+  }
+
+  .card video {
+    background: #111;
   }
 
   .photo-caption {
