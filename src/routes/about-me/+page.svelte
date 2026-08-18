@@ -69,7 +69,7 @@
     { src: '/photosilike/poconos.jpg', alt: 'Waterfall surrounded by autumn trees', isVideo: false, caption: 'Poconos, USA' },
     { src: '/photosilike/tokyo-flame.jpg', alt: 'Asahi Flame framed by trees and flowers', isVideo: false, caption: 'Tokyo, Japan' },
     { src: '/photosilike/tokyo-skyline.jpg', alt: 'Tokyo skyline at night', isVideo: false, caption: 'Tokyo, Japan' },
-    { src: '/photosilike/wooded-lake.jpg', alt: 'Wooded lake in autumn', isVideo: false, caption: 'United States' },
+    { src: '/photosilike/wooded-lake.jpg', alt: 'Wooded lake in autumn', isVideo: false, caption: 'Poconos, USA' },
     { src: '/photosilike/gateway-arch.jpg', alt: 'Gateway Arch beneath a blue sky', isVideo: false, caption: 'St. Louis, USA' }
   ];
 
