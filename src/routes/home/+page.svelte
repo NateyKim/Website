@@ -76,7 +76,7 @@
     margin: 0 0 2rem;
     text-align: center;
     color: #555;
-    font-size: 1.35rem;
+    font-size: 1.6rem;
     font-weight: 500;
   }
 
