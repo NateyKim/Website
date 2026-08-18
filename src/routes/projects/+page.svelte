@@ -76,8 +76,16 @@ Implemented real-time EMG feature extraction and hardware filtering using custom
       dates: 'Jan 2023 – May 2023',
       description: `Collaborated with engineers and clinicians in Jamaica to develop a Unity-based driving simulator for pediatric patients with hemiplegia.
 Created custom steering and pedal controls and fabricated the supporting mechanical, electrical, and sensor-integrated components.`,
-      images: adaptImages,
-      captions: adaptCaptions,
+      images: [
+        '/rehab-driving/learning-tools.jpg',
+        '/rehab-driving/finished-steering-wheel.jpg',
+        '/rehab-driving/patient-first-use.mp4'
+      ],
+      captions: [
+        ['Learning how to use tools'],
+        ['Finished steering wheel setup'],
+        ['Patient using the device for the first time!']
+      ],
     },
     {
       title: 'Social DinoBot',
@@ -246,6 +254,29 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
     margin-bottom: 0.25rem;
   }
 
+  .project-video {
+    display: block;
+    width: 100%;
+    max-height: 350px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    background: #000;
+  }
+
+  .next-media {
+    margin-top: 0.75rem;
+    padding: 0.45rem 0.8rem;
+    border: 1px solid #777;
+    border-radius: 0.4rem;
+    background: white;
+    color: #222;
+    cursor: pointer;
+  }
+
+  .next-media:hover {
+    background: #f0f0f0;
+  }
+
   .other-projects {
     border-top: 1px solid #d0d0d0;
     padding-top: 1.5rem;
@@ -302,18 +333,29 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
       </div>
 
       <div class="image-block">
-        <button
-          class="image-wrapper"
-          on:click={() => nextSlide(projectIndex)}
-          aria-label="Cycle project {project.title} images"
-          title="Click or press Enter/Space to view next image"
-          type="button"
-        >
-          <img
-            src={project.images[currentIndexes[projectIndex]]}
-            alt={`Image ${currentIndexes[projectIndex] + 1} for ${project.title}`}
-          />
-        </button>
+        {#if project.images[currentIndexes[projectIndex]].endsWith('.mp4')}
+          <video class="project-video" controls playsinline preload="metadata">
+            <source src={project.images[currentIndexes[projectIndex]]} type="video/mp4" />
+            <track kind="captions" src="/rehab-driving/no-dialogue.vtt" srclang="en" label="No dialogue" default />
+            Your browser does not support embedded video.
+          </video>
+          <button class="next-media" on:click={() => nextSlide(projectIndex)} type="button">
+            View next media
+          </button>
+        {:else}
+          <button
+            class="image-wrapper"
+            on:click={() => nextSlide(projectIndex)}
+            aria-label="Cycle project {project.title} media"
+            title="Click or press Enter/Space to view next item"
+            type="button"
+          >
+            <img
+              src={project.images[currentIndexes[projectIndex]]}
+              alt={`Media ${currentIndexes[projectIndex] + 1} for ${project.title}`}
+            />
+          </button>
+        {/if}
         {#if project.captions && project.captions.length > 0}
           <ul class="caption-list">
             {#each project.captions[currentIndexes[projectIndex]] as captionLine}
