@@ -18,8 +18,14 @@
       description: `Developed a MuJoCo musculoskeletal digital twin using inverse dynamics, PD control, and quadratic programming, reproducing measured elbow kinematics with a mean tracking RMSE of 1.866°.
 Built a causal temporal convolutional network that predicts subject-specific biceps and triceps EMG for unseen controller configurations at real-time-capable latency.
 Integrated surface EMG, OptiTrack motion capture, motor torque, and exoskeleton encoder data across participants, external loads, and controller configurations.`,
-      images: adaptImages,
-      captions: adaptCaptions,
+      images: [
+        '/project-media/exoskeleton/exo.png',
+        '/project-media/exoskeleton/exosim.gif'
+      ],
+      captions: [
+        ['EMG-controlled upper-limb exoskeleton prototype'],
+        ['Digital-twin and musculoskeletal simulation comparison']
+      ],
     },
     {
       title: 'EMG-Based Achilles Tendinopathy Classification',
@@ -38,8 +44,14 @@ Detected Achilles tendinopathy in an average of 20 of 21 held-out evaluations an
       description: `Co-developed an assistive medical device using ultrasound-based bone detection and real-time angle feedback to guide lumbar-puncture needle trajectories.
 Designed the enclosure and interface, integrated the ultrasound transducer, motor, angle sensor, and control electronics, and tested acoustic acquisition on tissue and spinal phantoms.
 Validated angle sensing and LED feedback within 1° across controlled targets; the prototype achieved 80% optimal needle-path detection and 95% bone-detection accuracy.`,
-      images: adaptImages,
-      captions: adaptCaptions,
+      images: [
+        '/project-media/verdigris/verdigris.png',
+        '/project-media/verdigris/verdigris-rotate.gif'
+      ],
+      captions: [
+        ['Verdigris assistive ultrasound guidance prototype'],
+        ['Rotating CAD model of the Verdigris enclosure']
+      ],
     },
     {
       title: 'Ember Social Robotics Platform',
@@ -94,8 +106,8 @@ Created custom steering and pedal controls and fabricated the supporting mechani
       description: `Designed a mobile dinosaur social robot to aid gait rehabilitation for an ischemic stroke patient.
 Fabricated wooden chassis for lightweight frame and modular assembly.
 Implemented various modes of communication for assistance with aphasia and speech rehabilitation.`,
-      images: adaptImages,
-      captions: adaptCaptions,
+      images: ['/project-media/dinobot/dinobot.jpg'],
+      captions: [['Social DinoBot rehabilitation prototype']],
     },
     {
       title: 'AI Image to GPS Localization',
