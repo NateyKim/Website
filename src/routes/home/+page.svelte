@@ -37,6 +37,7 @@
 
 <section class="intro-wrapper">
   <h1 class="header-title">Natey Kim</h1>
+  <p class="job-title">Human Robotic Interaction Research Engineer @ UPenn GRASP</p>
 
   <div class="intro-section">
     <div class="intro-left">
@@ -68,7 +69,15 @@
     text-align: center;
     font-size: 3rem;
     font-weight: 700;
-    margin-bottom: 2rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .job-title {
+    margin: 0 0 2rem;
+    text-align: center;
+    color: #555;
+    font-size: 1.2rem;
+    font-weight: 500;
   }
 
   .intro-section {
