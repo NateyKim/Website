@@ -1,24 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { page } from '$app/stores';
 
   import HomePage from './home/+page.svelte';
   import ProjectsPage from './projects/+page.svelte';
   import AboutMePage from './about-me/+page.svelte';
   import HobbiesPage from './hobbies/+page.svelte';
   import CVPage from './cv/+page.svelte';
+  import OtherProjectsPage from './other-projects/OtherProjectsPage.svelte';
 
   let activeSection = 'home';
-  let projectsPage: ProjectsPage;
-
-  const otherProjectTitles = [
-    'PENN Assistive Devices and Prosthetic Technologies (ADAPT)',
-    'Cockroach Interface',
-    'AI Image to GPS Localization',
-    'PENN Tikkun Olam Makers',
-    'KUKA Arm Competition',
-    'AI Human Content Generator',
-    'HVAC Monitoring and Surveillance System'
-  ];
 
   const sections = [
     { label: 'Home', id: 'home' },
@@ -37,11 +28,6 @@
         block: 'start'
       });
     }
-  }
-
-  function showOtherProject(title: string) {
-    projectsPage.showOtherProject(title);
-    scrollToSection('projects');
   }
 
   function updateActiveSection() {
@@ -68,21 +54,26 @@
 </script>
 
 <nav>
+  {#if $page.url.pathname === '/other-projects'}
+    <a class="nav-link" href="/home">Home</a>
+  {/if}
   {#each sections as section}
+    {#if $page.url.pathname === '/other-projects' && section.id !== 'projects'}
+      <!-- The standalone Other Projects page keeps only the relevant navigation. -->
+    {:else}
     {#if section.id === 'projects'}
       <div class="nav-item">
-        <button
+        <a
           class="nav-link"
           class:active={activeSection === section.id}
-          on:click={() => scrollToSection(section.id)}
+          href="/home#projects"
           aria-haspopup="true"
         >
           {section.label}
-        </button>
+        </a>
         <div class="project-menu" aria-label="Other projects">
-          {#each otherProjectTitles as title}
-            <button type="button" on:click={() => showOtherProject(title)}>{title}</button>
-          {/each}
+          <a href="/home#projects">Main Projects</a>
+          <a href="/other-projects">Other Projects</a>
         </div>
       </div>
     {:else}
@@ -94,16 +85,22 @@
         {section.label}
       </button>
     {/if}
+    {/if}
   {/each}
 </nav>
 
+{#if $page.url.pathname === '/other-projects'}
+  <main class="standalone-page">
+    <OtherProjectsPage />
+  </main>
+{:else}
 <main>
   <section id="home">
     <HomePage />
   </section>
 
   <section id="projects">
-    <ProjectsPage bind:this={projectsPage} />
+    <ProjectsPage />
   </section>
 
   <section id="about-me">
@@ -118,6 +115,7 @@
     <CVPage />
   </section>
 </main>
+{/if}
 
 <style>
   nav {
@@ -174,20 +172,25 @@
     display: grid;
   }
 
-  .project-menu button {
+  .project-menu a {
+    display: block;
     padding: 0.65rem 0.75rem;
-    border: 0;
     border-radius: 0.3rem;
     background: transparent;
     color: white;
     cursor: pointer;
     font-size: 0.92rem;
     text-align: left;
+    text-decoration: none;
   }
 
-  .project-menu button:hover,
-  .project-menu button:focus-visible {
+  .project-menu a:hover,
+  .project-menu a:focus-visible {
     background: #555;
+  }
+
+  .standalone-page {
+    min-height: calc(100vh - 60px);
   }
 
   main {

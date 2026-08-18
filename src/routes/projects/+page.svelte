@@ -167,12 +167,6 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
   ]);
 
   const featuredProjects = projects.filter((project) => featuredProjectTitles.has(project.title));
-  const otherProjects = projects.filter((project) => !featuredProjectTitles.has(project.title));
-  let selectedOtherProject: (typeof projects)[number] | undefined;
-
-  export function showOtherProject(title: string) {
-    selectedOtherProject = otherProjects.find((project) => project.title === title);
-  }
 
   // Track current image index per project
   let currentIndexes = projects.map(() => 0);
@@ -294,13 +288,6 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
     background: #f0f0f0;
   }
 
-  .selected-project {
-    padding: 1.5rem;
-    border: 1px solid #d0d0d0;
-    border-radius: 0.75rem;
-    background: rgba(255, 255, 255, 0.45);
-  }
-
   @media (max-width: 900px) {
     .project-row, .project-row.even, .project-row.odd {
       flex-direction: column !important;
@@ -315,39 +302,6 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
 </style>
 
 <div class="portfolio-wrapper">
-  {#if selectedOtherProject}
-    {@const projectIndex = projects.indexOf(selectedOtherProject)}
-    <div class="project-row selected-project">
-      <div class="text-block">
-        <div class="project-header">{selectedOtherProject.title}</div>
-        <div class="project-meta">{selectedOtherProject.location} &bull; {selectedOtherProject.dates}</div>
-        <div class="project-description">{selectedOtherProject.description}</div>
-      </div>
-
-      <div class="image-block">
-        <button
-          class="image-wrapper"
-          on:click={() => nextSlide(projectIndex)}
-          aria-label="Cycle project {selectedOtherProject.title} images"
-          title="Click or press Enter/Space to view next image"
-          type="button"
-        >
-          <img
-            src={selectedOtherProject.images[currentIndexes[projectIndex]]}
-            alt={`Image ${currentIndexes[projectIndex] + 1} for ${selectedOtherProject.title}`}
-          />
-        </button>
-        {#if selectedOtherProject.captions && selectedOtherProject.captions.length > 0}
-          <ul class="caption-list">
-            {#each selectedOtherProject.captions[currentIndexes[projectIndex]] as captionLine}
-              <li>{captionLine}</li>
-            {/each}
-          </ul>
-        {/if}
-      </div>
-    </div>
-  {/if}
-
   {#each featuredProjects as project, i}
     {@const projectIndex = projects.indexOf(project)}
     <div class="project-row {i % 2 === 0 ? 'even' : 'odd'}">
