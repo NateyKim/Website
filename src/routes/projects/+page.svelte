@@ -148,12 +148,11 @@ Deployed a GUI using Gradio for online user image uploads.`,
       captions: adaptCaptions,
     },
     {
-      title: 'HVAC Monitoring and Surveillance System',
+      title: 'Cornell Health Hackathon Finalist: HVAC Monitoring and Surveillance System',
       location: 'Ithaca, NY',
       dates: 'Mar 2024',
       description: `Modeled affordable devices for detecting airborne bacteria and fungi utilizing hospital HVAC systems.
-Created front-end GUI to monitor the spread of airborne diseases in monitored spaces.
-Selected as a finalist at the Cornell University Health Hackathon.`,
+Created front-end GUI to monitor the spread of airborne diseases in monitored spaces.`,
       images: adaptImages,
       captions: adaptCaptions,
     },
