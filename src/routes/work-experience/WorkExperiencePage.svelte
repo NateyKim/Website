@@ -2,26 +2,37 @@
   const experiences = [
     {
       organization: 'GRASP Laboratory, University of Pennsylvania',
+      logo: 'P',
+      logoClass: 'penn-logo',
       role: 'Graduate Research Assistant → Research Engineer',
       dates: 'Aug 2023 – Present',
       location: 'Philadelphia, PA',
-      description: 'Develop musculoskeletal digital twins, real-time control and signal-processing systems, and machine-learning methods for upper-limb exoskeletons and high-density EMG-based movement and injury analysis.',
-      projectId: 'project-exoskeleton'
+      description: 'Develop musculoskeletal digital twins, real-time control and signal-processing systems, and machine-learning methods for upper-limb exoskeletons. I also develop high-density surface EMG hardware and analysis pipelines for movement assessment, rehabilitation-exercise classification, and Achilles tendinopathy detection.',
+      projectLinks: [
+        { label: 'Upper-limb exoskeleton project', id: 'project-exoskeleton' },
+        { label: 'HD-sEMG and Achilles classification project', id: 'project-achilles' }
+      ]
     },
     {
       organization: 'Maingen (Y Combinator)',
+      logo: 'M',
+      logoClass: 'maingen-logo',
       role: 'Research Resident',
       dates: 'Jul 2026 – Present',
       location: 'Remote',
-      description: 'Research machine-learning methods for generating robotic end-effector CAD geometries and build simulation and evaluation pipelines that test geometric validity, mechanical performance, and task-specific engineering constraints.'
+      description: 'Research machine-learning methods for generating robotic end-effector CAD geometries and build simulation and evaluation pipelines that test geometric validity, mechanical performance, and task-specific engineering constraints. My benchtop project develops an autonomous pipeline that compiles generated parametric designs into physically grounded MuJoCo simulations and iteratively repairs them using deterministic mechanical, collision, and robustness checks.'
     },
     {
       organization: 'Tadashi Robotics',
+      logo: 'T',
+      logoClass: 'tadashi-logo',
       role: 'Founding Mechanical Engineer',
       dates: 'Aug 2025 – Present',
       location: 'Philadelphia, PA',
-      description: 'Translate the Ember social-robotics research platform into an early-stage rehabilitation product by developing its mechanical enclosure, embedded architecture, sensing and communication hardware, and LLM-based patient interactions.',
-      projectId: 'project-ember'
+      description: 'Own the end-to-end engineering of Ember, translating the social-robotics research platform into an early-stage rehabilitation product. I independently lead its mechanical design, embedded architecture, sensing and communication hardware, system integration, prototyping, and LLM-based patient interactions.',
+      projectLinks: [
+        { label: 'Ember social robotics project', id: 'project-ember' }
+      ]
     }
   ];
 </script>
@@ -37,7 +48,10 @@
       <article>
         <div class="experience-heading">
           <div>
-            <h2>{experience.organization}</h2>
+            <div class="organization-line">
+              <span class="employer-logo {experience.logoClass}" aria-hidden="true">{experience.logo}</span>
+              <h2>{experience.organization}</h2>
+            </div>
             <p class="role">{experience.role}</p>
           </div>
           <p class="date-location">{experience.dates}<br />{experience.location}</p>
@@ -45,8 +59,12 @@
 
         <p class="description">{experience.description}</p>
 
-        {#if experience.projectId}
-          <a class="project-link" href={`#${experience.projectId}`}>Click here to view the related project</a>
+        {#if experience.projectLinks}
+          <div class="project-links" aria-label={`Projects related to ${experience.organization}`}>
+            {#each experience.projectLinks as projectLink}
+              <a class="project-link" href={`#${projectLink.id}`}>{projectLink.label} <span aria-hidden="true">→</span></a>
+            {/each}
+          </div>
         {/if}
       </article>
     {/each}
@@ -98,6 +116,38 @@
     font-size: 1.4rem;
   }
 
+  .organization-line {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .employer-logo {
+    display: grid;
+    width: 2.6rem;
+    height: 2.6rem;
+    flex: 0 0 2.6rem;
+    place-items: center;
+    border-radius: 0.65rem;
+    color: white;
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+  }
+
+  .penn-logo {
+    background: #011f5b;
+    box-shadow: inset 0 -0.32rem 0 #990000;
+  }
+
+  .maingen-logo {
+    background: #111;
+  }
+
+  .tadashi-logo {
+    background: linear-gradient(135deg, #295d50, #54a487);
+  }
+
   .role,
   .date-location,
   .description {
@@ -121,13 +171,25 @@
     margin: 1rem 0 0;
   }
 
+  .project-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    margin-top: 0.9rem;
+  }
+
   .project-link {
     display: inline-block;
-    margin-top: 0.85rem;
-    color: inherit;
+    color: #0759c7;
     font-weight: 600;
     text-decoration: underline;
-    text-underline-offset: 0.2em;
+    text-decoration-thickness: 0.1em;
+    text-underline-offset: 0.22em;
+  }
+
+  .project-link:hover,
+  .project-link:focus-visible {
+    color: #003b88;
   }
 
   @media (max-width: 650px) {
