@@ -429,11 +429,6 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
             <track kind="captions" src="/rehab-driving/no-dialogue.vtt" srclang="en" label="No dialogue" default />
             Your browser does not support embedded video.
           </video>
-          {#if project.images.length > 1}
-            <button class="next-media" on:click={() => nextSlide(projectIndex)} type="button">
-              View next media
-            </button>
-          {/if}
         {:else}
           <button
             class="image-wrapper"
@@ -446,6 +441,11 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
               src={project.images[currentIndexes[projectIndex]]}
               alt={`Media ${currentIndexes[projectIndex] + 1} for ${project.title}`}
             />
+          </button>
+        {/if}
+        {#if !project.mediaNotice && project.images.length > 1}
+          <button class="next-media" on:click={() => nextSlide(projectIndex)} type="button">
+            View next media
           </button>
         {/if}
         {#if project.captions && project.captions.length > 0}
