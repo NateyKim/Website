@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
 
   const bio = [
-    'I am a research engineer at Penn’s GRASP Laboratory working at the intersection of assistive robotics, human movement, and human–robot interaction. I earned an M.S.E. in Robotics and a B.S.E. in Bioengineering from the University of Pennsylvania, both with a 4.0 GPA.',
+    'I am a research engineer at Penn’s GRASP Laboratory working at the intersection of assistive robotics, human movement, and human–robot interaction. I earned an M.S.E. in Robotics and a B.S.E. in Bioengineering from the University of Pennsylvania.',
     'My research spans upper-limb exoskeletons, EMG-informed musculoskeletal digital twins, human-in-the-loop control, machine learning for injury assessment, and socially assistive robots. I build systems that translate neuromuscular intent into adaptive, intuitive, and clinically meaningful technologies.',
     'Alongside my work at Penn, I am a research resident at Maingen, where I study machine-learning methods for robotic end-effector design, and a founding mechanical engineer at Tadashi Robotics, where I am helping translate the Ember social-robotics platform into a rehabilitative product.'
   ];
@@ -51,7 +51,7 @@
       </svg>
     </a>
   </div>
-  <p class="job-title">Human–Robot Interaction Research Engineer @ Penn GRASP</p>
+  <p class="job-title">Human–Robot Interaction Research Engineer @ UPenn GRASP Lab</p>
 
   <div class="intro-section">
     <div class="intro-left">

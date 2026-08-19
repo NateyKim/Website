@@ -48,12 +48,12 @@ Detected Achilles tendinopathy in an average of 20 of 21 held-out evaluations an
 Designed the enclosure and interface, integrated the ultrasound transducer, motor, angle sensor, and control electronics, and tested acoustic acquisition on tissue and spinal phantoms.
 Validated angle sensing and LED feedback within 1° across controlled targets; the prototype achieved 80% optimal needle-path detection and 95% bone-detection accuracy.`,
       images: [
-        '/project-media/verdigris/verdigris.png',
-        '/project-media/verdigris/verdigris-rotate.gif'
+        '/project-media/verdigris/verdigris-rotate.gif',
+        '/project-media/verdigris/verdigris.png'
       ],
       captions: [
-        ['Verdigris assistive ultrasound guidance prototype'],
-        ['Rotating CAD model of the Verdigris enclosure']
+        ['Rotating CAD model of the Verdigris enclosure'],
+        ['Verdigris assistive ultrasound guidance prototype']
       ],
     },
     {
