@@ -269,7 +269,7 @@
     {#each clementineImages as image (image.id)}
       <div class="card">
         {#if image.isVideo}
-          <video controls playsinline preload="none" aria-label={image.alt}>
+          <video controls autoplay muted loop playsinline preload="metadata" aria-label={image.alt}>
             <source src={image.src} type="video/mp4" />
             <track kind="captions" src="/pets/clementine-video.vtt" srclang="en" label="English" default />
           </video>
