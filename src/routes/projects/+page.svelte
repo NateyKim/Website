@@ -34,8 +34,9 @@ Integrated surface EMG, OptiTrack motion capture, motor torque, and exoskeleton 
       description: `Developed a real-time high-density EMG collection pipeline using custom 3D-printed hardware and laser-cut MMX/silicon fabric electrodes.
 Built a 3D variational autoencoder to quantify injury severity, assess laterality, and classify rehabilitation exercises.
 Detected Achilles tendinopathy in an average of 20 of 21 held-out evaluations and classified healthy, unilateral, and bilateral pathology in 18 of 21.`,
-      images: adaptImages,
-      captions: adaptCaptions,
+      images: [],
+      captions: [],
+      mediaNotice: 'Publication Pending, images withheld!'
     },
     {
       title: 'Verdigris: Assistive Ultrasound Guidance for Lumbar Puncture',
@@ -60,8 +61,8 @@ Validated angle sensing and LED feedback within 1° across controlled targets; t
       description: `Translating Ember from an academic social-robotics research platform into an early-stage product for rehabilitative patient support and naturalistic human–robot interaction.
 Designed the mechanical enclosure and embedded architecture across wireless communication, audio I/O, vision, display, power, and motor-control hardware.
 Developed LLM-based interaction logic for reminiscence dialogue and emergency guidance and supported human-subject research submissions.`,
-      images: adaptImages,
-      captions: adaptCaptions,
+      images: ['/project-media/ember/ember-first-prototype.mp4'],
+      captions: [['1st prototype of Ember']],
     },
     {
       title: 'PENN Assistive Devices and Prosthetic Technologies (ADAPT)',
@@ -239,6 +240,20 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
     text-align: center;
   }
 
+  .media-notice {
+    display: grid;
+    min-height: 220px;
+    padding: 2rem;
+    place-items: center;
+    border: 1px dashed #777;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.035);
+    color: #555;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
   .project-header {
     font-weight: 700;
     font-size: 1.5rem;
@@ -389,7 +404,9 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
       </div>
 
       <div class="image-block">
-        {#if project.images[currentIndexes[projectIndex]].endsWith('.mp4')}
+        {#if project.mediaNotice}
+          <div class="media-notice" role="note">{project.mediaNotice}</div>
+        {:else if project.images[currentIndexes[projectIndex]].endsWith('.mp4')}
           <video class="project-video" controls playsinline preload="metadata">
             <source src={project.images[currentIndexes[projectIndex]]} type="video/mp4" />
             <track kind="captions" src="/rehab-driving/no-dialogue.vtt" srclang="en" label="No dialogue" default />

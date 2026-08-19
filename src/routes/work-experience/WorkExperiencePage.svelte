@@ -2,8 +2,8 @@
   const experiences = [
     {
       organization: 'GRASP Laboratory, University of Pennsylvania',
-      logo: 'P',
-      logoClass: 'penn-logo',
+      logoSrc: '/employer-logos/grasp.webp',
+      logoAlt: 'Penn Engineering GRASP Laboratory logo',
       role: 'Graduate Research Assistant → Research Engineer',
       dates: 'Aug 2023 – Present',
       location: 'Philadelphia, PA',
@@ -15,8 +15,8 @@
     },
     {
       organization: 'Maingen (Y Combinator)',
-      logo: 'M',
-      logoClass: 'maingen-logo',
+      logoSrc: '/employer-logos/maingen.png',
+      logoAlt: 'Maingen logo',
       role: 'Research Resident',
       dates: 'Jul 2026 – Present',
       location: 'Remote',
@@ -47,8 +47,8 @@
         <div class="experience-heading">
           <div>
             <div class="organization-line">
-              {#if experience.logo && experience.logoClass}
-                <span class="employer-logo {experience.logoClass}" aria-hidden="true">{experience.logo}</span>
+              {#if experience.logoSrc && experience.logoAlt}
+                <img class="employer-logo" src={experience.logoSrc} alt={experience.logoAlt} />
               {/if}
               <h2>{experience.organization}</h2>
             </div>
@@ -123,25 +123,11 @@
   }
 
   .employer-logo {
-    display: grid;
-    width: 2.6rem;
-    height: 2.6rem;
-    flex: 0 0 2.6rem;
-    place-items: center;
-    border-radius: 0.65rem;
-    color: white;
-    font-size: 1.15rem;
-    font-weight: 800;
-    letter-spacing: -0.04em;
-  }
-
-  .penn-logo {
-    background: #011f5b;
-    box-shadow: inset 0 -0.32rem 0 #990000;
-  }
-
-  .maingen-logo {
-    background: #111;
+    width: 4.5rem;
+    height: 3.2rem;
+    flex: 0 0 4.5rem;
+    border-radius: 0.45rem;
+    object-fit: contain;
   }
 
   .role,
