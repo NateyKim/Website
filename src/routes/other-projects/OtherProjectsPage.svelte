@@ -37,7 +37,7 @@
       description: 'Created an OpenPose-to-Stable Diffusion machine-learning pipeline for social-media art generation and deployed an upload interface using Gradio.'
     },
     {
-      title: 'Cornell Health Hackathon Finalist: HVAC Monitoring and Surveillance System',
+      title: 'HVAC Monitoring and Surveillance System',
       location: 'Ithaca, NY',
       dates: 'Mar 2024',
       description: 'Modeled affordable devices for detecting airborne bacteria and fungi through hospital HVAC systems and created a monitoring interface for visualizing the spread of airborne diseases.'
