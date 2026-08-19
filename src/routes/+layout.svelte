@@ -7,7 +7,6 @@
   import ProjectsPage from './projects/+page.svelte';
   import AboutMePage from './about-me/+page.svelte';
   import CVPage from './cv/+page.svelte';
-  import OtherProjectsPage from './other-projects/OtherProjectsPage.svelte';
 
   let activeSection = 'home';
 
@@ -129,10 +128,10 @@
 
     <section id="cv">
       <CVPage />
-    </section>
-
-    <section id="other-projects">
-      <OtherProjectsPage />
+      <div class="beyond-cta">
+        <p>Curious to see who I am beyond the work?</p>
+        <a href="/about-me">Explore Beyond the Work</a>
+      </div>
     </section>
   {/if}
 </main>
@@ -218,6 +217,33 @@
   section {
     min-height: 100vh;
     scroll-margin-top: 60px;
+  }
+
+  .beyond-cta {
+    padding: 2.5rem 1rem 3.5rem;
+    background: #f5f5f5;
+    text-align: center;
+  }
+
+  .beyond-cta p {
+    margin: 0 0 1rem;
+    font-size: clamp(1.2rem, 3vw, 1.6rem);
+    font-weight: 700;
+  }
+
+  .beyond-cta a {
+    display: inline-block;
+    padding: 0.8rem 1.2rem;
+    border-radius: 0.5rem;
+    background: #333;
+    color: white;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .beyond-cta a:hover,
+  .beyond-cta a:focus-visible {
+    background: #555;
   }
 
   :global(html) {

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { autoplayWhenVisible } from '$lib/autoplayWhenVisible';
+  import OtherProjectsPage from '../other-projects/OtherProjectsPage.svelte';
 
   // Load all images from /static/ADAPT folder once
   const adaptImages = Object.keys(import.meta.glob('/static/ADAPT/*.{jpg,jpeg,png}', { eager: true }))
@@ -183,6 +184,7 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
   // Track current image index per project
   let currentIndexes = projects.map(() => 0);
   let expandedProjects = new Set<string>();
+  let otherProjectsExpanded = false;
 
   function toggleProjectDetails(title: string) {
     const nextExpandedProjects = new Set(expandedProjects);
@@ -367,6 +369,36 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
     background: #f0f0f0;
   }
 
+  .other-projects-toggle {
+    max-width: 1200px;
+    margin: 1rem auto 4rem;
+    padding: 2rem 1rem 0;
+    border-top: 1px solid #c9c9c9;
+    text-align: center;
+    scroll-margin-top: 70px;
+  }
+
+  .other-projects-button {
+    padding: 0.8rem 1.2rem;
+    border: 1px solid #333;
+    border-radius: 0.5rem;
+    background: #333;
+    color: white;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+  }
+
+  .other-projects-button:hover,
+  .other-projects-button:focus-visible {
+    background: #555;
+  }
+
+  .other-projects-content {
+    margin-top: 1rem;
+    text-align: left;
+  }
+
   @media (max-width: 900px) {
     .portfolio-wrapper {
       margin-right: 1rem;
@@ -459,4 +491,22 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
     </div>
   {/each}
 
+</div>
+
+<div id="other-projects" class="other-projects-toggle">
+  <button
+    class="other-projects-button"
+    type="button"
+    aria-expanded={otherProjectsExpanded}
+    aria-controls="other-projects-content"
+    on:click={() => (otherProjectsExpanded = !otherProjectsExpanded)}
+  >
+    {otherProjectsExpanded ? 'Minimize Other Projects' : 'Click here to expand Other Projects'}
+  </button>
+
+  {#if otherProjectsExpanded}
+    <div id="other-projects-content" class="other-projects-content">
+      <OtherProjectsPage />
+    </div>
+  {/if}
 </div>
