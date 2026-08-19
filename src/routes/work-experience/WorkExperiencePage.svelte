@@ -24,12 +24,10 @@
     },
     {
       organization: 'Tadashi Robotics',
-      logo: 'T',
-      logoClass: 'tadashi-logo',
       role: 'Founding Mechanical Engineer',
       dates: 'Aug 2025 – Present',
       location: 'Philadelphia, PA',
-      description: 'Own the end-to-end engineering of Ember, translating the social-robotics research platform into an early-stage rehabilitation product. I independently lead its mechanical design, embedded architecture, sensing and communication hardware, system integration, prototyping, and LLM-based patient interactions.',
+      description: 'Serve as the sole engineer developing Ember as the social-robotics research platform moves into an early-stage rehabilitation startup. I lead the evolving mechanical design, embedded architecture, sensing and communication hardware, system integration, prototyping, and LLM-based patient interactions.',
       projectLinks: [
         { label: 'Ember social robotics project', id: 'project-ember' }
       ]
@@ -49,7 +47,9 @@
         <div class="experience-heading">
           <div>
             <div class="organization-line">
-              <span class="employer-logo {experience.logoClass}" aria-hidden="true">{experience.logo}</span>
+              {#if experience.logo && experience.logoClass}
+                <span class="employer-logo {experience.logoClass}" aria-hidden="true">{experience.logo}</span>
+              {/if}
               <h2>{experience.organization}</h2>
             </div>
             <p class="role">{experience.role}</p>
@@ -142,10 +142,6 @@
 
   .maingen-logo {
     background: #111;
-  }
-
-  .tadashi-logo {
-    background: linear-gradient(135deg, #295d50, #54a487);
   }
 
   .role,
