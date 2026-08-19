@@ -40,7 +40,7 @@
       title: 'HVAC Monitoring and Surveillance System',
       location: 'Ithaca, NY',
       dates: 'Mar 2024',
-      description: 'Modeled affordable devices for detecting airborne bacteria and fungi through hospital HVAC systems and created a monitoring interface for visualizing the spread of airborne diseases.'
+      description: 'Modeled affordable devices for detecting airborne bacteria and fungi through hospital HVAC systems and created a monitoring interface for visualizing the spread of airborne diseases. Selected as a finalist at the Cornell University Health Hackathon.'
     }
   ];
 </script>
