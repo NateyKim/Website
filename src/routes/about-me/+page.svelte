@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { autoplayWhenVisible } from '$lib/autoplayWhenVisible';
 
   type CarouselType = 'mookie' | 'clementine' | 'photosilike';
   type BaseImage = { src: string; alt: string; isVideo: boolean; caption?: string };
@@ -269,7 +270,7 @@
     {#each clementineImages as image (image.id)}
       <div class="card">
         {#if image.isVideo}
-          <video controls autoplay muted loop playsinline preload="metadata" aria-label={image.alt}>
+          <video use:autoplayWhenVisible controls muted loop playsinline preload="metadata" aria-label={image.alt}>
             <source src={image.src} type="video/mp4" />
             <track kind="captions" src="/pets/clementine-video.vtt" srclang="en" label="English" default />
           </video>

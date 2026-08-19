@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { autoplayWhenVisible } from '$lib/autoplayWhenVisible';
+
   // Load all images from /static/ADAPT folder once
   const adaptImages = Object.keys(import.meta.glob('/static/ADAPT/*.{jpg,jpeg,png}', { eager: true }))
     .map(path => path.replace('/static', ''));
@@ -407,7 +409,7 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
         {#if project.mediaNotice}
           <div class="media-notice" role="note">{project.mediaNotice}</div>
         {:else if project.images[currentIndexes[projectIndex]].endsWith('.mp4')}
-          <video class="project-video" controls autoplay muted loop playsinline preload="metadata">
+          <video use:autoplayWhenVisible class="project-video" controls muted loop playsinline preload="metadata">
             <source src={project.images[currentIndexes[projectIndex]]} type="video/mp4" />
             <track kind="captions" src="/rehab-driving/no-dialogue.vtt" srclang="en" label="No dialogue" default />
             Your browser does not support embedded video.
