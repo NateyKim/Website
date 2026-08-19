@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { page } from '$app/stores';
 
   import HomePage from './home/+page.svelte';
   import WorkExperiencePage from './work-experience/WorkExperiencePage.svelte';
@@ -27,7 +28,14 @@
     { label: 'Beyond the Work', id: 'about-me' }
   ];
 
+  const navigationSections = sections;
+
   function scrollToSection(sectionId: string) {
+    if ($page.url.pathname === '/about-me') {
+      window.location.href = `/home#${sectionId}`;
+      return;
+    }
+
     const element = document.getElementById(sectionId);
 
     if (element) {
@@ -39,6 +47,11 @@
   }
 
   function updateActiveSection() {
+    if ($page.url.pathname === '/about-me') {
+      activeSection = 'about-me';
+      return;
+    }
+
     const scrollPosition = window.scrollY + 100;
 
     for (let i = sections.length - 1; i >= 0; i--) {
@@ -62,8 +75,12 @@
 </script>
 
 <nav>
-  {#each sections as section}
-    {#if section.id === 'projects'}
+  {#each navigationSections as section}
+    {#if section.id === 'about-me'}
+      <a class="nav-link" class:active={activeSection === section.id} href="/about-me">
+        {section.label}
+      </a>
+    {:else if section.id === 'projects'}
       <div class="nav-item">
         <button
           class="nav-link"
@@ -93,29 +110,31 @@
 </nav>
 
 <main>
-  <section id="home">
-    <HomePage />
-  </section>
+  {#if $page.url.pathname === '/about-me'}
+    <section id="about-me">
+      <AboutMePage />
+    </section>
+  {:else}
+    <section id="home">
+      <HomePage />
+    </section>
 
-  <section id="work-experience">
-    <WorkExperiencePage />
-  </section>
+    <section id="work-experience">
+      <WorkExperiencePage />
+    </section>
 
-  <section id="projects">
-    <ProjectsPage />
-  </section>
+    <section id="projects">
+      <ProjectsPage />
+    </section>
 
-  <section id="cv">
-    <CVPage />
-  </section>
+    <section id="cv">
+      <CVPage />
+    </section>
 
-  <section id="other-projects">
-    <OtherProjectsPage />
-  </section>
-
-  <section id="about-me">
-    <AboutMePage />
-  </section>
+    <section id="other-projects">
+      <OtherProjectsPage />
+    </section>
+  {/if}
 </main>
 
 <style>
