@@ -67,7 +67,7 @@ Developed LLM-based interaction logic for reminiscence dialogue and emergency gu
     {
       title: 'PENN Assistive Devices and Prosthetic Technologies (ADAPT)',
       location: 'Philadelphia, PA',
-      dates: 'Jan 2023 – Present',
+      dates: 'Jan 2023 – May 2026',
       description: `Led an undergraduate team in designing of upper limb prosthetics with EEG and EMG control.
 Designed a prosthetic arm and hand connected to an Arduino & Raspberry Pi system for real-time brain signal control.
 Implemented multiple machine learning models to classify user grasping mechanisms.`,

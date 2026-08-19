@@ -3,7 +3,7 @@
     {
       title: 'PENN Assistive Devices and Prosthetic Technologies (ADAPT)',
       location: 'Philadelphia, PA',
-      dates: 'Jan 2023 – Present',
+      dates: 'Jan 2023 – May 2026',
       description: 'Led an undergraduate team designing upper-limb prosthetics with EEG and EMG control. Designed an Arduino- and Raspberry Pi-based prosthetic arm and hand for real-time brain-signal control, and implemented machine-learning models to classify grasping mechanisms.'
     },
     {
