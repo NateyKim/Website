@@ -21,7 +21,7 @@
     {
       title: 'PENN Tikkun Olam Makers',
       location: 'Philadelphia, PA',
-      dates: 'Aug 2023 – Present',
+      dates: 'Aug 2023 – May 2024',
       description: 'Designed a laser-cuttable, adaptable wheelchair for children with physical disabilities and developed assistive toothbrush mechanisms in collaboration with Penn Dental.'
     },
     {

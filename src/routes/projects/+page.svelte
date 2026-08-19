@@ -122,7 +122,7 @@ Implemented the Image2GPS algorithm using a ResNet-18 backbone and custom layers
     {
       title: 'PENN Tikkun Olam Makers',
       location: 'Philadelphia, PA',
-      dates: 'Aug 2023 – Present',
+      dates: 'Aug 2023 – May 2024',
       description: `Designed a laser-cuttable, adaptable wheelchair for children with physical disabilities.
 Developed assistive toothbrush mechanisms in collaboration with Penn Dental.`,
       images: adaptImages,
