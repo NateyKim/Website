@@ -14,7 +14,7 @@
     {
       title: 'Hybrid Simulation and EMG-Controlled Upper-Limb Exoskeleton',
       location: 'Penn GRASP Laboratory · Philadelphia, PA',
-      dates: 'Jan 2023 – Present',
+      dates: 'Jun 2025 – Present',
       description: `Developed a MuJoCo musculoskeletal digital twin using inverse dynamics, PD control, and quadratic programming, reproducing measured elbow kinematics with a mean tracking RMSE of 1.866°.
 Built a causal temporal convolutional network that predicts subject-specific biceps and triceps EMG for unseen controller configurations at real-time-capable latency.
 Integrated surface EMG, OptiTrack motion capture, motor torque, and exoskeleton encoder data across participants, external loads, and controller configurations.`,
