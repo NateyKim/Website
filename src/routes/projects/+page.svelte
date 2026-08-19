@@ -347,6 +347,12 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
     background: #000;
   }
 
+  .ember-video {
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    object-position: center;
+  }
+
   .next-media {
     margin-top: 0.75rem;
     padding: 0.45rem 0.8rem;
@@ -409,7 +415,16 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
         {#if project.mediaNotice}
           <div class="media-notice" role="note">{project.mediaNotice}</div>
         {:else if project.images[currentIndexes[projectIndex]].endsWith('.mp4')}
-          <video use:autoplayWhenVisible class="project-video" controls muted loop playsinline preload="metadata">
+          <video
+            use:autoplayWhenVisible
+            class="project-video"
+            class:ember-video={project.title === 'Ember Social Robotics Platform'}
+            controls
+            muted
+            loop
+            playsinline
+            preload="metadata"
+          >
             <source src={project.images[currentIndexes[projectIndex]]} type="video/mp4" />
             <track kind="captions" src="/rehab-driving/no-dialogue.vtt" srclang="en" label="No dialogue" default />
             Your browser does not support embedded video.
