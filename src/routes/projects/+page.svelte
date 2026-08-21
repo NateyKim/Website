@@ -2,6 +2,8 @@
   import { autoplayWhenVisible } from '$lib/autoplayWhenVisible';
   import OtherProjectsPage from '../other-projects/OtherProjectsPage.svelte';
 
+  export let mode: 'research' | 'projects' = 'projects';
+
   // Load all images from /static/ADAPT folder once
   const adaptImages = Object.keys(import.meta.glob('/static/ADAPT/*.{jpg,jpeg,png}', { eager: true }))
     .map(path => path.replace('/static', ''));
@@ -161,16 +163,21 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
     },
   ];
 
-  const featuredProjectTitles = new Set([
+  const researchProjectTitles = new Set([
     'Hybrid Simulation and EMG-Controlled Upper-Limb Exoskeleton',
-    'EMG-Based Achilles Tendinopathy Classification',
+    'EMG-Based Achilles Tendinopathy Classification'
+  ]);
+
+  const featuredProjectTitles = new Set([
     'Verdigris: Assistive Ultrasound Guidance for Lumbar Puncture',
     'Ember Social Robotics Platform',
     'Social DinoBot',
     'Rehabilitative Driving Simulator'
   ]);
 
-  const featuredProjects = projects.filter((project) => featuredProjectTitles.has(project.title));
+  $: displayedProjects = projects.filter((project) =>
+    (mode === 'research' ? researchProjectTitles : featuredProjectTitles).has(project.title)
+  );
 
   const projectIds: Record<string, string> = {
     'Hybrid Simulation and EMG-Controlled Upper-Limb Exoskeleton': 'project-exoskeleton',
@@ -217,6 +224,24 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
     gap: 2rem;
     align-items: center;
     scroll-margin-top: 70px;
+  }
+
+  .portfolio-header {
+    margin-bottom: -1rem;
+  }
+
+  .portfolio-header .eyebrow {
+    margin: 0 0 0.35rem;
+    color: #666;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .portfolio-header h2 {
+    margin: 0;
+    font-size: clamp(2rem, 5vw, 3.25rem);
   }
 
   .project-row:not(:last-child) {
@@ -423,7 +448,12 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
 </style>
 
 <div class="portfolio-wrapper">
-  {#each featuredProjects as project, i}
+  <header class="portfolio-header">
+    <p class="eyebrow">Portfolio</p>
+    <h2>{mode === 'research' ? 'Research Projects' : 'Projects'}</h2>
+  </header>
+
+  {#each displayedProjects as project, i}
     {@const projectIndex = projects.indexOf(project)}
     <div id={projectIds[project.title]} class="project-row {i % 2 === 0 ? 'even' : 'odd'}">
       <div class="text-block">
@@ -493,20 +523,22 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
 
 </div>
 
-<div id="other-projects" class="other-projects-toggle">
-  <button
-    class="other-projects-button"
-    type="button"
-    aria-expanded={otherProjectsExpanded}
-    aria-controls="other-projects-content"
-    on:click={() => (otherProjectsExpanded = !otherProjectsExpanded)}
-  >
-    {otherProjectsExpanded ? 'Minimize Other Projects' : 'Click here to expand Other Projects'}
-  </button>
+{#if mode === 'projects'}
+  <div id="other-projects" class="other-projects-toggle">
+    <button
+      class="other-projects-button"
+      type="button"
+      aria-expanded={otherProjectsExpanded}
+      aria-controls="other-projects-content"
+      on:click={() => (otherProjectsExpanded = !otherProjectsExpanded)}
+    >
+      {otherProjectsExpanded ? 'Minimize Other Projects' : 'Click here to expand Other Projects'}
+    </button>
 
-  {#if otherProjectsExpanded}
-    <div id="other-projects-content" class="other-projects-content">
-      <OtherProjectsPage />
-    </div>
-  {/if}
-</div>
+    {#if otherProjectsExpanded}
+      <div id="other-projects-content" class="other-projects-content">
+        <OtherProjectsPage />
+      </div>
+    {/if}
+  </div>
+{/if}

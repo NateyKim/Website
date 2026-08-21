@@ -1,6 +1,9 @@
 <script lang="ts">
-  const experiences = [
+  export let kind: 'research' | 'work' = 'work';
+
+  const allExperiences = [
     {
+      kind: 'research',
       organization: 'GRASP Laboratory, University of Pennsylvania',
       logoSrc: '/employer-logos/grasp.webp',
       logoAlt: 'Penn Engineering GRASP Laboratory logo',
@@ -14,6 +17,7 @@
       ]
     },
     {
+      kind: 'work',
       organization: 'Maingen (Y Combinator)',
       logoSrc: '/employer-logos/maingen.png',
       logoAlt: 'Maingen logo',
@@ -23,6 +27,7 @@
       description: 'Research machine-learning methods for generating robotic end-effector CAD geometries and build simulation and evaluation pipelines that test geometric validity, mechanical performance, and task-specific engineering constraints. My benchtop project develops an autonomous pipeline that compiles generated parametric designs into physically grounded MuJoCo simulations and iteratively repairs them using deterministic mechanical, collision, and robustness checks.'
     },
     {
+      kind: 'work',
       organization: 'Tadashi Robotics',
       role: 'Founding Mechanical Engineer',
       dates: 'Aug 2025 – Present',
@@ -33,12 +38,14 @@
       ]
     }
   ];
+
+  $: experiences = allExperiences.filter((experience) => experience.kind === kind);
 </script>
 
 <div class="experience-page">
   <header>
     <p class="eyebrow">Background</p>
-    <h1>Work Experience</h1>
+    <h1>{kind === 'research' ? 'Research Experience' : 'Work Experience'}</h1>
   </header>
 
   <div class="experience-list">

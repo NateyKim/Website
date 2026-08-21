@@ -4,6 +4,7 @@
 
   import HomePage from './home/+page.svelte';
   import WorkExperiencePage from './work-experience/WorkExperiencePage.svelte';
+  import PublicationsPage from './publications/PublicationsPage.svelte';
   import ProjectsPage from './projects/+page.svelte';
   import AboutMePage from './about-me/+page.svelte';
   import CVPage from './cv/+page.svelte';
@@ -11,8 +12,6 @@
   let activeSection = 'home';
 
   const mainProjectLinks = [
-    { label: 'Upper-Limb Exoskeleton', id: 'project-exoskeleton' },
-    { label: 'Achilles Classification', id: 'project-achilles' },
     { label: 'Verdigris Ultrasound Guidance', id: 'project-verdigris' },
     { label: 'Ember Social Robotics', id: 'project-ember' },
     { label: 'Rehabilitative Driving Simulator', id: 'project-rehab-driving' },
@@ -21,7 +20,9 @@
 
   const sections = [
     { label: 'Home', id: 'home' },
-    { label: 'Work Experience', id: 'work-experience' },
+    { label: 'Research', id: 'research' },
+    { label: 'Publications', id: 'publications' },
+    { label: 'Work', id: 'work-experience' },
     { label: 'Projects', id: 'projects' },
     { label: 'CV', id: 'cv' },
     { label: 'Beyond the Work', id: 'about-me' }
@@ -118,12 +119,21 @@
       <HomePage />
     </section>
 
+    <section id="research">
+      <WorkExperiencePage kind="research" />
+      <ProjectsPage mode="research" />
+    </section>
+
+    <section id="publications">
+      <PublicationsPage />
+    </section>
+
     <section id="work-experience">
-      <WorkExperiencePage />
+      <WorkExperiencePage kind="work" />
     </section>
 
     <section id="projects">
-      <ProjectsPage />
+      <ProjectsPage mode="projects" />
     </section>
 
     <section id="cv">
