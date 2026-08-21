@@ -2,7 +2,7 @@
   import { autoplayWhenVisible } from '$lib/autoplayWhenVisible';
   import OtherProjectsPage from '../other-projects/OtherProjectsPage.svelte';
 
-  export let mode: 'research' | 'projects' = 'projects';
+  export let mode: 'research' | 'work' | 'other' = 'other';
 
   // Load all images from /static/ADAPT folder once
   const adaptImages = Object.keys(import.meta.glob('/static/ADAPT/*.{jpg,jpeg,png}', { eager: true }))
@@ -168,15 +168,25 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
     'EMG-Based Achilles Tendinopathy Classification'
   ]);
 
-  const featuredProjectTitles = new Set([
+  const workProjectTitles = new Set([
+    'Ember Social Robotics Platform'
+  ]);
+
+  const otherProjectTitles = new Set([
     'Verdigris: Assistive Ultrasound Guidance for Lumbar Puncture',
-    'Ember Social Robotics Platform',
-    'Social DinoBot',
+    'Rehabilitative Driving Simulator'
   ]);
 
   $: displayedProjects = projects.filter((project) =>
-    (mode === 'research' ? researchProjectTitles : featuredProjectTitles).has(project.title)
+    (mode === 'research'
+      ? researchProjectTitles
+      : mode === 'work'
+        ? workProjectTitles
+        : otherProjectTitles
+    ).has(project.title)
   );
+
+  $: sectionTitle = mode === 'research' ? 'Research Projects' : mode === 'work' ? 'Work Projects' : 'Other Projects';
 
   const projectIds: Record<string, string> = {
     'Hybrid Simulation and EMG-Controlled Upper-Limb Exoskeleton': 'project-exoskeleton',
@@ -449,7 +459,7 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
 <div class="portfolio-wrapper">
   <header class="portfolio-header">
     <p class="eyebrow">Portfolio</p>
-    <h2>{mode === 'research' ? 'Research Projects' : 'Projects'}</h2>
+    <h2>{sectionTitle}</h2>
   </header>
 
   {#each displayedProjects as project, i}
@@ -522,8 +532,8 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
 
 </div>
 
-{#if mode === 'projects'}
-  <div id="other-projects" class="other-projects-toggle">
+{#if mode === 'other'}
+  <div id="additional-projects" class="other-projects-toggle">
     <button
       class="other-projects-button"
       type="button"
@@ -531,7 +541,7 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
       aria-controls="other-projects-content"
       on:click={() => (otherProjectsExpanded = !otherProjectsExpanded)}
     >
-      {otherProjectsExpanded ? 'Minimize Other Projects' : 'Click here to expand Other Projects'}
+      {otherProjectsExpanded ? 'Minimize Additional Projects' : 'Click here to expand Additional Projects'}
     </button>
 
     {#if otherProjectsExpanded}

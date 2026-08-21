@@ -17,7 +17,7 @@
     { label: 'Publications', id: 'publications' },
     { label: 'Research Projects', id: 'research-projects' },
     { label: 'Work', id: 'work-experience' },
-    { label: 'Projects', id: 'projects' },
+    { label: 'Work Projects', id: 'work-projects' },
     { label: 'Other Projects', id: 'other-projects' },
     { label: 'CV', id: 'cv' },
     { label: 'Beyond the Work', id: 'about-me' }
@@ -95,7 +95,7 @@
   <div class="nav-item">
     <button
       class="nav-link"
-      class:active={isActive(['work-experience', 'projects'])}
+      class:active={isActive(['work-experience', 'work-projects'])}
       on:click={() => scrollToSection('work-experience')}
       aria-haspopup="true"
     >
@@ -103,7 +103,7 @@
     </button>
     <div class="nav-menu" aria-label="Work navigation">
       <button type="button" on:click={() => scrollToSection('work-experience')}>Experience</button>
-      <button type="button" on:click={() => scrollToSection('projects')}>Projects</button>
+      <button type="button" on:click={() => scrollToSection('work-projects')}>Projects</button>
     </div>
   </div>
 
@@ -134,7 +134,7 @@
       <HomePage />
     </section>
 
-    <section id="research-experience">
+    <section id="research-experience" class="major-section">
       <WorkExperiencePage kind="research" />
     </section>
 
@@ -146,12 +146,16 @@
       <ProjectsPage mode="research" />
     </section>
 
-    <section id="work-experience">
+    <section id="work-experience" class="major-section">
       <WorkExperiencePage kind="work" />
     </section>
 
-    <section id="projects">
-      <ProjectsPage mode="projects" />
+    <section id="work-projects">
+      <ProjectsPage mode="work" />
+    </section>
+
+    <section id="other-projects" class="major-section">
+      <ProjectsPage mode="other" />
     </section>
 
     <section id="cv">
@@ -254,6 +258,10 @@
 
   main > section + section {
     margin-top: 1.5rem;
+  }
+
+  main > section.major-section {
+    margin-top: 5rem;
   }
 
   .beyond-cta {

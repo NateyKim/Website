@@ -12,20 +12,12 @@
 
   const projects: OtherProject[] = [
     {
-      title: 'Rehabilitative Driving Simulator',
-      location: 'Kingston, Jamaica',
-      dates: 'Jan 2023 – May 2023',
-      description: 'Collaborated with engineers and clinicians in Jamaica to develop a Unity-based driving simulator with custom steering and pedal controls for pediatric patients with hemiplegia.',
-      media: [
-        '/rehab-driving/patient-first-use.mp4',
-        '/rehab-driving/learning-tools.jpg',
-        '/rehab-driving/finished-steering-wheel.jpg'
-      ],
-      captions: [
-        'Patient using the device for the first time!',
-        'Learning how to use tools',
-        'Finished steering wheel setup'
-      ]
+      title: 'Social DinoBot',
+      location: 'Philadelphia, PA',
+      dates: 'Aug 2024 – Dec 2024',
+      description: 'Designed a mobile dinosaur social robot to support gait, aphasia, and speech rehabilitation for an ischemic-stroke patient.',
+      media: ['/project-media/dinobot/dinobot.jpg'],
+      captions: ['Social DinoBot rehabilitation prototype']
     },
     {
       title: 'PENN Assistive Devices and Prosthetic Technologies (ADAPT)',
@@ -107,9 +99,11 @@
             {:else}
               <img src={project.media[rehabMediaIndex]} alt={project.captions[rehabMediaIndex]} />
             {/if}
-            <button type="button" on:click={() => nextRehabMedia(project.media?.length ?? 1)}>
-              View next media
-            </button>
+            {#if project.media.length > 1}
+              <button type="button" on:click={() => nextRehabMedia(project.media?.length ?? 1)}>
+                View next media
+              </button>
+            {/if}
             <p class="media-caption">{project.captions[rehabMediaIndex]}</p>
           </div>
         {/if}
