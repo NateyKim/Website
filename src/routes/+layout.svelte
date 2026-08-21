@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { page } from '$app/stores';
 
   import HomePage from './home/+page.svelte';
@@ -27,12 +27,14 @@
     return sectionIds.includes(activeSection);
   }
 
-  function scrollToSection(sectionId: string) {
+  async function scrollToSection(sectionId: string) {
     if ($page.url.pathname === '/about-me') {
       window.location.href = `/home#${sectionId}`;
       return;
     }
 
+    activeSection = sectionId;
+    await tick();
     const element = document.getElementById(sectionId);
 
     if (element) {
@@ -46,6 +48,10 @@
   function updateActiveSection() {
     if ($page.url.pathname === '/about-me') {
       activeSection = 'about-me';
+      return;
+    }
+
+    if (window.matchMedia('(max-width: 700px)').matches) {
       return;
     }
 
@@ -63,7 +69,13 @@
 
   onMount(() => {
     window.addEventListener('scroll', updateActiveSection);
-    updateActiveSection();
+    const linkedSection = window.location.hash.slice(1);
+
+    if (sections.some((section) => section.id === linkedSection)) {
+      activeSection = linkedSection;
+    } else {
+      updateActiveSection();
+    }
 
     return () => {
       window.removeEventListener('scroll', updateActiveSection);
@@ -130,35 +142,35 @@
       <AboutMePage />
     </section>
   {:else}
-    <section id="home">
+    <section id="home" class="mobile-subject" class:mobile-active={activeSection === 'home'}>
       <HomePage />
     </section>
 
-    <section id="research-experience" class="major-section">
+    <section id="research-experience" class="major-section mobile-subject" class:mobile-active={isActive(['research-experience', 'publications', 'research-projects'])}>
       <WorkExperiencePage kind="research" />
     </section>
 
-    <section id="publications">
+    <section id="publications" class="mobile-subject" class:mobile-active={isActive(['research-experience', 'publications', 'research-projects'])}>
       <PublicationsPage />
     </section>
 
-    <section id="research-projects">
+    <section id="research-projects" class="mobile-subject" class:mobile-active={isActive(['research-experience', 'publications', 'research-projects'])}>
       <ProjectsPage mode="research" />
     </section>
 
-    <section id="work-experience" class="major-section">
+    <section id="work-experience" class="major-section mobile-subject" class:mobile-active={isActive(['work-experience', 'work-projects'])}>
       <WorkExperiencePage kind="work" />
     </section>
 
-    <section id="work-projects">
+    <section id="work-projects" class="mobile-subject" class:mobile-active={isActive(['work-experience', 'work-projects'])}>
       <ProjectsPage mode="work" />
     </section>
 
-    <section id="other-projects" class="major-section">
+    <section id="other-projects" class="major-section mobile-subject" class:mobile-active={activeSection === 'other-projects'}>
       <ProjectsPage mode="other" />
     </section>
 
-    <section id="cv" class="major-section">
+    <section id="cv" class="major-section mobile-subject" class:mobile-active={activeSection === 'cv'}>
       <CVPage />
       <div class="beyond-cta">
         <p>Curious to see who I am beyond the work?</p>
@@ -257,7 +269,7 @@
   }
 
   main > section + section {
-    margin-top: 2.5rem;
+    margin-top: 8rem;
   }
 
   main > section.major-section {
@@ -334,7 +346,15 @@
     }
 
     main > section.major-section {
-      margin-top: 18rem;
+      margin-top: 0;
+    }
+
+    main > section + section {
+      margin-top: 8rem;
+    }
+
+    .mobile-subject:not(.mobile-active) {
+      display: none;
     }
   }
 </style>

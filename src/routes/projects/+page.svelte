@@ -237,7 +237,7 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
   }
 
   .portfolio-header {
-    margin-bottom: -1rem;
+    margin-bottom: -3.25rem;
   }
 
   .portfolio-header .eyebrow {

@@ -86,7 +86,7 @@
   }
 
   header {
-    margin-bottom: 2.5rem;
+    margin-bottom: 0.75rem;
   }
 
   .eyebrow {
