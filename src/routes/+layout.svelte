@@ -134,47 +134,31 @@
       <HomePage />
     </section>
 
-    <div class="portfolio-divider research-divider" aria-hidden="true">
-      <span>Research</span>
-    </div>
-
-    <section id="research-experience" class="section-band research-band">
+    <section id="research-experience" class="major-section">
       <WorkExperiencePage kind="research" />
     </section>
 
-    <section id="publications" class="section-band research-band">
+    <section id="publications">
       <PublicationsPage />
     </section>
 
-    <section id="research-projects" class="section-band research-band band-end">
+    <section id="research-projects">
       <ProjectsPage mode="research" />
     </section>
 
-    <div class="portfolio-divider work-divider" aria-hidden="true">
-      <span>Work</span>
-    </div>
-
-    <section id="work-experience" class="section-band work-band">
+    <section id="work-experience" class="major-section">
       <WorkExperiencePage kind="work" />
     </section>
 
-    <section id="work-projects" class="section-band work-band band-end">
+    <section id="work-projects">
       <ProjectsPage mode="work" />
     </section>
 
-    <div class="portfolio-divider projects-divider" aria-hidden="true">
-      <span>Other Projects</span>
-    </div>
-
-    <section id="other-projects" class="section-band projects-band band-end">
+    <section id="other-projects" class="major-section">
       <ProjectsPage mode="other" />
     </section>
 
-    <div class="portfolio-divider cv-divider" aria-hidden="true">
-      <span>Curriculum Vitae</span>
-    </div>
-
-    <section id="cv" class="section-band cv-band band-end">
+    <section id="cv" class="major-section">
       <CVPage />
       <div class="beyond-cta">
         <p>Curious to see who I am beyond the work?</p>
@@ -273,63 +257,11 @@
   }
 
   main > section + section {
-    margin-top: 0;
+    margin-top: 2.5rem;
   }
 
-  .portfolio-divider {
-    display: flex;
-    align-items: center;
-    min-height: 11rem;
-    margin-top: 5rem;
-    padding: 0 max(2rem, calc((100vw - 1200px) / 2));
-    color: white;
-  }
-
-  .portfolio-divider span {
-    font-size: clamp(2.6rem, 7vw, 5.5rem);
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    line-height: 1;
-  }
-
-  .research-divider {
-    background: #17324d;
-  }
-
-  .work-divider {
-    background: #30363d;
-  }
-
-  .projects-divider {
-    background: #5a3d2b;
-  }
-
-  .cv-divider {
-    background: #24352d;
-  }
-
-  .section-band {
-    display: flow-root;
-  }
-
-  .research-band {
-    background: #f2f6fa;
-  }
-
-  .work-band {
-    background: #f4f4f4;
-  }
-
-  .projects-band {
-    background: #faf6f1;
-  }
-
-  .cv-band {
-    background: #f3f7f4;
-  }
-
-  .band-end {
-    padding-bottom: 4rem;
+  main > section.major-section {
+    margin-top: 16rem;
   }
 
   .beyond-cta {
@@ -401,15 +333,8 @@
       scroll-margin-top: calc(60px + env(safe-area-inset-top));
     }
 
-    .portfolio-divider {
-      min-height: 7rem;
-      margin-top: 3rem;
-      padding-right: 1rem;
-      padding-left: 1rem;
-    }
-
-    .band-end {
-      padding-bottom: 2.5rem;
+    main > section.major-section {
+      margin-top: 10rem;
     }
   }
 </style>
