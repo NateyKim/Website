@@ -261,7 +261,7 @@
   }
 
   main > section.major-section {
-    margin-top: 16rem;
+    margin-top: clamp(24rem, 45vh, 38rem);
   }
 
   .beyond-cta {
@@ -334,7 +334,7 @@
     }
 
     main > section.major-section {
-      margin-top: 10rem;
+      margin-top: 18rem;
     }
   }
 </style>
