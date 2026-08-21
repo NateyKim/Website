@@ -41,7 +41,7 @@ Built a 3D variational autoencoder to quantify injury severity, assess lateralit
 Detected Achilles tendinopathy in an average of 20 of 21 held-out evaluations and classified healthy, unilateral, and bilateral pathology in 18 of 21.`,
       images: [],
       captions: [],
-      mediaNotice: 'Publication Pending, images withheld!'
+      mediaNotice: 'Images withheld pending publication.'
     },
     {
       title: 'Verdigris: Assistive Ultrasound Guidance for Lumbar Puncture',
