@@ -1,5 +1,32 @@
 <script lang="ts">
-  const projects = [
+  import { autoplayWhenVisible } from '$lib/autoplayWhenVisible';
+
+  type OtherProject = {
+    title: string;
+    location: string;
+    dates: string;
+    description: string;
+    media?: string[];
+    captions?: string[];
+  };
+
+  const projects: OtherProject[] = [
+    {
+      title: 'Rehabilitative Driving Simulator',
+      location: 'Kingston, Jamaica',
+      dates: 'Jan 2023 – May 2023',
+      description: 'Collaborated with engineers and clinicians in Jamaica to develop a Unity-based driving simulator with custom steering and pedal controls for pediatric patients with hemiplegia.',
+      media: [
+        '/rehab-driving/patient-first-use.mp4',
+        '/rehab-driving/learning-tools.jpg',
+        '/rehab-driving/finished-steering-wheel.jpg'
+      ],
+      captions: [
+        'Patient using the device for the first time!',
+        'Learning how to use tools',
+        'Finished steering wheel setup'
+      ]
+    },
     {
       title: 'PENN Assistive Devices and Prosthetic Technologies (ADAPT)',
       location: 'Philadelphia, PA',
@@ -43,6 +70,12 @@
       description: 'Modeled affordable devices for detecting airborne bacteria and fungi through hospital HVAC systems and created a monitoring interface for visualizing the spread of airborne diseases.'
     }
   ];
+
+  let rehabMediaIndex = 0;
+
+  function nextRehabMedia(mediaCount: number) {
+    rehabMediaIndex = (rehabMediaIndex + 1) % mediaCount;
+  }
 </script>
 
 <svelte:head>
@@ -52,7 +85,7 @@
 <div class="other-projects-page">
   <header>
     <p class="eyebrow">Portfolio</p>
-    <h1>Other Projects</h1>
+    <h1>Additional Projects</h1>
     <p>A selection of additional engineering, robotics, and machine-learning work.</p>
   </header>
 
@@ -62,6 +95,24 @@
         <h2>{project.title}</h2>
         <p class="meta">{project.location} &bull; {project.dates}</p>
         <p>{project.description}</p>
+
+        {#if project.media && project.captions}
+          <div class="rehab-media">
+            {#if project.media[rehabMediaIndex].endsWith('.mp4')}
+              <video use:autoplayWhenVisible controls muted loop playsinline preload="metadata">
+                <source src={project.media[rehabMediaIndex]} type="video/mp4" />
+                <track kind="captions" src="/rehab-driving/no-dialogue.vtt" srclang="en" label="No dialogue" default />
+                Your browser does not support embedded video.
+              </video>
+            {:else}
+              <img src={project.media[rehabMediaIndex]} alt={project.captions[rehabMediaIndex]} />
+            {/if}
+            <button type="button" on:click={() => nextRehabMedia(project.media?.length ?? 1)}>
+              View next media
+            </button>
+            <p class="media-caption">{project.captions[rehabMediaIndex]}</p>
+          </div>
+        {/if}
       </article>
     {/each}
   </div>
@@ -117,5 +168,43 @@
     color: #666;
     font-size: 0.95rem;
     font-style: italic;
+  }
+
+  .rehab-media {
+    margin-top: 1.25rem;
+    text-align: center;
+  }
+
+  .rehab-media video,
+  .rehab-media img {
+    display: block;
+    width: min(100%, 760px);
+    max-height: 520px;
+    margin: 0 auto;
+    border-radius: 8px;
+    background: #000;
+    box-shadow: 0 4px 8px rgb(0 0 0 / 15%);
+    object-fit: contain;
+  }
+
+  .rehab-media button {
+    margin-top: 0.75rem;
+    padding: 0.45rem 0.8rem;
+    border: 1px solid #777;
+    border-radius: 0.4rem;
+    background: white;
+    color: #222;
+    cursor: pointer;
+  }
+
+  .rehab-media button:hover,
+  .rehab-media button:focus-visible {
+    background: #f0f0f0;
+  }
+
+  .media-caption {
+    margin-top: 0.6rem;
+    color: #444;
+    font-size: 0.9rem;
   }
 </style>

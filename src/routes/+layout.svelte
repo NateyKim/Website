@@ -11,13 +11,6 @@
 
   let activeSection = 'home';
 
-  const mainProjectLinks = [
-    { label: 'Verdigris Ultrasound Guidance', id: 'project-verdigris' },
-    { label: 'Ember Social Robotics', id: 'project-ember' },
-    { label: 'Rehabilitative Driving Simulator', id: 'project-rehab-driving' },
-    { label: 'Social DinoBot', id: 'project-dinobot' }
-  ];
-
   const sections = [
     { label: 'Home', id: 'home' },
     { label: 'Research', id: 'research-experience' },
@@ -25,11 +18,14 @@
     { label: 'Research Projects', id: 'research-projects' },
     { label: 'Work', id: 'work-experience' },
     { label: 'Projects', id: 'projects' },
+    { label: 'Other Projects', id: 'other-projects' },
     { label: 'CV', id: 'cv' },
     { label: 'Beyond the Work', id: 'about-me' }
   ];
 
-  const navigationSections = sections;
+  function isActive(sectionIds: string[]) {
+    return sectionIds.includes(activeSection);
+  }
 
   function scrollToSection(sectionId: string) {
     if ($page.url.pathname === '/about-me') {
@@ -76,38 +72,56 @@
 </script>
 
 <nav>
-  {#each navigationSections as section}
-    {#if section.id === 'about-me'}
-      <a class="nav-link" class:active={activeSection === section.id} href="/about-me">
-        {section.label}
-      </a>
-    {:else if section.id === 'projects'}
-      <div class="nav-item">
-        <button
-          class="nav-link"
-          class:active={activeSection === section.id}
-          on:click={() => scrollToSection(section.id)}
-          aria-haspopup="true"
-        >
-          {section.label}
-        </button>
-        <div class="project-menu" aria-label="Project navigation">
-          {#each mainProjectLinks as project}
-            <button type="button" on:click={() => scrollToSection(project.id)}>{project.label}</button>
-          {/each}
-          <button type="button" on:click={() => scrollToSection('other-projects')}>Other Projects</button>
-        </div>
-      </div>
-    {:else}
-      <button
-        class="nav-link"
-        class:active={activeSection === section.id}
-        on:click={() => scrollToSection(section.id)}
-      >
-        {section.label}
-      </button>
-    {/if}
-  {/each}
+  <button class="nav-link" class:active={activeSection === 'home'} on:click={() => scrollToSection('home')}>
+    Home
+  </button>
+
+  <div class="nav-item">
+    <button
+      class="nav-link"
+      class:active={isActive(['research-experience', 'publications', 'research-projects'])}
+      on:click={() => scrollToSection('research-experience')}
+      aria-haspopup="true"
+    >
+      Research
+    </button>
+    <div class="nav-menu" aria-label="Research navigation">
+      <button type="button" on:click={() => scrollToSection('research-experience')}>Experience</button>
+      <button type="button" on:click={() => scrollToSection('publications')}>Publications</button>
+      <button type="button" on:click={() => scrollToSection('research-projects')}>Projects</button>
+    </div>
+  </div>
+
+  <div class="nav-item">
+    <button
+      class="nav-link"
+      class:active={isActive(['work-experience', 'projects'])}
+      on:click={() => scrollToSection('work-experience')}
+      aria-haspopup="true"
+    >
+      Work
+    </button>
+    <div class="nav-menu" aria-label="Work navigation">
+      <button type="button" on:click={() => scrollToSection('work-experience')}>Experience</button>
+      <button type="button" on:click={() => scrollToSection('projects')}>Projects</button>
+    </div>
+  </div>
+
+  <button
+    class="nav-link"
+    class:active={activeSection === 'other-projects'}
+    on:click={() => scrollToSection('other-projects')}
+  >
+    Other Projects
+  </button>
+
+  <button class="nav-link" class:active={activeSection === 'cv'} on:click={() => scrollToSection('cv')}>
+    CV
+  </button>
+
+  <a class="nav-link" class:active={activeSection === 'about-me'} href="/about-me">
+    Beyond the Work
+  </a>
 </nav>
 
 <main>
@@ -188,7 +202,7 @@
     position: relative;
   }
 
-  .project-menu {
+  .nav-menu {
     position: absolute;
     top: 100%;
     left: 0;
@@ -200,12 +214,12 @@
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
   }
 
-  .nav-item:hover .project-menu,
-  .nav-item:focus-within .project-menu {
+  .nav-item:hover .nav-menu,
+  .nav-item:focus-within .nav-menu {
     display: grid;
   }
 
-  .project-menu button {
+  .nav-menu button {
     display: block;
     width: 100%;
     padding: 0.65rem 0.75rem;
@@ -219,8 +233,8 @@
     text-decoration: none;
   }
 
-  .project-menu button:hover,
-  .project-menu button:focus-visible {
+  .nav-menu button:hover,
+  .nav-menu button:focus-visible {
     background: #555;
   }
 
@@ -236,6 +250,10 @@
   section#cv,
   section#about-me {
     min-height: 100vh;
+  }
+
+  main > section + section {
+    margin-top: 1.5rem;
   }
 
   .beyond-cta {
@@ -297,10 +315,6 @@
       padding-right: 0.7rem;
       padding-left: 0.7rem;
       white-space: nowrap;
-    }
-
-    .project-menu {
-      display: none !important;
     }
 
     main {

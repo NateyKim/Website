@@ -172,7 +172,6 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
     'Verdigris: Assistive Ultrasound Guidance for Lumbar Puncture',
     'Ember Social Robotics Platform',
     'Social DinoBot',
-    'Rehabilitative Driving Simulator'
   ]);
 
   $: displayedProjects = projects.filter((project) =>
