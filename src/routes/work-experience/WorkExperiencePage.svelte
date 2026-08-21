@@ -80,9 +80,9 @@
 
 <style>
   .experience-page {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 3rem 1.5rem 2rem;
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0;
   }
 
   header {
@@ -179,6 +179,14 @@
   .project-link:hover,
   .project-link:focus-visible {
     color: #003b88;
+  }
+
+  @media (max-width: 900px) {
+    .experience-page {
+      margin-right: 1rem;
+      margin-left: 1rem;
+    }
+
   }
 
   @media (max-width: 650px) {

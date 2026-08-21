@@ -19,12 +19,12 @@
   .cv-page {
     box-sizing: border-box;
     min-height: calc(100vh - 60px);
-    padding: 2rem clamp(1rem, 4vw, 3rem) 3rem;
+    padding: 2rem 0 3rem;
     background: #f5f5f5;
   }
 
   .cv-header {
-    width: min(100%, 960px);
+    width: min(100%, 1200px);
     margin: 0 auto 1rem;
     display: flex;
     align-items: center;
@@ -52,7 +52,7 @@
 
   iframe {
     display: block;
-    width: min(100%, 960px);
+    width: min(100%, 1200px);
     height: max(700px, calc(100vh - 180px));
     margin: 0 auto;
     border: 1px solid #ccc;
@@ -62,7 +62,7 @@
   }
 
   .cv-fallback {
-    width: min(100%, 960px);
+    width: min(100%, 1200px);
     margin: 0.75rem auto 0;
     color: #555;
     font-size: 0.9rem;
@@ -70,7 +70,7 @@
 
   @media (max-width: 600px) {
     .cv-page {
-      padding: 1.25rem 0.75rem 2rem;
+      padding: 1.25rem 1rem 2rem;
     }
 
     iframe {

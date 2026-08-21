@@ -70,9 +70,9 @@
 
 <style>
   .publications-page {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem;
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0;
   }
 
   header {
@@ -127,5 +127,12 @@
     margin: 1rem 0 0;
     color: #555;
     font-size: 0.9rem;
+  }
+
+  @media (max-width: 900px) {
+    .publications-page {
+      margin-right: 1rem;
+      margin-left: 1rem;
+    }
   }
 </style>

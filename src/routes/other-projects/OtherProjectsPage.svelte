@@ -69,9 +69,9 @@
 
 <style>
   .other-projects-page {
-    max-width: 900px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 3rem 1.5rem 5rem;
+    padding: 2rem 0;
   }
 
   header {

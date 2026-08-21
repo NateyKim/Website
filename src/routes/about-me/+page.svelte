@@ -353,7 +353,7 @@
   }
 
   .personal-header {
-    padding: 3rem 1.5rem 1rem;
+    padding: 3rem 0 1rem;
   }
 
   .personal-header h1 {
@@ -376,7 +376,7 @@
   }
 
   .personal-category {
-    padding: 0 1.5rem;
+    padding: 0;
   }
 
   h2 {
@@ -529,8 +529,9 @@
   @media (max-width: 700px) {
     .personal-header,
     .personal-category {
-      padding-right: 1rem;
-      padding-left: 1rem;
+      width: auto;
+      margin-right: 1rem;
+      margin-left: 1rem;
     }
 
     .carousel {

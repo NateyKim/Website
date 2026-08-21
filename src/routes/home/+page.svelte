@@ -76,7 +76,9 @@
 
 <style>
   .intro-wrapper {
-    padding: 2rem;
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0;
   }
 
   .header-title {
@@ -160,6 +162,11 @@
   }
 
   @media (max-width: 768px) {
+    .intro-wrapper {
+      margin-right: 1rem;
+      margin-left: 1rem;
+    }
+
     .intro-section {
       flex-direction: column;
     }
