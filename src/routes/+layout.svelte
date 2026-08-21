@@ -20,8 +20,9 @@
 
   const sections = [
     { label: 'Home', id: 'home' },
-    { label: 'Research', id: 'research' },
+    { label: 'Research', id: 'research-experience' },
     { label: 'Publications', id: 'publications' },
+    { label: 'Research Projects', id: 'research-projects' },
     { label: 'Work', id: 'work-experience' },
     { label: 'Projects', id: 'projects' },
     { label: 'CV', id: 'cv' },
@@ -119,13 +120,16 @@
       <HomePage />
     </section>
 
-    <section id="research">
+    <section id="research-experience">
       <WorkExperiencePage kind="research" />
-      <ProjectsPage mode="research" />
     </section>
 
     <section id="publications">
       <PublicationsPage />
+    </section>
+
+    <section id="research-projects">
+      <ProjectsPage mode="research" />
     </section>
 
     <section id="work-experience">
@@ -225,8 +229,13 @@
   }
 
   section {
-    min-height: 100vh;
     scroll-margin-top: 60px;
+  }
+
+  section#home,
+  section#cv,
+  section#about-me {
+    min-height: 100vh;
   }
 
   .beyond-cta {

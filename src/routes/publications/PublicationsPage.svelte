@@ -56,7 +56,7 @@
       <article>
         <p class="authors">
           {#each publication.authors as author, index}
-            <span class:highlighted={author.highlighted}>{author.name}</span>{#if author.equal}<sup>&amp;</sup>{/if}{authorSeparator(index, publication.authors.length)}
+            <span class:highlighted={author.highlighted}>{author.name}</span>{#if author.equal}<sup>*</sup>{/if}{authorSeparator(index, publication.authors.length)}
           {/each}
         </p>
         <h2>{publication.title}</h2>
@@ -65,14 +65,14 @@
     {/each}
   </div>
 
-  <p class="equal-note"><sup>&amp;</sup> Equal contribution.</p>
+  <p class="equal-note"><sup>*</sup> Equal contribution.</p>
 </div>
 
 <style>
   .publications-page {
     max-width: 1000px;
     margin: 0 auto;
-    padding: 3rem 1.5rem 5rem;
+    padding: 2rem 1.5rem;
   }
 
   header {
