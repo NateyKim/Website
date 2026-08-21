@@ -12,14 +12,6 @@
 
   const projects: OtherProject[] = [
     {
-      title: 'Social DinoBot',
-      location: 'Philadelphia, PA',
-      dates: 'Aug 2024 – Dec 2024',
-      description: 'Designed a mobile dinosaur social robot to support gait, aphasia, and speech rehabilitation for an ischemic-stroke patient.',
-      media: ['/project-media/dinobot/dinobot.jpg'],
-      captions: ['Social DinoBot rehabilitation prototype']
-    },
-    {
       title: 'PENN Assistive Devices and Prosthetic Technologies (ADAPT)',
       location: 'Philadelphia, PA',
       dates: 'Jan 2023 – May 2026',

@@ -158,7 +158,7 @@
       <ProjectsPage mode="other" />
     </section>
 
-    <section id="cv">
+    <section id="cv" class="major-section">
       <CVPage />
       <div class="beyond-cta">
         <p>Curious to see who I am beyond the work?</p>
@@ -261,7 +261,7 @@
   }
 
   main > section.major-section {
-    margin-top: 5rem;
+    margin-top: 9rem;
   }
 
   .beyond-cta {
@@ -331,6 +331,10 @@
 
     section {
       scroll-margin-top: calc(60px + env(safe-area-inset-top));
+    }
+
+    main > section.major-section {
+      margin-top: 6rem;
     }
   }
 </style>

@@ -174,7 +174,8 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
 
   const otherProjectTitles = new Set([
     'Verdigris: Assistive Ultrasound Guidance for Lumbar Puncture',
-    'Rehabilitative Driving Simulator'
+    'Rehabilitative Driving Simulator',
+    'Social DinoBot'
   ]);
 
   $: displayedProjects = projects.filter((project) =>
