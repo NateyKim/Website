@@ -340,13 +340,13 @@
   .research-network {
     position: absolute;
     z-index: -1;
-    top: clamp(-38rem, -45vh, -24rem);
+    top: calc(clamp(-38rem, -45vh, -24rem) - 8rem);
     left: 50%;
     width: 100vw;
-    height: calc(clamp(24rem, 45vh, 38rem) + 46rem);
+    height: calc(clamp(24rem, 45vh, 38rem) + 54rem);
     pointer-events: none;
     transform: translateX(-50%);
-    mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 58%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 56%, transparent 100%);
   }
 
   .research-network svg { width: 100%; height: 100%; }

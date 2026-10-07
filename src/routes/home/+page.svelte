@@ -33,7 +33,6 @@
   let desiredRightTargetY = 218;
   let leftPose = { upperRotation: 0, forearmRotation: 0, wristRotation: 0 };
   let rightPose = { upperRotation: 0, forearmRotation: 0, wristRotation: 0 };
-  let activeArm: 'left' | 'right' = 'left';
   let armAnimationFrame = 0;
 
   function handlePointerMove(event: PointerEvent) {
@@ -56,22 +55,13 @@
     if (leftRobot && rightRobot) {
       const leftRect = leftRobot.getBoundingClientRect();
       const rightRect = rightRobot.getBoundingClientRect();
-      // The nearest robot owns the target while the other yields. This lets
-      // the center of the pinch aperture sit on the cursor without overlap.
-      if (nextX < -0.08) activeArm = 'left';
-      if (nextX > 0.08) activeArm = 'right';
-
-      if (activeArm === 'left') {
-        desiredLeftTargetX = ((event.clientX - leftRect.left) / leftRect.width) * 270;
-        desiredLeftTargetY = ((event.clientY - leftRect.top) / leftRect.height) * 520;
-        desiredRightTargetX = 80;
-        desiredRightTargetY = 218;
-      } else {
-        desiredLeftTargetX = 190;
-        desiredLeftTargetY = 218;
-        desiredRightTargetX = ((event.clientX - rightRect.left) / rightRect.width) * 270;
-        desiredRightTargetY = ((event.clientY - rightRect.top) / rightRect.height) * 520;
-      }
+      // Treat both robots as one bimanual gripper. Their pinch centers
+      // straddle the pointer, making the midpoint of the grasp the cursor.
+      const halfGraspWidth = 34;
+      desiredLeftTargetX = ((event.clientX - halfGraspWidth - leftRect.left) / leftRect.width) * 270;
+      desiredLeftTargetY = ((event.clientY - leftRect.top) / leftRect.height) * 520;
+      desiredRightTargetX = ((event.clientX + halfGraspWidth - rightRect.left) / rightRect.width) * 270;
+      desiredRightTargetY = ((event.clientY - rightRect.top) / rightRect.height) * 520;
     }
 
     clearTimeout(movementTimer);
@@ -302,29 +292,6 @@
     <p class="job-title">Human–Robot Interaction Research Engineer @ UPenn GRASP Lab</p>
   </div>
 
-  <div class="neural-transition" aria-hidden="true">
-    <svg viewBox="0 0 1200 420" preserveAspectRatio="none">
-      <g class="neural-lines">
-        <path d="M0 250 L120 188 L245 260 L355 174 L478 244 L600 148 L724 238 L848 172 L976 252 L1090 184 L1200 246" />
-        <path d="M55 330 L120 188 L278 330 M245 260 L355 174 L410 330 M478 244 L600 148 L655 330 M724 238 L848 172 L905 330 M976 252 L1090 184 L1150 330" />
-        <path d="M0 292 L245 260 L478 244 L724 238 L976 252 L1200 286" />
-        <path d="M120 188 L355 174 L600 148 L848 172 L1090 184" />
-        <path d="M55 330 L180 380 L278 330 L410 386 L655 330 L782 388 L905 330 L1040 382 L1150 330" />
-        <path d="M245 260 L180 380 M478 244 L410 386 M724 238 L782 388 M976 252 L1040 382" />
-      </g>
-      <g class="neural-nodes">
-        <circle cx="120" cy="188" r="7" /><circle cx="245" cy="260" r="5" />
-        <circle cx="355" cy="174" r="7" /><circle cx="478" cy="244" r="5" />
-        <circle cx="600" cy="148" r="9" /><circle cx="724" cy="238" r="5" />
-        <circle cx="848" cy="172" r="7" /><circle cx="976" cy="252" r="5" />
-        <circle cx="1090" cy="184" r="7" />
-        <circle cx="55" cy="330" r="4" /><circle cx="180" cy="380" r="3" /><circle cx="278" cy="330" r="4" />
-        <circle cx="410" cy="386" r="3" /><circle cx="655" cy="330" r="4" /><circle cx="782" cy="388" r="3" />
-        <circle cx="905" cy="330" r="4" /><circle cx="1040" cy="382" r="3" /><circle cx="1150" cy="330" r="4" />
-      </g>
-    </svg>
-  </div>
-
   <div class="bio-panel">
     {#each bio as paragraph}<p>{paragraph}</p>{/each}
   </div>
@@ -452,29 +419,6 @@
   .robot-right.gripping .finger-upper { transform: translateY(19px); }
   .robot-right.gripping .finger-lower { transform: translateY(-19px); }
 
-  .neural-transition {
-    position: absolute;
-    z-index: -2;
-    right: 0;
-    bottom: -3rem;
-    left: 0;
-    height: 500px;
-    background: linear-gradient(to bottom, transparent, rgba(233, 237, 250, 0.58) 38%, rgba(247, 249, 253, 0.7) 72%, transparent 100%);
-    mask-image: linear-gradient(to bottom, transparent 0%, black 17%, black 63%, rgba(0, 0, 0, 0.48) 81%, transparent 100%);
-  }
-  .neural-transition svg { width: 100%; height: 100%; }
-  .neural-lines path { fill: none; stroke: #7b849c; stroke-width: 1.2; opacity: 0.36; vector-effect: non-scaling-stroke; }
-  .neural-nodes circle {
-    fill: #7566ff;
-    stroke: #f8fafc;
-    stroke-width: 3;
-    animation: neural-pulse 3.4s ease-in-out infinite alternate;
-    transform-box: fill-box;
-    transform-origin: center;
-  }
-  .neural-nodes circle:nth-child(2n) { animation-delay: -1.1s; }
-  .neural-nodes circle:nth-child(3n) { animation-delay: -2.2s; }
-
   .bio-panel {
     position: relative;
     z-index: 4;
@@ -492,8 +436,6 @@
   }
   .bio-panel p { margin: 0; font-size: clamp(1rem, 1.5vw, 1.12rem); line-height: 1.65; }
 
-  @keyframes neural-pulse { to { fill: #16aaf3; opacity: 0.55; transform: scale(1.5); } }
-
   @media (max-width: 850px) {
     .home-scene { padding-top: 2.5rem; padding-bottom: 2rem; }
     .identity { margin-top: 7rem; margin-bottom: 16rem; }
@@ -501,7 +443,6 @@
     .robot-left { left: -6rem; }
     .robot-right { right: -6rem; }
     .bio-panel { grid-template-columns: 1fr; }
-    .neural-transition { bottom: -2rem; height: 660px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
