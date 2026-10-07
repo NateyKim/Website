@@ -131,8 +131,12 @@
     const baseAngleOne = side === 'left' ? -57.38 : -122.62;
     const baseAngleTwo = side === 'left' ? -56.84 : -123.16;
 
-    let dx = targetX - baseX;
-    let dy = targetY - baseY;
+    const toolDirection = Math.atan2(targetY - baseY, targetX - baseX);
+    const toolCenterOffset = 55;
+    const wristTargetX = targetX - Math.cos(toolDirection) * toolCenterOffset;
+    const wristTargetY = targetY - Math.sin(toolDirection) * toolCenterOffset;
+    let dx = wristTargetX - baseX;
+    let dy = wristTargetY - baseY;
     const maximumReach = linkOne + linkTwo - 1;
     const minimumReach = Math.abs(linkOne - linkTwo) + 18;
     const distance = Math.hypot(dx, dy) || 1;
@@ -154,9 +158,11 @@
     const forearm = shoulder + elbow;
     const upperRotation = radiansToDegrees(shoulder) - baseAngleOne;
     const forearmRotation = radiansToDegrees(forearm) - baseAngleTwo - upperRotation;
-    const desiredToolAngle = radiansToDegrees(Math.atan2(targetY - baseY, targetX - baseX));
+    const desiredToolAngle = radiansToDegrees(toolDirection);
     const defaultToolAngle = side === 'left' ? 0 : 180;
-    const wristRotation = clamp(desiredToolAngle - defaultToolAngle - upperRotation - forearmRotation, -145, 145);
+    const rawWristRotation = desiredToolAngle - defaultToolAngle - upperRotation - forearmRotation;
+    const normalizedWristRotation = ((rawWristRotation + 540) % 360) - 180;
+    const wristRotation = clamp(normalizedWristRotation, -155, 155);
 
     return { upperRotation, forearmRotation, wristRotation };
   }
@@ -165,24 +171,24 @@
 
   function advanceArms() {
     // Target-space slew limits prevent pointer jumps from demanding impossible Cartesian velocities.
-    leftTargetX = moveToward(leftTargetX, desiredLeftTargetX, 5.5);
-    leftTargetY = moveToward(leftTargetY, desiredLeftTargetY, 5.5);
-    rightTargetX = moveToward(rightTargetX, desiredRightTargetX, 5.5);
-    rightTargetY = moveToward(rightTargetY, desiredRightTargetY, 5.5);
+    leftTargetX = moveToward(leftTargetX, desiredLeftTargetX, 6.875);
+    leftTargetY = moveToward(leftTargetY, desiredLeftTargetY, 6.875);
+    rightTargetX = moveToward(rightTargetX, desiredRightTargetX, 6.875);
+    rightTargetY = moveToward(rightTargetY, desiredRightTargetY, 6.875);
 
     const solvedLeft = solveArm('left', leftTargetX, leftTargetY);
     const solvedRight = solveArm('right', rightTargetX, rightTargetY);
 
     // Per-joint velocity limits keep the mechanism continuous near IK boundaries.
     leftPose = {
-      upperRotation: moveAngleToward(leftPose.upperRotation, solvedLeft.upperRotation, 2.1),
-      forearmRotation: moveAngleToward(leftPose.forearmRotation, solvedLeft.forearmRotation, 2.8),
-      wristRotation: moveAngleToward(leftPose.wristRotation, solvedLeft.wristRotation, 3.4)
+      upperRotation: moveAngleToward(leftPose.upperRotation, solvedLeft.upperRotation, 2.625),
+      forearmRotation: moveAngleToward(leftPose.forearmRotation, solvedLeft.forearmRotation, 3.5),
+      wristRotation: moveAngleToward(leftPose.wristRotation, solvedLeft.wristRotation, 4.25)
     };
     rightPose = {
-      upperRotation: moveAngleToward(rightPose.upperRotation, solvedRight.upperRotation, 2.1),
-      forearmRotation: moveAngleToward(rightPose.forearmRotation, solvedRight.forearmRotation, 2.8),
-      wristRotation: moveAngleToward(rightPose.wristRotation, solvedRight.wristRotation, 3.4)
+      upperRotation: moveAngleToward(rightPose.upperRotation, solvedRight.upperRotation, 2.625),
+      forearmRotation: moveAngleToward(rightPose.forearmRotation, solvedRight.forearmRotation, 3.5),
+      wristRotation: moveAngleToward(rightPose.wristRotation, solvedRight.wristRotation, 4.25)
     };
 
     armAnimationFrame = requestAnimationFrame(advanceArms);
@@ -276,12 +282,14 @@
   </div>
 
   <div class="neural-transition" aria-hidden="true">
-    <svg viewBox="0 0 1200 330" preserveAspectRatio="none">
+    <svg viewBox="0 0 1200 420" preserveAspectRatio="none">
       <g class="neural-lines">
         <path d="M0 250 L120 188 L245 260 L355 174 L478 244 L600 148 L724 238 L848 172 L976 252 L1090 184 L1200 246" />
         <path d="M55 330 L120 188 L278 330 M245 260 L355 174 L410 330 M478 244 L600 148 L655 330 M724 238 L848 172 L905 330 M976 252 L1090 184 L1150 330" />
         <path d="M0 292 L245 260 L478 244 L724 238 L976 252 L1200 286" />
         <path d="M120 188 L355 174 L600 148 L848 172 L1090 184" />
+        <path d="M55 330 L180 380 L278 330 L410 386 L655 330 L782 388 L905 330 L1040 382 L1150 330" />
+        <path d="M245 260 L180 380 M478 244 L410 386 M724 238 L782 388 M976 252 L1040 382" />
       </g>
       <g class="neural-nodes">
         <circle cx="120" cy="188" r="7" /><circle cx="245" cy="260" r="5" />
@@ -289,6 +297,9 @@
         <circle cx="600" cy="148" r="9" /><circle cx="724" cy="238" r="5" />
         <circle cx="848" cy="172" r="7" /><circle cx="976" cy="252" r="5" />
         <circle cx="1090" cy="184" r="7" />
+        <circle cx="55" cy="330" r="4" /><circle cx="180" cy="380" r="3" /><circle cx="278" cy="330" r="4" />
+        <circle cx="410" cy="386" r="3" /><circle cx="655" cy="330" r="4" /><circle cx="782" cy="388" r="3" />
+        <circle cx="905" cy="330" r="4" /><circle cx="1040" cy="382" r="3" /><circle cx="1150" cy="330" r="4" />
       </g>
     </svg>
   </div>
@@ -408,8 +419,8 @@
   .robot-right { right: max(-4rem, calc((100vw - 1500px) / 2)); }
   .robot-mount path, .arm-segment path { fill: none; stroke: #222c38; stroke-width: 13; stroke-linecap: round; stroke-linejoin: round; }
   .robot-mount circle, .arm-segment circle { fill: #f8fafc; stroke: #222c38; stroke-width: 7; }
-  .arm-segment { transition: transform 170ms cubic-bezier(0.2, 0.75, 0.25, 1); }
-  .wrist { transition: transform 130ms cubic-bezier(0.2, 0.75, 0.25, 1); }
+  .arm-segment { transition: transform 128ms cubic-bezier(0.2, 0.75, 0.25, 1); }
+  .wrist { transition: transform 98ms cubic-bezier(0.2, 0.75, 0.25, 1); }
   .gripper-base { stroke-width: 8 !important; }
   .gripper-finger {
     stroke-width: 7 !important;
@@ -425,11 +436,11 @@
     position: absolute;
     z-index: -2;
     right: 0;
-    bottom: 0;
+    bottom: -3rem;
     left: 0;
-    height: 390px;
-    background: linear-gradient(to bottom, transparent, rgba(233, 237, 250, 0.68) 44%, rgba(255, 255, 255, 0.88));
-    mask-image: linear-gradient(to bottom, transparent 0%, black 22%, black 68%, transparent 100%);
+    height: 500px;
+    background: linear-gradient(to bottom, transparent, rgba(233, 237, 250, 0.58) 38%, rgba(247, 249, 253, 0.7) 72%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 17%, black 63%, rgba(0, 0, 0, 0.48) 81%, transparent 100%);
   }
   .neural-transition svg { width: 100%; height: 100%; }
   .neural-lines path { fill: none; stroke: #7b849c; stroke-width: 1.2; opacity: 0.36; vector-effect: non-scaling-stroke; }
@@ -470,7 +481,7 @@
     .robot-left { left: -6rem; }
     .robot-right { right: -6rem; }
     .bio-panel { grid-template-columns: 1fr; }
-    .neural-transition { height: 610px; }
+    .neural-transition { bottom: -2rem; height: 660px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
