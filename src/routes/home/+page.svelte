@@ -484,8 +484,8 @@
     opacity: 0.84;
     filter: drop-shadow(0 20px 26px rgba(25, 32, 50, 0.13));
   }
-  .robot-left { left: max(-4rem, calc((100vw - 1500px) / 2)); }
-  .robot-right { right: max(-4rem, calc((100vw - 1500px) / 2)); }
+  .robot-left { left: clamp(3rem, calc((100vw - 1200px) / 2), 9rem); }
+  .robot-right { right: clamp(3rem, calc((100vw - 1200px) / 2), 9rem); }
   .robot-mount path, .arm-segment path, .wrist path { fill: none; stroke: #222c38; stroke-width: 13; stroke-linecap: round; stroke-linejoin: round; }
   .robot-mount circle, .arm-segment circle { fill: #f8fafc; stroke: #222c38; stroke-width: 7; }
   .gripper-base { stroke-width: 8 !important; }
