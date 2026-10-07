@@ -34,6 +34,7 @@
   let leftPose = { upperRotation: 0, forearmRotation: 0, wristRotation: 0 };
   let rightPose = { upperRotation: 0, forearmRotation: 0, wristRotation: 0 };
   let armAnimationFrame = 0;
+  const graspCenterOffset = 45.5;
 
   function handlePointerMove(event: PointerEvent) {
     if (event.pointerType === 'touch') return;
@@ -217,8 +218,9 @@
     const constrainedTargetY = Math.min(targetY, floorY - gripperClearance);
 
     const toolDirection = Math.atan2(constrainedTargetY - baseY, targetX - baseX);
-    // The grasp point is the center between the fingertips at x = 61.
-    const toolCenterOffset = 61;
+    // The grasp point is halfway through the open jaw, between its fixed
+    // crossbar at x=30 and fingertip line at x=61.
+    const toolCenterOffset = graspCenterOffset;
     const maximumReach = linkOne + linkTwo - 1;
     // Keep enough radial clearance that the forearm cannot fold back through
     // the upper arm when the cursor moves close to the shoulder.
