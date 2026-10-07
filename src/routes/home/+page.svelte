@@ -263,7 +263,10 @@
       && !boxesOverlap(upperBox, wristBox)
       && !boxesOverlap(upperBox, gripperBox)
       && !boxesOverlap(elbowBox, wristBox)
-      && !boxesOverlap(elbowBox, gripperBox);
+      && !boxesOverlap(elbowBox, gripperBox)
+      // The forearm box is trimmed before the wrist, so overlap here is a
+      // genuine fold-back collision rather than the intended joint contact.
+      && !boxesOverlap(forearmBox, gripperBox);
   }
 
   function graspCenter(geometry: ReturnType<typeof calculateArmGeometry>) {
