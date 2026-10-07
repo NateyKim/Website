@@ -368,7 +368,12 @@
     const baseAngleOne = side === 'left' ? 0 : 180;
     const baseAngleTwo = side === 'left' ? 0 : 180;
 
-    const toolDirection = Math.atan2(targetY - baseY, targetX - baseX);
+    // This canonical arm is mounted on the right wall, so points to the right
+    // of its shoulder are behind the mounting plane. Project them onto the
+    // nearest usable interior line instead of letting IK alternate between
+    // impossible branches or trigger the fully extended escape posture.
+    const interiorTargetX = Math.min(targetX, baseX - 36);
+    const rawDirection = Math.atan2(targetY - baseY, interiorTargetX - baseX);
     // The grasp point is halfway through the open jaw, between its fixed
     // crossbar at x=30 and fingertip line at x=61.
     const toolCenterOffset = graspCenterOffset;
@@ -378,14 +383,15 @@
     // Keep the wrist far enough from the shoulder/base that the complete
     // 61-by-64 open-gripper rectangle cannot overlap the proximal mechanism.
     const minimumReach = 92;
-    const targetDistance = Math.hypot(targetX - baseX, targetY - baseY);
-    const targetIsBeyondReach = targetDistance > maximumReach + toolCenterOffset;
-    const wristTargetX = targetIsBeyondReach
-      ? baseX + Math.cos(toolDirection) * maximumReach
-      : targetX - Math.cos(toolDirection) * toolCenterOffset;
-    const wristTargetY = targetIsBeyondReach
-      ? baseY + Math.sin(toolDirection) * maximumReach
-      : targetY - Math.sin(toolDirection) * toolCenterOffset;
+    const minimumGraspReach = minimumReach + toolCenterOffset;
+    const maximumGraspReach = maximumReach + toolCenterOffset;
+    const requestedGraspReach = Math.hypot(interiorTargetX - baseX, targetY - baseY);
+    const graspReach = clamp(requestedGraspReach, minimumGraspReach, maximumGraspReach);
+    const toolDirection = rawDirection;
+    const projectedGraspX = baseX + Math.cos(toolDirection) * graspReach;
+    const projectedGraspY = baseY + Math.sin(toolDirection) * graspReach;
+    const wristTargetX = projectedGraspX - Math.cos(toolDirection) * toolCenterOffset;
+    const wristTargetY = projectedGraspY - Math.sin(toolDirection) * toolCenterOffset;
     let dx = wristTargetX - baseX;
     let dy = wristTargetY - baseY;
     const distance = Math.hypot(dx, dy) || 1;
