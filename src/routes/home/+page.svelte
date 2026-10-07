@@ -55,9 +55,12 @@
     if (leftRobot && rightRobot) {
       const leftRect = leftRobot.getBoundingClientRect();
       const rightRect = rightRobot.getBoundingClientRect();
-      desiredLeftTargetX = ((event.clientX - leftRect.left) / leftRect.width) * 270;
+      // Keep the end effectors on opposite sides of the cursor so the arms
+      // approach the target together without occupying the same task space.
+      const collisionClearance = 38;
+      desiredLeftTargetX = ((event.clientX - collisionClearance - leftRect.left) / leftRect.width) * 270;
       desiredLeftTargetY = ((event.clientY - leftRect.top) / leftRect.height) * 520 - 10;
-      desiredRightTargetX = ((event.clientX - rightRect.left) / rightRect.width) * 270;
+      desiredRightTargetX = ((event.clientX + collisionClearance - rightRect.left) / rightRect.width) * 270;
       desiredRightTargetY = ((event.clientY - rightRect.top) / rightRect.height) * 520 + 10;
     }
 
@@ -102,19 +105,21 @@
     }).join(' ');
   }
 
-  const motorUnitKernel = [0, -0.12, -0.48, -0.94, -0.32, 0.68, 1, 0.52, 0.04, -0.38, -0.22, -0.06, 0];
+  const motorUnitKernel = [0, -0.18, -0.82, 1, -0.46, 0.12, 0];
 
   function advanceEmgSignal() {
-    emgIntensity += (targetEmgIntensity - emgIntensity) * 0.22;
+    const intensityResponse = targetEmgIntensity > emgIntensity ? 0.58 : 0.14;
+    emgIntensity += (targetEmgIntensity - emgIntensity) * intensityResponse;
 
-    if (Math.random() < 0.015 + emgIntensity * 0.34) {
+    if (Math.random() < 0.004 + emgIntensity * 0.48) {
       activeMotorUnits.push({
         age: 0,
-        amplitude: 15 + emgIntensity * (22 + Math.random() * 18)
+        amplitude: 18 + emgIntensity * (30 + Math.random() * 24)
       });
     }
 
-    let sample = (Math.random() - 0.5) * 3.2;
+    // Fine, high-frequency resting activity; deliberate movement adds crisp motor-unit spikes.
+    let sample = (Math.random() - 0.5) * 1.4;
     for (const unit of activeMotorUnits) {
       sample += motorUnitKernel[unit.age] * unit.amplitude;
       unit.age += 1;
@@ -198,7 +203,7 @@
   }
 
   onMount(() => {
-    emgTimer = setInterval(advanceEmgSignal, 40);
+    emgTimer = setInterval(advanceEmgSignal, 20);
     armAnimationFrame = requestAnimationFrame(advanceArms);
   });
 
@@ -243,10 +248,6 @@
   </svg>
 
   <svg bind:this={leftRobot} class="robot robot-left" class:gripping viewBox="0 0 270 520" aria-hidden="true">
-    <g class="workspace-floor">
-      <rect x="0" y="450" width="270" height="70" />
-      <path d="M0 450 H270" />
-    </g>
     <g class="robot-mount">
       <path d="M8 450 H118 M32 450 V420 H92 V450" /><circle cx="62" cy="416" r="19" />
     </g>
@@ -264,10 +265,6 @@
   </svg>
 
   <svg bind:this={rightRobot} class="robot robot-right" class:gripping viewBox="0 0 270 520" aria-hidden="true">
-    <g class="workspace-floor">
-      <rect x="0" y="450" width="270" height="70" />
-      <path d="M0 450 H270" />
-    </g>
     <g class="robot-mount">
       <path d="M152 450 H262 M178 450 V420 H238 V450" /><circle cx="208" cy="416" r="19" />
     </g>
@@ -428,8 +425,6 @@
   }
   .robot-left { left: max(-4rem, calc((100vw - 1500px) / 2)); }
   .robot-right { right: max(-4rem, calc((100vw - 1500px) / 2)); }
-  .workspace-floor rect { fill: rgba(34, 44, 56, 0.07); }
-  .workspace-floor path { fill: none; stroke: #222c38; stroke-width: 5; }
   .robot-mount path, .arm-segment path { fill: none; stroke: #222c38; stroke-width: 13; stroke-linecap: round; stroke-linejoin: round; }
   .robot-mount circle, .arm-segment circle { fill: #f8fafc; stroke: #222c38; stroke-width: 7; }
   .arm-segment { transition: transform 128ms cubic-bezier(0.2, 0.75, 0.25, 1); }
