@@ -444,9 +444,9 @@
       : clamp((timestamp - previousArmTime) / 1000, 1 / 240, 1 / 30);
     previousArmTime = timestamp;
     const maximumSteps = {
-      upper: 210 * elapsedSeconds,
-      forearm: 280 * elapsedSeconds,
-      tool: 135 * elapsedSeconds
+      upper: 175 * elapsedSeconds,
+      forearm: 230 * elapsedSeconds,
+      tool: 105 * elapsedSeconds
     };
     // Solve from the current pointer position. Joint-space limits below still
     // smooth the mechanism without adding a second layer of cursor lag.
