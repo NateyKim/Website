@@ -43,6 +43,8 @@
     progress: number;
     targetX: number;
     targetY: number;
+    bestTrackingError: number;
+    stagnantTime: number;
   };
   let leftPlan: ArmPlan | null = null;
   let rightPlan: ArmPlan | null = null;
@@ -331,6 +333,10 @@
       }
       return freeCache.get(key) ?? false;
     };
+    const trackingErrorAt = (pose: ArmPose, tool: number) => {
+      const center = graspCenter(calculateArmGeometry('right', pose, targetX, targetY, tool));
+      return Math.hypot(center.x - targetX, center.y - targetY);
+    };
 
     const start = {
       upper: indexAt(currentPose.upperRotation),
@@ -414,7 +420,9 @@
             const tool = (node.tool + dt + toolCount) % toolCount;
             if (upper < 0 || upper >= count || forearm < 0 || forearm >= count || !isFree(upper, forearm, tool)) continue;
             const key = keyOf(upper, forearm, tool);
-            const nextCost = node.g + Math.hypot(du, df, dt * 0.55);
+            const nextPose = poseAt(upper, forearm);
+            const cartesianCost = trackingErrorAt(nextPose, toolAt(tool)) / 180;
+            const nextCost = node.g + Math.hypot(du, df, dt * 0.55) + cartesianCost;
             if (nextCost >= (costs.get(key) ?? Infinity)) continue;
             costs.set(key, nextCost);
             parents.set(key, nodeKey);
@@ -439,6 +447,10 @@
     gridPath.push({ pose: exactGoal, tool: exactGoal.toolAngle });
 
     const collisionFreeSegment = (from: ArmWaypoint, to: ArmWaypoint) => {
+      const allowedTrackingError = Math.max(
+        trackingErrorAt(from.pose, from.tool),
+        trackingErrorAt(to.pose, to.tool)
+      ) + 10;
       for (let sample = 1; sample <= 10; sample += 1) {
         const amount = sample / 10;
         const pose = {
@@ -448,6 +460,7 @@
         };
         const interpolatedTool = from.tool + normalizeAngle(to.tool - from.tool) * amount;
         if (!geometryIsCollisionFree(calculateArmGeometry('right', pose, targetX, targetY, interpolatedTool))) return false;
+        if (trackingErrorAt(pose, interpolatedTool) > allowedTrackingError) return false;
       }
       return true;
     };
@@ -521,13 +534,23 @@
       };
       const tool = existingPlan.segmentStart.tool + normalizeAngle(waypoint.tool - existingPlan.segmentStart.tool) * blend;
       if (geometryIsCollisionFree(calculateArmGeometry('right', pose, targetX, targetY, tool))) {
-        if (t >= 1) {
-          existingPlan.waypoints.shift();
-          existingPlan.segmentStart = { pose, tool };
-          existingPlan.progress = 0;
-          if (!existingPlan.waypoints.length) existingPlan = null;
+        const center = graspCenter(calculateArmGeometry('right', pose, targetX, targetY, tool));
+        const trackingError = Math.hypot(center.x - targetX, center.y - targetY);
+        if (trackingError < existingPlan.bestTrackingError - 0.75) {
+          existingPlan.bestTrackingError = trackingError;
+          existingPlan.stagnantTime = 0;
+        } else {
+          existingPlan.stagnantTime += elapsedSeconds;
         }
-        return { pose, tool, plan: existingPlan };
+        if (existingPlan.stagnantTime <= 1.1) {
+          if (t >= 1) {
+            existingPlan.waypoints.shift();
+            existingPlan.segmentStart = { pose, tool };
+            existingPlan.progress = 0;
+            if (!existingPlan.waypoints.length) existingPlan = null;
+          }
+          return { pose, tool, plan: existingPlan };
+        }
       }
       existingPlan = null;
     }
@@ -545,12 +568,15 @@
       }
     }
     const waypoints = planConfigurationPath(currentPose, currentTool, solvedPoses, targetX, targetY);
+    const currentCenter = graspCenter(calculateArmGeometry('right', currentPose, targetX, targetY, currentTool));
     const plan = waypoints.length ? {
       waypoints,
       segmentStart: { pose: currentPose, tool: currentTool },
       progress: 0,
       targetX,
-      targetY
+      targetY,
+      bestTrackingError: Math.hypot(currentCenter.x - targetX, currentCenter.y - targetY),
+      stagnantTime: 0
     } : null;
     return { pose: currentPose, tool: currentTool, plan };
   }
