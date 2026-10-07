@@ -301,105 +301,151 @@
     // only among goals whose gripper centers are essentially equally close.
     const bestError = safeGoals[0].error;
     const eligibleGoals = safeGoals.filter((candidate) => candidate.error <= bestError + 1.5).slice(0, 8);
-    const tool = eligibleGoals[0].goal.toolAngle;
     const resolution = 12;
     const minimumAngle = -168;
     const count = 29;
+    const toolResolution = 15;
+    const toolCount = 24;
     const angleAt = (index: number) => minimumAngle + index * resolution;
     const indexAt = (angle: number) => clamp(Math.round((normalizeAngle(angle) - minimumAngle) / resolution), 0, count - 1);
-    const keyOf = (upper: number, forearm: number) => `${upper},${forearm}`;
+    const toolAt = (index: number) => -180 + index * toolResolution;
+    const toolIndexAt = (angle: number) => ((Math.round((normalizeAngle(angle) + 180) / toolResolution) % toolCount) + toolCount) % toolCount;
+    const keyOf = (upper: number, forearm: number, tool: number) => `${upper},${forearm},${tool}`;
     const poseAt = (upper: number, forearm: number): ArmPose => ({
       upperRotation: angleAt(upper), forearmRotation: angleAt(forearm), wristRotation: 0
     });
     const freeCache = new Map<string, boolean>();
-    const isFree = (upper: number, forearm: number) => {
-      const key = keyOf(upper, forearm);
+    const isFree = (upper: number, forearm: number, tool: number) => {
+      const key = keyOf(upper, forearm, tool);
       if (!freeCache.has(key)) {
-        freeCache.set(key, geometryIsCollisionFree(calculateArmGeometry('right', poseAt(upper, forearm), targetX, targetY, tool)));
+        freeCache.set(key, geometryIsCollisionFree(calculateArmGeometry('right', poseAt(upper, forearm), targetX, targetY, toolAt(tool))));
       }
       return freeCache.get(key) ?? false;
     };
 
-    const start = { upper: indexAt(currentPose.upperRotation), forearm: indexAt(currentPose.forearmRotation) };
+    const start = {
+      upper: indexAt(currentPose.upperRotation),
+      forearm: indexAt(currentPose.forearmRotation),
+      tool: toolIndexAt(currentTool)
+    };
     const goalKeys = new Set<string>();
     for (const { goal } of eligibleGoals) {
       const centerUpper = indexAt(goal.upperRotation);
       const centerForearm = indexAt(goal.forearmRotation);
+      const centerTool = toolIndexAt(goal.toolAngle);
       for (let du = -1; du <= 1; du += 1) {
         for (let df = -1; df <= 1; df += 1) {
-          const upper = centerUpper + du;
-          const forearm = centerForearm + df;
-          if (upper >= 0 && upper < count && forearm >= 0 && forearm < count && isFree(upper, forearm)) {
-            goalKeys.add(keyOf(upper, forearm));
+          for (let dt = -1; dt <= 1; dt += 1) {
+            const upper = centerUpper + du;
+            const forearm = centerForearm + df;
+            const tool = (centerTool + dt + toolCount) % toolCount;
+            if (upper >= 0 && upper < count && forearm >= 0 && forearm < count && isFree(upper, forearm, tool)) {
+              goalKeys.add(keyOf(upper, forearm, tool));
+            }
           }
         }
       }
     }
     if (!goalKeys.size) return [];
 
-    type GridNode = { upper: number; forearm: number; g: number; f: number };
-    const open: GridNode[] = [{ ...start, g: 0, f: 0 }];
-    const costs = new Map<string, number>([[keyOf(start.upper, start.forearm), 0]]);
+    type GridNode = { upper: number; forearm: number; tool: number; g: number; f: number };
+    const open: GridNode[] = [];
+    const pushOpen = (node: GridNode) => {
+      open.push(node);
+      for (let index = open.length - 1; index > 0;) {
+        const parent = Math.floor((index - 1) / 2);
+        if (open[parent].f <= open[index].f) break;
+        [open[parent], open[index]] = [open[index], open[parent]];
+        index = parent;
+      }
+    };
+    const popOpen = () => {
+      const first = open[0];
+      const last = open.pop();
+      if (open.length && last) {
+        open[0] = last;
+        for (let index = 0;;) {
+          const left = index * 2 + 1;
+          const right = left + 1;
+          let smallest = index;
+          if (left < open.length && open[left].f < open[smallest].f) smallest = left;
+          if (right < open.length && open[right].f < open[smallest].f) smallest = right;
+          if (smallest === index) break;
+          [open[index], open[smallest]] = [open[smallest], open[index]];
+          index = smallest;
+        }
+      }
+      return first;
+    };
+    pushOpen({ ...start, g: 0, f: 0 });
+    const startKey = keyOf(start.upper, start.forearm, start.tool);
+    const costs = new Map<string, number>([[startKey, 0]]);
     const parents = new Map<string, string>();
     const closed = new Set<string>();
     const goalCoordinates = [...goalKeys].map((key) => key.split(',').map(Number));
     let reached = '';
-    const heuristic = (upper: number, forearm: number) => Math.min(...goalCoordinates.map(([gu, gf]) => Math.hypot(gu - upper, gf - forearm)));
+    const toolGridDistance = (first: number, second: number) => Math.min(Math.abs(first - second), toolCount - Math.abs(first - second));
+    const heuristic = (upper: number, forearm: number, tool: number) => Math.min(...goalCoordinates.map(([gu, gf, gt]) =>
+      Math.hypot(gu - upper, gf - forearm, toolGridDistance(gt, tool) * 0.55)
+    ));
 
     while (open.length) {
-      let bestIndex = 0;
-      for (let index = 1; index < open.length; index += 1) if (open[index].f < open[bestIndex].f) bestIndex = index;
-      const node = open.splice(bestIndex, 1)[0];
-      const nodeKey = keyOf(node.upper, node.forearm);
+      const node = popOpen();
+      if (!node) break;
+      const nodeKey = keyOf(node.upper, node.forearm, node.tool);
       if (closed.has(nodeKey)) continue;
       closed.add(nodeKey);
       if (goalKeys.has(nodeKey)) { reached = nodeKey; break; }
       for (let du = -1; du <= 1; du += 1) {
         for (let df = -1; df <= 1; df += 1) {
-          if (du === 0 && df === 0) continue;
-          const upper = node.upper + du;
-          const forearm = node.forearm + df;
-          if (upper < 0 || upper >= count || forearm < 0 || forearm >= count || !isFree(upper, forearm)) continue;
-          const key = keyOf(upper, forearm);
-          const nextCost = node.g + Math.hypot(du, df);
-          if (nextCost >= (costs.get(key) ?? Infinity)) continue;
-          costs.set(key, nextCost);
-          parents.set(key, nodeKey);
-          open.push({ upper, forearm, g: nextCost, f: nextCost + heuristic(upper, forearm) });
+          for (let dt = -1; dt <= 1; dt += 1) {
+            if (du === 0 && df === 0 && dt === 0) continue;
+            const upper = node.upper + du;
+            const forearm = node.forearm + df;
+            const tool = (node.tool + dt + toolCount) % toolCount;
+            if (upper < 0 || upper >= count || forearm < 0 || forearm >= count || !isFree(upper, forearm, tool)) continue;
+            const key = keyOf(upper, forearm, tool);
+            const nextCost = node.g + Math.hypot(du, df, dt * 0.55);
+            if (nextCost >= (costs.get(key) ?? Infinity)) continue;
+            costs.set(key, nextCost);
+            parents.set(key, nodeKey);
+            pushOpen({ upper, forearm, tool, g: nextCost, f: nextCost + heuristic(upper, forearm, tool) });
+          }
         }
       }
     }
     if (!reached) return [];
 
-    const gridPath: ArmPose[] = [];
-    for (let key = reached; key !== keyOf(start.upper, start.forearm); key = parents.get(key) ?? keyOf(start.upper, start.forearm)) {
-      const [upper, forearm] = key.split(',').map(Number);
-      gridPath.unshift(poseAt(upper, forearm));
+    const gridPath: ArmWaypoint[] = [];
+    for (let key = reached; key !== startKey; key = parents.get(key) ?? startKey) {
+      const [upper, forearm, tool] = key.split(',').map(Number);
+      gridPath.unshift({ pose: poseAt(upper, forearm), tool: toolAt(tool) });
     }
     const exactGoal = eligibleGoals.reduce((best, candidate) => {
-      const last = gridPath.at(-1) ?? currentPose;
+      const last = gridPath.at(-1)?.pose ?? currentPose;
       const distance = Math.abs(normalizeAngle(candidate.goal.upperRotation - last.upperRotation))
         + Math.abs(normalizeAngle(candidate.goal.forearmRotation - last.forearmRotation));
       return distance < best.distance ? { pose: candidate.goal, distance } : best;
     }, { pose: eligibleGoals[0].goal, distance: Infinity }).pose;
-    gridPath.push(exactGoal);
+    gridPath.push({ pose: exactGoal, tool: exactGoal.toolAngle });
 
-    const collisionFreeSegment = (from: ArmPose, to: ArmPose) => {
+    const collisionFreeSegment = (from: ArmWaypoint, to: ArmWaypoint) => {
       for (let sample = 1; sample <= 10; sample += 1) {
         const amount = sample / 10;
         const pose = {
-          upperRotation: from.upperRotation + normalizeAngle(to.upperRotation - from.upperRotation) * amount,
-          forearmRotation: from.forearmRotation + normalizeAngle(to.forearmRotation - from.forearmRotation) * amount,
+          upperRotation: from.pose.upperRotation + normalizeAngle(to.pose.upperRotation - from.pose.upperRotation) * amount,
+          forearmRotation: from.pose.forearmRotation + normalizeAngle(to.pose.forearmRotation - from.pose.forearmRotation) * amount,
           wristRotation: 0
         };
-        if (!geometryIsCollisionFree(calculateArmGeometry('right', pose, targetX, targetY, tool))) return false;
+        const interpolatedTool = from.tool + normalizeAngle(to.tool - from.tool) * amount;
+        if (!geometryIsCollisionFree(calculateArmGeometry('right', pose, targetX, targetY, interpolatedTool))) return false;
       }
       return true;
     };
     // Greedy line-of-sight shortcutting removes A*'s grid staircase while
     // retaining collision checks along every replacement segment.
-    const smoothed: ArmPose[] = [];
-    let anchor = currentPose;
+    const smoothed: ArmWaypoint[] = [];
+    let anchor = { pose: currentPose, tool: currentTool };
     for (let index = 0; index < gridPath.length;) {
       let furthest = index;
       for (let candidate = gridPath.length - 1; candidate >= index; candidate -= 1) {
@@ -409,7 +455,7 @@
       anchor = gridPath[furthest];
       index = furthest + 1;
     }
-    return smoothed.map((pose, index) => ({ pose, tool: index === smoothed.length - 1 ? exactGoal.toolAngle : tool }));
+    return smoothed;
   }
 
   function chooseSafeMotion(
