@@ -197,7 +197,9 @@
     clearTimeout(movementTimer);
     clearTimeout(gripTimer);
     clearInterval(emgTimer);
-    cancelAnimationFrame(armAnimationFrame);
+    if (typeof cancelAnimationFrame !== 'undefined') {
+      cancelAnimationFrame(armAnimationFrame);
+    }
   });
 </script>
 
