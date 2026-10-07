@@ -276,7 +276,7 @@
   function chooseSafeMotion(
     currentPose: { upperRotation: number; forearmRotation: number; wristRotation: number },
     currentTool: number,
-    solvedPose: { upperRotation: number; forearmRotation: number; wristRotation: number },
+    solvedPose: { upperRotation: number; forearmRotation: number; wristRotation: number; toolAngle: number },
     targetX: number,
     targetY: number,
     maximumSteps: { upper: number; forearm: number; tool: number },
@@ -289,31 +289,20 @@
       const centerError = Math.hypot(center.x - targetX, center.y - targetY);
       const approach = radiansToDegrees(Math.atan2(targetY - center.y, targetX - center.x));
       const orientationError = centerError < 2 ? 0 : Math.abs(((geometry.toolAngle - approach + 540) % 360) - 180);
-      const preferredTool = radiansToDegrees(Math.atan2(targetY - geometry.wristY, targetX - geometry.wristX));
-      const toolPostureError = ((tool - preferredTool + 540) % 360) - 180;
-      // Inside the reachable workspace many joint combinations put the tool
-      // near the cursor. Strong convex posture terms select one stable IK
-      // branch and prevent unnecessary shoulder/elbow/wrist redistribution.
-      const ikBias = 0.18 * (
+      const toolPostureError = ((tool - solvedPose.toolAngle + 540) % 360) - 180;
+      const ikBias = 0.35 * (
         (pose.upperRotation - solvedPose.upperRotation) ** 2
         + (pose.forearmRotation - solvedPose.forearmRotation) ** 2
-      ) + 0.12 * toolPostureError ** 2;
-      return centerError + orientationError * 6 + ikBias;
+      ) + 0.3 * toolPostureError ** 2;
+      return centerError ** 2 + orientationError ** 2 * 4 + ikBias;
     };
-
-    const epsilon = 0.4;
-    const sample = (upper: number, forearm: number, tool: number) => energy(
-      enforceSafePose('right', { upperRotation: upper, forearmRotation: forearm, wristRotation: 0 }),
-      tool
-    );
-    const upperGradient = (sample(currentPose.upperRotation + epsilon, currentPose.forearmRotation, currentTool) - sample(currentPose.upperRotation - epsilon, currentPose.forearmRotation, currentTool)) / (2 * epsilon);
-    const forearmGradient = (sample(currentPose.upperRotation, currentPose.forearmRotation + epsilon, currentTool) - sample(currentPose.upperRotation, currentPose.forearmRotation - epsilon, currentTool)) / (2 * epsilon);
-    const toolGradient = (sample(currentPose.upperRotation, currentPose.forearmRotation, currentTool + epsilon) - sample(currentPose.upperRotation, currentPose.forearmRotation, currentTool - epsilon)) / (2 * epsilon);
-    const scaledNorm = Math.hypot(upperGradient * maximumSteps.upper, forearmGradient * maximumSteps.forearm, toolGradient * maximumSteps.tool) || 1;
+    const upperError = solvedPose.upperRotation - currentPose.upperRotation;
+    const forearmError = solvedPose.forearmRotation - currentPose.forearmRotation;
+    const toolError = ((solvedPose.toolAngle - currentTool + 540) % 360) - 180;
     const desiredVelocity = {
-      upper: clamp(-(upperGradient * maximumSteps.upper / scaledNorm) * maximumSteps.upper, -maximumSteps.upper, maximumSteps.upper),
-      forearm: clamp(-(forearmGradient * maximumSteps.forearm / scaledNorm) * maximumSteps.forearm, -maximumSteps.forearm, maximumSteps.forearm),
-      tool: clamp(-(toolGradient * maximumSteps.tool / scaledNorm) * maximumSteps.tool, -maximumSteps.tool, maximumSteps.tool)
+      upper: clamp(upperError * 0.18, -maximumSteps.upper, maximumSteps.upper),
+      forearm: clamp(forearmError * 0.18, -maximumSteps.forearm, maximumSteps.forearm),
+      tool: clamp(toolError * 0.2, -maximumSteps.tool, maximumSteps.tool)
     };
     const velocity = {
       upper: previousVelocity.upper * 0.62 + desiredVelocity.upper * 0.38,
@@ -328,7 +317,7 @@
         wristRotation: 0
       });
       const tool = currentTool + velocity.tool * fraction;
-      if (energy(pose, tool) <= currentEnergy + 0.02) {
+      if (energy(pose, tool) <= currentEnergy + 0.001) {
         return { pose, tool, velocity: { upper: velocity.upper * fraction, forearm: velocity.forearm * fraction, tool: velocity.tool * fraction } };
       }
     }
@@ -420,7 +409,7 @@
     // Prevent the gripper from rotating back into its own forearm.
     const wristRotation = clamp(normalizedWristRotation, -108, 108);
 
-    return { upperRotation, forearmRotation, wristRotation };
+    return { upperRotation, forearmRotation, wristRotation, toolAngle: desiredToolAngle };
   }
 
   $: emgPath = buildEmgPath(emgSamples);
