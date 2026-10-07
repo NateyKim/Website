@@ -270,6 +270,71 @@
       && !boxesOverlap(elbowBox, gripperBox);
   }
 
+  function graspCenter(geometry: ReturnType<typeof calculateArmGeometry>) {
+    const radians = (geometry.toolAngle * Math.PI) / 180;
+    return {
+      x: geometry.wristX + Math.cos(radians) * graspCenterOffset,
+      y: geometry.wristY + Math.sin(radians) * graspCenterOffset
+    };
+  }
+
+  function chooseSafeMotion(
+    currentPose: { upperRotation: number; forearmRotation: number; wristRotation: number },
+    currentTool: number,
+    solvedPose: { upperRotation: number; forearmRotation: number; wristRotation: number },
+    targetX: number,
+    targetY: number
+  ) {
+    const boundedPose = enforceSafePose('right', {
+      upperRotation: moveAngleToward(currentPose.upperRotation, solvedPose.upperRotation, 9),
+      forearmRotation: moveAngleToward(currentPose.forearmRotation, solvedPose.forearmRotation, 13),
+      wristRotation: moveAngleToward(currentPose.wristRotation, solvedPose.wristRotation, 16)
+    });
+    const factors = [1, 0.75, 0.5, 0.25, 0];
+    let bestPose = currentPose;
+    let bestTool = currentTool;
+    let bestScore = Number.POSITIVE_INFINITY;
+
+    // Search only inside the per-frame velocity envelope. This allows the arm
+    // to slide along a collision boundary rather than freezing at it, while
+    // every accepted shoulder, elbow and wrist change remains continuous.
+    for (const upperFactor of factors) {
+      for (const forearmFactor of factors) {
+        const candidatePose = enforceSafePose('right', {
+          upperRotation: currentPose.upperRotation + (boundedPose.upperRotation - currentPose.upperRotation) * upperFactor,
+          forearmRotation: currentPose.forearmRotation + (boundedPose.forearmRotation - currentPose.forearmRotation) * forearmFactor,
+          wristRotation: currentPose.wristRotation
+        });
+        const desiredTool = calculateArmGeometry('right', candidatePose, targetX, targetY).toolAngle;
+        const boundedTool = moveAngleToward(currentTool, desiredTool, 3);
+
+        for (const toolFactor of factors) {
+          const candidateTool = currentTool + (boundedTool - currentTool) * toolFactor;
+          const geometry = calculateArmGeometry('right', candidatePose, targetX, targetY, candidateTool);
+          if (!geometryIsCollisionFree(geometry)) continue;
+
+          const center = graspCenter(geometry);
+          const centerError = Math.hypot(center.x - targetX, center.y - targetY);
+          // A tiny motion cost breaks ties without overpowering the primary
+          // objective: minimize mouse-to-jaw-center distance.
+          const motionCost = 0.002 * (
+            Math.abs(candidatePose.upperRotation - currentPose.upperRotation)
+            + Math.abs(candidatePose.forearmRotation - currentPose.forearmRotation)
+            + Math.abs(candidateTool - currentTool)
+          );
+          const score = centerError + motionCost;
+          if (score < bestScore) {
+            bestScore = score;
+            bestPose = candidatePose;
+            bestTool = candidateTool;
+          }
+        }
+      }
+    }
+
+    return { pose: bestPose, tool: bestTool };
+  }
+
   function buildEmgPath(samples: number[]) {
     return samples.map((sample, index) => {
       const x = (index / (samples.length - 1)) * 1200;
@@ -383,34 +448,12 @@
     const solvedLeft = solveArm('right', 270 - leftTargetX, leftTargetY);
     const solvedRight = solveArm('right', rightTargetX, rightTargetY);
 
-    // Build one bounded candidate frame, then accept it only if every rigid
-    // body's collision box is valid. Rejection holds the last safe frame.
-    const proposedLeftPose = enforceSafePose('right', {
-      upperRotation: moveAngleToward(leftPose.upperRotation, solvedLeft.upperRotation, 9),
-      forearmRotation: moveAngleToward(leftPose.forearmRotation, solvedLeft.forearmRotation, 13),
-      wristRotation: moveAngleToward(leftPose.wristRotation, solvedLeft.wristRotation, 16)
-    });
-    const proposedRightPose = enforceSafePose('right', {
-      upperRotation: moveAngleToward(rightPose.upperRotation, solvedRight.upperRotation, 9),
-      forearmRotation: moveAngleToward(rightPose.forearmRotation, solvedRight.forearmRotation, 13),
-      wristRotation: moveAngleToward(rightPose.wristRotation, solvedRight.wristRotation, 16)
-    });
-
-    const desiredLeftTool = calculateArmGeometry('right', proposedLeftPose, 270 - leftTargetX, leftTargetY).toolAngle;
-    const desiredRightTool = calculateArmGeometry('right', proposedRightPose, rightTargetX, rightTargetY).toolAngle;
-    const proposedLeftTool = moveAngleToward(leftToolAngle, desiredLeftTool, 3);
-    const proposedRightTool = moveAngleToward(rightToolAngle, desiredRightTool, 3);
-    const proposedLeftGeometry = calculateArmGeometry('right', proposedLeftPose, 270 - leftTargetX, leftTargetY, proposedLeftTool);
-    const proposedRightGeometry = calculateArmGeometry('right', proposedRightPose, rightTargetX, rightTargetY, proposedRightTool);
-
-    if (geometryIsCollisionFree(proposedLeftGeometry)) {
-      leftPose = proposedLeftPose;
-      leftToolAngle = proposedLeftTool;
-    }
-    if (geometryIsCollisionFree(proposedRightGeometry)) {
-      rightPose = proposedRightPose;
-      rightToolAngle = proposedRightTool;
-    }
+    const safeLeft = chooseSafeMotion(leftPose, leftToolAngle, solvedLeft, 270 - leftTargetX, leftTargetY);
+    const safeRight = chooseSafeMotion(rightPose, rightToolAngle, solvedRight, rightTargetX, rightTargetY);
+    leftPose = safeLeft.pose;
+    leftToolAngle = safeLeft.tool;
+    rightPose = safeRight.pose;
+    rightToolAngle = safeRight.tool;
 
     armAnimationFrame = requestAnimationFrame(advanceArms);
   }
