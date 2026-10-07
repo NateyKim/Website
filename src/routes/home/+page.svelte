@@ -5,412 +5,302 @@
     'Alongside my work at Penn, I am a research resident at Maingen, where I study machine-learning methods for robotic end-effector design, and a founding mechanical engineer at Tadashi Robotics, where I am helping translate the Ember social-robotics platform into a rehabilitative product.'
   ];
 
+  let pointerX = 0;
+  let pointerY = 0;
+
+  function handlePointerMove(event: PointerEvent) {
+    if (event.pointerType === 'touch') return;
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    pointerX = Math.max(-1, Math.min(1, ((event.clientX - rect.left) / rect.width) * 2 - 1));
+    pointerY = Math.max(-1, Math.min(1, ((event.clientY - rect.top) / rect.height) * 2 - 1));
+  }
+
+  function resetPointer() {
+    pointerX = 0;
+    pointerY = 0;
+  }
+
+  function buildWavePath(x: number, y: number) {
+    const baseline = 278 + y * 24;
+    const amplitude = 50 + Math.abs(x) * 30;
+    const a = (value: number) => baseline + value * amplitude;
+    return [
+      `M 0 ${baseline}`, `L 180 ${baseline}`, `L 210 ${a(-0.08)}`, `L 230 ${a(0.1)}`,
+      `L 250 ${a(-0.22)}`, `L 270 ${a(0.28)}`, `L 292 ${a(-0.82)}`, `L 316 ${a(1.05)}`,
+      `L 340 ${a(-0.45)}`, `L 366 ${a(0.18)}`, `L 398 ${baseline}`, `L 550 ${baseline}`,
+      `L 576 ${a(-0.12)}`, `L 598 ${a(0.14)}`, `L 620 ${a(-0.58)}`, `L 642 ${a(0.7)}`,
+      `L 666 ${a(-0.25)}`, `L 692 ${baseline}`, `L 850 ${baseline}`, `L 874 ${a(-0.08)}`,
+      `L 898 ${a(0.1)}`, `L 922 ${a(-0.34)}`, `L 946 ${a(0.4)}`, `L 972 ${baseline}`,
+      `L 1200 ${baseline}`
+    ].join(' ');
+  }
+
+  $: wavePath = buildWavePath(pointerX, pointerY);
+  $: leftUpperAngle = -14 + pointerX * 9 + pointerY * 5;
+  $: leftForearmAngle = 14 + pointerX * 12 - pointerY * 8;
+  $: rightUpperAngle = 14 + pointerX * 9 - pointerY * 5;
+  $: rightForearmAngle = -14 + pointerX * 12 + pointerY * 8;
 </script>
 
-<section class="intro-wrapper">
-  <div class="title-row">
-    <h1 class="header-title">Natey Kim</h1>
-    <a
-      class="linkedin-link"
-      href="https://www.linkedin.com/in/nateykim"
-      target="_blank"
-      rel="noreferrer"
-      aria-label="Visit Natey Kim’s LinkedIn profile"
-      title="LinkedIn"
-    >
-      <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
-        <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V8.98h3.42v1.57h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.29ZM5.32 7.41a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13Zm1.78 13.04H3.54V8.98H7.1v11.47ZM22.23 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.46c.98 0 1.77-.77 1.77-1.73V1.73C24 .77 23.21 0 22.23 0Z" />
-      </svg>
-    </a>
+<section
+  class="home-scene"
+  on:pointermove={handlePointerMove}
+  on:pointerleave={resetPointer}
+  style={`--drift-x: ${pointerX * 12}px; --drift-y: ${pointerY * 10}px;`}
+>
+  <div class="grid-layer"></div>
+  <div class="ambient-light"></div>
+
+  <svg class="emg-layer" viewBox="0 0 1200 620" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="emg-gradient" x1="0" x2="1">
+        <stop offset="0" stop-color="#00a9ff" stop-opacity="0" />
+        <stop offset="0.18" stop-color="#00a9ff" />
+        <stop offset="0.52" stop-color="#7566ff" />
+        <stop offset="0.82" stop-color="#cf5fff" />
+        <stop offset="1" stop-color="#cf5fff" stop-opacity="0" />
+      </linearGradient>
+      <filter id="emg-glow" x="-20%" y="-100%" width="140%" height="300%">
+        <feGaussianBlur stdDeviation="5" result="blur" />
+        <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+      </filter>
+    </defs>
+    <path class="emg-shadow" d={wavePath} />
+    <path class="emg-wave" d={wavePath} filter="url(#emg-glow)" />
+  </svg>
+
+  <svg class="robot robot-left" viewBox="0 0 270 520" aria-hidden="true">
+    <g class="robot-mount">
+      <path d="M8 450 H118 M32 450 V420 H92 V450" /><circle cx="62" cy="416" r="19" />
+    </g>
+    <g class="arm-segment" style={`transform: rotate(${leftUpperAngle}deg); transform-origin: 62px 416px;`}>
+      <path d="M62 416 L126 316" /><circle cx="126" cy="316" r="16" />
+      <g class="arm-segment" style={`transform: rotate(${leftForearmAngle}deg); transform-origin: 126px 316px;`}>
+        <path d="M126 316 L190 218" /><circle cx="190" cy="218" r="14" />
+        <path class="gripper" d="M190 218 L226 183 M190 218 L236 225 M226 183 L247 170 M236 225 L258 230" />
+      </g>
+    </g>
+    <circle class="joint-pulse pulse-a" cx="62" cy="416" r="29" />
+    <circle class="joint-pulse pulse-b" cx="126" cy="316" r="25" />
+  </svg>
+
+  <svg class="robot robot-right" viewBox="0 0 270 520" aria-hidden="true">
+    <g class="robot-mount">
+      <path d="M152 450 H262 M178 450 V420 H238 V450" /><circle cx="208" cy="416" r="19" />
+    </g>
+    <g class="arm-segment" style={`transform: rotate(${rightUpperAngle}deg); transform-origin: 208px 416px;`}>
+      <path d="M208 416 L144 316" /><circle cx="144" cy="316" r="16" />
+      <g class="arm-segment" style={`transform: rotate(${rightForearmAngle}deg); transform-origin: 144px 316px;`}>
+        <path d="M144 316 L80 218" /><circle cx="80" cy="218" r="14" />
+        <path class="gripper" d="M80 218 L44 183 M80 218 L34 225 M44 183 L23 170 M34 225 L12 230" />
+      </g>
+    </g>
+    <circle class="joint-pulse pulse-a" cx="208" cy="416" r="29" />
+    <circle class="joint-pulse pulse-b" cx="144" cy="316" r="25" />
+  </svg>
+
+  <div class="identity">
+    <p class="identity-kicker">Robotics · Biosignals · Human-Centered AI</p>
+    <div class="name-row">
+      <h1>Natey Kim</h1>
+      <a class="linkedin-link" href="https://www.linkedin.com/in/nateykim" target="_blank" rel="noreferrer" aria-label="Visit Natey Kim’s LinkedIn profile" title="LinkedIn">
+        <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+          <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V8.98h3.42v1.57h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.29ZM5.32 7.41a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13Zm1.78 13.04H3.54V8.98H7.1v11.47ZM22.23 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.46c.98 0 1.77-.77 1.77-1.73V1.73C24 .77 23.21 0 22.23 0Z" />
+        </svg>
+      </a>
+    </div>
+    <p class="job-title">Human–Robot Interaction Research Engineer @ UPenn GRASP Lab</p>
   </div>
-  <p class="job-title">Human–Robot Interaction Research Engineer @ UPenn GRASP Lab</p>
 
-  <div class="intro-section">
-    <div class="intro-visual" aria-hidden="true">
-      <svg class="ai-system" viewBox="0 0 1200 360" preserveAspectRatio="xMidYMid meet">
-        <defs>
-          <linearGradient id="signal-gradient" x1="0" x2="1">
-            <stop offset="0" stop-color="#35b7ff" />
-            <stop offset="0.55" stop-color="#7668ff" />
-            <stop offset="1" stop-color="#dc5cff" />
-          </linearGradient>
-          <radialGradient id="core-gradient">
-            <stop offset="0" stop-color="#ffffff" />
-            <stop offset="0.28" stop-color="#9fdcff" />
-            <stop offset="0.68" stop-color="#7668ff" />
-            <stop offset="1" stop-color="#3d2f87" />
-          </radialGradient>
-          <filter id="soft-glow" x="-80%" y="-80%" width="260%" height="260%">
-            <feGaussianBlur stdDeviation="8" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
-        </defs>
+  <div class="neural-transition" aria-hidden="true">
+    <svg viewBox="0 0 1200 330" preserveAspectRatio="none">
+      <g class="neural-lines">
+        <path d="M0 250 L120 188 L245 260 L355 174 L478 244 L600 148 L724 238 L848 172 L976 252 L1090 184 L1200 246" />
+        <path d="M55 330 L120 188 L278 330 M245 260 L355 174 L410 330 M478 244 L600 148 L655 330 M724 238 L848 172 L905 330 M976 252 L1090 184 L1150 330" />
+        <path d="M0 292 L245 260 L478 244 L724 238 L976 252 L1200 286" />
+        <path d="M120 188 L355 174 L600 148 L848 172 L1090 184" />
+      </g>
+      <g class="neural-nodes">
+        <circle cx="120" cy="188" r="7" /><circle cx="245" cy="260" r="5" />
+        <circle cx="355" cy="174" r="7" /><circle cx="478" cy="244" r="5" />
+        <circle cx="600" cy="148" r="9" /><circle cx="724" cy="238" r="5" />
+        <circle cx="848" cy="172" r="7" /><circle cx="976" cy="252" r="5" />
+        <circle cx="1090" cy="184" r="7" />
+      </g>
+    </svg>
+  </div>
 
-        <g class="ambient-grid">
-          <path d="M0 70 H1200 M0 180 H1200 M0 290 H1200" />
-          <path d="M120 0 V360 M360 0 V360 M600 0 V360 M840 0 V360 M1080 0 V360" />
-        </g>
-
-        <g class="input-system">
-          <text x="45" y="76">BIOSIGNAL INPUT</text>
-          <path class="input-ring" d="M64 180 A76 76 0 1 1 216 180 A76 76 0 1 1 64 180" />
-          <path class="signal-path" d="M42 181 H76 L89 181 L99 133 L115 235 L132 159 L149 200 L163 181 H228" />
-          <circle class="sensor-dot sensor-one" cx="140" cy="104" r="5" />
-          <circle class="sensor-dot sensor-two" cx="202" cy="146" r="4" />
-          <circle class="sensor-dot sensor-three" cx="105" cy="251" r="4" />
-        </g>
-
-        <g class="network-lines">
-          <path d="M228 181 C276 181 282 93 330 93 M228 181 C276 181 282 153 330 153 M228 181 C276 181 282 213 330 213 M228 181 C276 181 282 273 330 273" />
-          <path d="M330 93 C380 93 390 127 438 127 M330 93 C380 93 390 181 438 181 M330 153 C380 153 390 127 438 127 M330 153 C380 153 390 235 438 235 M330 213 C380 213 390 127 438 127 M330 213 C380 213 390 235 438 235 M330 273 C380 273 390 181 438 181 M330 273 C380 273 390 235 438 235" />
-          <path d="M438 127 C492 127 510 181 556 181 M438 181 H556 M438 235 C492 235 510 181 556 181" />
-        </g>
-
-        <g class="neural-nodes">
-          <circle cx="330" cy="93" r="9" /><circle cx="330" cy="153" r="9" />
-          <circle cx="330" cy="213" r="9" /><circle cx="330" cy="273" r="9" />
-          <circle cx="438" cy="127" r="10" /><circle cx="438" cy="181" r="10" /><circle cx="438" cy="235" r="10" />
-        </g>
-
-        <g class="latent-core" filter="url(#soft-glow)">
-          <circle class="core-halo halo-one" cx="600" cy="181" r="82" />
-          <circle class="core-halo halo-two" cx="600" cy="181" r="61" />
-          <circle class="core" cx="600" cy="181" r="38" />
-          <path class="core-mark" d="M583 181 L595 193 L619 166" />
-        </g>
-        <text class="core-label" x="600" y="298">ADAPTIVE CONTROL</text>
-
-        <g class="output-streams">
-          <path id="stream-a" d="M644 160 C728 80 804 82 882 137" />
-          <path id="stream-b" d="M644 181 C735 181 800 181 882 181" />
-          <path id="stream-c" d="M644 202 C728 282 804 280 882 225" />
-          <circle class="data-particle particle-one" r="5"><animateMotion dur="3.2s" repeatCount="indefinite"><mpath href="#stream-a" /></animateMotion></circle>
-          <circle class="data-particle particle-two" r="5"><animateMotion dur="2.7s" begin="-1s" repeatCount="indefinite"><mpath href="#stream-b" /></animateMotion></circle>
-          <circle class="data-particle particle-three" r="5"><animateMotion dur="3.5s" begin="-2s" repeatCount="indefinite"><mpath href="#stream-c" /></animateMotion></circle>
-        </g>
-
-        <g class="robot-system">
-          <text x="925" y="76">ROBOTIC OUTPUT</text>
-          <path class="robot-base" d="M950 285 H1118 M978 285 V258 H1088 V285" />
-          <g class="robot-upper">
-            <path d="M1034 258 L972 198" />
-            <circle cx="1034" cy="258" r="15" /><circle cx="972" cy="198" r="13" />
-          </g>
-          <g class="robot-forearm">
-            <path d="M972 198 L1042 133" />
-            <circle cx="1042" cy="133" r="11" />
-            <path class="gripper" d="M1042 133 L1091 109 M1042 133 L1094 148 M1091 109 L1115 99 M1094 148 L1117 160" />
-          </g>
-          <circle class="joint-wave wave-one" cx="972" cy="198" r="22" />
-          <circle class="joint-wave wave-two" cx="1034" cy="258" r="24" />
-        </g>
-      </svg>
-    </div>
-
-    <div class="intro-right">
-      {#each bio as paragraph}
-        <p>{paragraph}</p>
-      {/each}
-    </div>
+  <div class="bio-panel">
+    {#each bio as paragraph}<p>{paragraph}</p>{/each}
   </div>
 </section>
 
 <style>
-  .intro-wrapper {
-    max-width: 1200px;
-    margin: 2rem auto;
-    padding: 0;
+  .home-scene {
+    position: relative;
+    isolation: isolate;
+    min-height: calc(100vh - 60px);
+    padding: clamp(4rem, 9vh, 7rem) max(1rem, calc((100vw - 1200px) / 2)) 4rem;
+    overflow: hidden;
+    background: #f8fafc;
+    color: #111820;
   }
 
-  .header-title {
-    grid-column: 2;
+  .grid-layer {
+    position: absolute;
+    z-index: -5;
+    inset: 0;
+    background-image: linear-gradient(rgba(55, 74, 99, 0.11) 1px, transparent 1px), linear-gradient(90deg, rgba(55, 74, 99, 0.11) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: linear-gradient(to bottom, black 0%, black 58%, transparent 91%);
+    transform: translate(var(--drift-x), var(--drift-y)) scale(1.04);
+    transition: transform 180ms ease-out;
+  }
+
+  .ambient-light {
+    position: absolute;
+    z-index: -4;
+    inset: 0;
+    background: radial-gradient(circle at 50% 31%, rgba(255, 255, 255, 0.96) 0 10%, rgba(224, 231, 255, 0.7) 30%, transparent 53%), radial-gradient(circle at 20% 42%, rgba(0, 169, 255, 0.1), transparent 28%), radial-gradient(circle at 80% 42%, rgba(207, 95, 255, 0.09), transparent 28%);
+  }
+
+  .emg-layer {
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: min(66vh, 620px);
+    pointer-events: none;
+  }
+
+  .emg-shadow, .emg-wave {
+    fill: none;
+    vector-effect: non-scaling-stroke;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: d 120ms ease-out;
+  }
+
+  .emg-shadow { stroke: rgba(74, 87, 111, 0.13); stroke-width: 12; }
+  .emg-wave {
+    stroke: url(#emg-gradient);
+    stroke-width: 3.5;
+    stroke-dasharray: 260 44;
+    animation: wave-travel 5s linear infinite;
+  }
+
+  .identity {
+    position: relative;
+    z-index: 3;
+    width: min(780px, 100%);
+    margin: clamp(5rem, 14vh, 10rem) auto clamp(13rem, 30vh, 22rem);
     text-align: center;
-    font-size: 3rem;
-    font-weight: 700;
-    margin: 0;
   }
 
-  .title-row {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 0.35rem;
+  .identity-kicker {
+    margin: 0 0 1rem;
+    color: #536174;
+    font-size: clamp(0.68rem, 1.5vw, 0.82rem);
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
   }
+
+  .name-row { display: flex; align-items: center; justify-content: center; gap: 1rem; }
+  h1 { margin: 0; font-size: clamp(4rem, 10vw, 8rem); font-weight: 800; letter-spacing: -0.07em; line-height: 0.94; }
+  .job-title { margin: 1.4rem 0 0; color: #394657; font-size: clamp(1.05rem, 2.2vw, 1.55rem); font-weight: 600; }
 
   .linkedin-link {
-    grid-column: 3;
-    justify-self: end;
     display: inline-flex;
-    width: 2.25rem;
-    height: 2.25rem;
+    width: clamp(1.8rem, 3.5vw, 2.5rem);
+    height: clamp(1.8rem, 3.5vw, 2.5rem);
     color: #0a66c2;
     transition: transform 0.2s ease, opacity 0.2s ease;
   }
+  .linkedin-link:hover, .linkedin-link:focus-visible { opacity: 0.78; transform: translateY(-3px); }
+  .linkedin-link svg { width: 100%; height: 100%; fill: currentColor; }
 
-  .linkedin-link:hover,
-  .linkedin-link:focus-visible {
-    opacity: 0.8;
-    transform: translateY(-2px);
+  .robot {
+    position: absolute;
+    z-index: 1;
+    top: clamp(6rem, 13vh, 9rem);
+    width: clamp(180px, 22vw, 330px);
+    overflow: visible;
+    opacity: 0.84;
+    filter: drop-shadow(0 20px 26px rgba(25, 32, 50, 0.13));
   }
+  .robot-left { left: max(-4rem, calc((100vw - 1500px) / 2)); }
+  .robot-right { right: max(-4rem, calc((100vw - 1500px) / 2)); }
+  .robot-mount path, .arm-segment path { fill: none; stroke: #222c38; stroke-width: 13; stroke-linecap: round; stroke-linejoin: round; }
+  .robot-mount circle, .arm-segment circle { fill: #f8fafc; stroke: #222c38; stroke-width: 7; }
+  .arm-segment { transition: transform 170ms cubic-bezier(0.2, 0.75, 0.25, 1); }
+  .arm-segment .gripper { stroke-width: 7; }
 
-  .linkedin-link svg {
-    width: 100%;
-    height: 100%;
-    fill: currentColor;
-  }
-
-  .job-title {
-    margin: 0 0 2rem;
-    text-align: center;
-    color: #555;
-    font-size: 1.6rem;
-    font-weight: 500;
-  }
-
-  .intro-section {
-    display: grid;
-    gap: 2.5rem;
-  }
-
-  .intro-visual {
-    width: 100%;
-    overflow: hidden;
-    border: 1px solid #dfe4eb;
-    border-radius: 1.25rem;
-    background:
-      radial-gradient(circle at 52% 48%, rgba(118, 104, 255, 0.13), transparent 26%),
-      linear-gradient(135deg, #f8fbff 0%, #f2f2ff 50%, #fbf7ff 100%);
-    box-shadow: 0 18px 55px rgba(24, 31, 50, 0.1);
-  }
-
-  .ai-system {
-    display: block;
-    width: 100%;
-    height: auto;
-  }
-
-  .ambient-grid path {
+  .joint-pulse {
     fill: none;
-    stroke: #536174;
-    stroke-width: 1;
-    opacity: 0.08;
-  }
-
-  .input-system text,
-  .robot-system text,
-  .core-label {
-    fill: #536174;
-    font-size: 13px;
-    font-weight: 800;
-    letter-spacing: 0.16em;
-  }
-
-  .core-label {
-    text-anchor: middle;
-  }
-
-  .input-ring {
-    fill: none;
-    stroke: #7668ff;
-    stroke-width: 1.5;
-    stroke-dasharray: 5 9;
-    transform-origin: 140px 180px;
-    animation: ring-spin 18s linear infinite;
-  }
-
-  .signal-path {
-    fill: none;
-    stroke: url(#signal-gradient);
-    stroke-width: 5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-dasharray: 260;
-    animation: signal-flow 3s ease-in-out infinite;
-  }
-
-  .sensor-dot,
-  .neural-nodes circle,
-  .data-particle {
-    fill: #7668ff;
-  }
-
-  .sensor-dot {
-    animation: sensor-pulse 2.2s ease-in-out infinite;
-  }
-
-  .sensor-two { animation-delay: -0.7s; }
-  .sensor-three { animation-delay: -1.4s; }
-
-  .network-lines path,
-  .output-streams path {
-    fill: none;
-    stroke: #8a93a3;
-    stroke-width: 1.4;
-    opacity: 0.42;
-  }
-
-  .neural-nodes circle {
-    stroke: white;
-    stroke-width: 3;
-    animation: neural-pulse 2.8s ease-in-out infinite alternate;
-  }
-
-  .neural-nodes circle:nth-child(2n) { animation-delay: -1.3s; }
-  .neural-nodes circle:nth-child(3n) { animation-delay: -2s; }
-
-  .core-halo {
-    fill: none;
-    stroke: #7668ff;
-    stroke-width: 1.5;
-    stroke-dasharray: 8 12;
-    transform-origin: 600px 181px;
-    animation: ring-spin 12s linear infinite;
-  }
-
-  .halo-two {
-    animation-direction: reverse;
-    animation-duration: 8s;
-  }
-
-  .core {
-    fill: url(#core-gradient);
-    animation: core-breathe 2.8s ease-in-out infinite;
-    transform-origin: 600px 181px;
-  }
-
-  .core-mark {
-    fill: none;
-    stroke: white;
-    stroke-width: 5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  .data-particle {
-    filter: url(#soft-glow);
-  }
-
-  .robot-base,
-  .robot-upper path,
-  .robot-forearm path {
-    fill: none;
-    stroke: #252a2f;
-    stroke-width: 10;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  .robot-upper circle,
-  .robot-forearm circle {
-    fill: white;
-    stroke: #252a2f;
-    stroke-width: 5;
-  }
-
-  .robot-upper {
-    transform-origin: 1034px 258px;
-    animation: upper-arm-motion 5s ease-in-out infinite;
-  }
-
-  .robot-forearm {
-    transform-origin: 972px 198px;
-    animation: forearm-motion 5s ease-in-out infinite;
-  }
-
-  .robot-forearm .gripper {
-    stroke-width: 5;
-  }
-
-  .joint-wave {
-    fill: none;
-    stroke: #7668ff;
+    stroke: #7566ff;
     stroke-width: 2;
     transform-box: fill-box;
     transform-origin: center;
-    animation: joint-pulse 2.4s ease-out infinite;
+    animation: joint-pulse 2.8s ease-out infinite;
   }
+  .pulse-b { animation-delay: -1.3s; }
 
-  .wave-two { animation-delay: -1.1s; }
-
-  @keyframes signal-flow {
-    0% { stroke-dashoffset: 260; opacity: 0.25; }
-    45%, 75% { stroke-dashoffset: 0; opacity: 1; }
-    100% { stroke-dashoffset: -260; opacity: 0.25; }
+  .neural-transition {
+    position: absolute;
+    z-index: -2;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 390px;
+    background: linear-gradient(to bottom, transparent, rgba(233, 237, 250, 0.72) 48%, rgba(238, 241, 248, 0.96));
   }
-
-  @keyframes sensor-pulse {
-    50% { opacity: 0.25; transform: scale(1.8); transform-box: fill-box; transform-origin: center; }
+  .neural-transition svg { width: 100%; height: 100%; }
+  .neural-lines path { fill: none; stroke: #7b849c; stroke-width: 1.2; opacity: 0.36; vector-effect: non-scaling-stroke; }
+  .neural-nodes circle {
+    fill: #7566ff;
+    stroke: #f8fafc;
+    stroke-width: 3;
+    animation: neural-pulse 3.4s ease-in-out infinite alternate;
+    transform-box: fill-box;
+    transform-origin: center;
   }
+  .neural-nodes circle:nth-child(2n) { animation-delay: -1.1s; }
+  .neural-nodes circle:nth-child(3n) { animation-delay: -2.2s; }
 
-  @keyframes neural-pulse {
-    to { fill: #35b7ff; transform: scale(1.3); transform-box: fill-box; transform-origin: center; }
-  }
-
-  @keyframes core-breathe {
-    50% { transform: scale(1.12); opacity: 0.9; }
-  }
-
-  @keyframes upper-arm-motion {
-    0%, 100% { transform: rotate(-4deg); }
-    50% { transform: rotate(7deg); }
-  }
-
-  @keyframes forearm-motion {
-    0%, 100% { transform: rotate(2deg); }
-    50% { transform: rotate(-12deg); }
-  }
-
-  @keyframes joint-pulse {
-    0% { opacity: 0.75; transform: scale(0.65); }
-    80%, 100% { opacity: 0; transform: scale(1.65); }
-  }
-
-  @keyframes ring-spin {
-    to { transform: rotate(360deg); }
-  }
-
-  .intro-right {
-    width: min(920px, 100%);
+  .bio-panel {
+    position: relative;
+    z-index: 4;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    width: min(1200px, 100%);
     margin: 0 auto;
-    padding: 0 1rem;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-radius: 1.25rem;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 22px 60px rgba(32, 39, 63, 0.11);
+    backdrop-filter: blur(18px);
   }
+  .bio-panel p { margin: 0; font-size: clamp(1rem, 1.5vw, 1.12rem); line-height: 1.65; }
 
-  .intro-right p {
-    font-size: 1.2rem;
-    line-height: 1.6;
-  }
+  @keyframes wave-travel { to { stroke-dashoffset: -608; } }
+  @keyframes joint-pulse { 0% { opacity: 0.8; transform: scale(0.65); } 78%, 100% { opacity: 0; transform: scale(1.65); } }
+  @keyframes neural-pulse { to { fill: #16aaf3; opacity: 0.55; transform: scale(1.5); } }
 
-  @media (max-width: 768px) {
-    .intro-wrapper {
-      margin-right: 1rem;
-      margin-left: 1rem;
-    }
-
-    .intro-section {
-      gap: 1.5rem;
-    }
-
-    .intro-visual,
-    .intro-right {
-      width: 100%;
-      text-align: center;
-    }
-
-    .intro-visual {
-      border-radius: 0.85rem;
-    }
-
-    .ai-system {
-      width: 165%;
-      max-width: none;
-      margin-left: -32.5%;
-    }
+  @media (max-width: 850px) {
+    .home-scene { padding-top: 2.5rem; padding-bottom: 2rem; }
+    .identity { margin-top: 7rem; margin-bottom: 16rem; }
+    .robot { top: 12rem; width: 180px; opacity: 0.34; }
+    .robot-left { left: -6rem; }
+    .robot-right { right: -6rem; }
+    .bio-panel { grid-template-columns: 1fr; }
+    .neural-transition { height: 610px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .ai-system * {
-      animation: none !important;
-    }
+    .home-scene *, .home-scene *::before, .home-scene *::after { animation: none !important; transition: none !important; }
   }
 </style>
