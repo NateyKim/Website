@@ -38,8 +38,6 @@
   let armAnimationFrame = 0;
   let previousArmTime = 0;
   let robotDebug = true;
-  let leftJointVelocity = { upper: 0, forearm: 0, tool: 0 };
-  let rightJointVelocity = { upper: 0, forearm: 0, tool: 0 };
   const graspCenterOffset = 45.5;
   // Collision envelope for the fully open gripper, including stroke width.
   const gripperEnvelope = [[0, -32], [61, -32], [61, 32], [0, 32]] as const;
@@ -279,49 +277,29 @@
     solvedPose: { upperRotation: number; forearmRotation: number; wristRotation: number; toolAngle: number },
     targetX: number,
     targetY: number,
-    maximumSteps: { upper: number; forearm: number; tool: number },
-    previousVelocity: { upper: number; forearm: number; tool: number }
+    maximumSteps: { upper: number; forearm: number; tool: number }
   ) {
-    const energy = (pose: typeof currentPose, tool: number) => {
-      const geometry = calculateArmGeometry('right', pose, targetX, targetY, tool);
-      if (!geometryIsCollisionFree(geometry)) return 1_000_000;
-      const center = graspCenter(geometry);
-      const centerError = Math.hypot(center.x - targetX, center.y - targetY);
-      const approach = radiansToDegrees(Math.atan2(targetY - center.y, targetX - center.x));
-      const orientationError = centerError < 2 ? 0 : Math.abs(((geometry.toolAngle - approach + 540) % 360) - 180);
-      const toolPostureError = ((tool - solvedPose.toolAngle + 540) % 360) - 180;
-      const ikBias = 0.35 * (
-        (pose.upperRotation - solvedPose.upperRotation) ** 2
-        + (pose.forearmRotation - solvedPose.forearmRotation) ** 2
-      ) + 0.3 * toolPostureError ** 2;
-      return centerError ** 2 + orientationError ** 2 * 4 + ikBias;
-    };
     const upperError = solvedPose.upperRotation - currentPose.upperRotation;
     const forearmError = solvedPose.forearmRotation - currentPose.forearmRotation;
     const toolError = ((solvedPose.toolAngle - currentTool + 540) % 360) - 180;
-    const desiredVelocity = {
+    const step = {
       upper: clamp(upperError * 0.18, -maximumSteps.upper, maximumSteps.upper),
       forearm: clamp(forearmError * 0.18, -maximumSteps.forearm, maximumSteps.forearm),
       tool: clamp(toolError * 0.2, -maximumSteps.tool, maximumSteps.tool)
     };
-    const velocity = {
-      upper: previousVelocity.upper * 0.62 + desiredVelocity.upper * 0.38,
-      forearm: previousVelocity.forearm * 0.62 + desiredVelocity.forearm * 0.38,
-      tool: previousVelocity.tool * 0.62 + desiredVelocity.tool * 0.38
-    };
-    const currentEnergy = energy(currentPose, currentTool);
-    for (const fraction of [1, 0.5, 0.25, 0.125]) {
+    for (const fraction of [1, 0.75, 0.5, 0.25, 0.125]) {
       const pose = enforceSafePose('right', {
-        upperRotation: currentPose.upperRotation + velocity.upper * fraction,
-        forearmRotation: currentPose.forearmRotation + velocity.forearm * fraction,
+        upperRotation: currentPose.upperRotation + step.upper * fraction,
+        forearmRotation: currentPose.forearmRotation + step.forearm * fraction,
         wristRotation: 0
       });
-      const tool = currentTool + velocity.tool * fraction;
-      if (energy(pose, tool) <= currentEnergy + 0.001) {
-        return { pose, tool, velocity: { upper: velocity.upper * fraction, forearm: velocity.forearm * fraction, tool: velocity.tool * fraction } };
+      const tool = currentTool + step.tool * fraction;
+      const geometry = calculateArmGeometry('right', pose, targetX, targetY, tool);
+      if (geometryIsCollisionFree(geometry)) {
+        return { pose, tool };
       }
     }
-    return { pose: currentPose, tool: currentTool, velocity: { upper: 0, forearm: 0, tool: 0 } };
+    return { pose: currentPose, tool: currentTool };
   }
 
   function buildEmgPath(samples: number[]) {
@@ -434,7 +412,7 @@
     };
     // A short refresh-rate-independent low-pass removes mouse-event quantizing
     // without making the mechanism feel detached from the cursor.
-    const targetBlend = 1 - Math.exp(-elapsedSeconds / 0.055);
+    const targetBlend = 1 - Math.exp(-elapsedSeconds / 0.035);
     leftTargetX += (desiredLeftTargetX - leftTargetX) * targetBlend;
     leftTargetY += (desiredLeftTargetY - leftTargetY) * targetBlend;
     rightTargetX += (desiredRightTargetX - rightTargetX) * targetBlend;
@@ -443,14 +421,12 @@
     const canonicalLeftTargetX = 270 - leftTargetX;
     const solvedLeft = solveArm('right', canonicalLeftTargetX, leftTargetY);
     const solvedRight = solveArm('right', rightTargetX, rightTargetY);
-    const safeLeft = chooseSafeMotion(leftPose, leftToolAngle, solvedLeft, canonicalLeftTargetX, leftTargetY, maximumSteps, leftJointVelocity);
-    const safeRight = chooseSafeMotion(rightPose, rightToolAngle, solvedRight, rightTargetX, rightTargetY, maximumSteps, rightJointVelocity);
+    const safeLeft = chooseSafeMotion(leftPose, leftToolAngle, solvedLeft, canonicalLeftTargetX, leftTargetY, maximumSteps);
+    const safeRight = chooseSafeMotion(rightPose, rightToolAngle, solvedRight, rightTargetX, rightTargetY, maximumSteps);
     leftPose = safeLeft.pose;
     leftToolAngle = safeLeft.tool;
-    leftJointVelocity = safeLeft.velocity;
     rightPose = safeRight.pose;
     rightToolAngle = safeRight.tool;
-    rightJointVelocity = safeRight.velocity;
 
     armAnimationFrame = requestAnimationFrame(advanceArms);
   }
