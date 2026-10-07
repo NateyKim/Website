@@ -39,6 +39,7 @@
   const graspCenterOffset = 45.5;
   // Collision envelope for the fully open gripper, including stroke width.
   const gripperEnvelope = [[0, -32], [61, -32], [61, 32], [0, 32]] as const;
+  type CollisionPoint = { x: number; y: number };
 
   function handlePointerMove(event: PointerEvent) {
     if (event.pointerType === 'touch') return;
@@ -181,6 +182,94 @@
     };
   }
 
+  function segmentBox(
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number,
+    halfWidth: number,
+    trimStart = 0,
+    trimEnd = 0
+  ): CollisionPoint[] {
+    const length = Math.hypot(endX - startX, endY - startY) || 1;
+    const ux = (endX - startX) / length;
+    const uy = (endY - startY) / length;
+    const px = -uy * halfWidth;
+    const py = ux * halfWidth;
+    const ax = startX + ux * trimStart;
+    const ay = startY + uy * trimStart;
+    const bx = endX - ux * trimEnd;
+    const by = endY - uy * trimEnd;
+    return [
+      { x: ax + px, y: ay + py }, { x: bx + px, y: by + py },
+      { x: bx - px, y: by - py }, { x: ax - px, y: ay - py }
+    ];
+  }
+
+  function transformedGripperBox(geometry: ReturnType<typeof calculateArmGeometry>): CollisionPoint[] {
+    const radians = (geometry.toolAngle * Math.PI) / 180;
+    const cosine = Math.cos(radians);
+    const sine = Math.sin(radians);
+    return gripperEnvelope.map(([x, y]) => ({
+      x: geometry.wristX + x * cosine - y * sine,
+      y: geometry.wristY + x * sine + y * cosine
+    }));
+  }
+
+  function jointBox(centerX: number, centerY: number, radius: number): CollisionPoint[] {
+    return [
+      { x: centerX - radius, y: centerY - radius },
+      { x: centerX + radius, y: centerY - radius },
+      { x: centerX + radius, y: centerY + radius },
+      { x: centerX - radius, y: centerY + radius }
+    ];
+  }
+
+  function boxesOverlap(first: CollisionPoint[], second: CollisionPoint[]) {
+    const polygons = [first, second];
+    for (const polygon of polygons) {
+      for (let index = 0; index < polygon.length; index += 1) {
+        const next = (index + 1) % polygon.length;
+        const edgeX = polygon[next].x - polygon[index].x;
+        const edgeY = polygon[next].y - polygon[index].y;
+        const axisX = -edgeY;
+        const axisY = edgeX;
+        const project = (points: CollisionPoint[]) => points.map((point) => point.x * axisX + point.y * axisY);
+        const firstProjection = project(first);
+        const secondProjection = project(second);
+        if (Math.max(...firstProjection) < Math.min(...secondProjection) || Math.max(...secondProjection) < Math.min(...firstProjection)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  function geometryIsCollisionFree(geometry: ReturnType<typeof calculateArmGeometry>) {
+    // Every visible rigid body has its own conservative boundary box. Adjacent
+    // bodies intentionally share a joint, so only non-adjacent pairs are tested.
+    const upperBox = segmentBox(geometry.baseX, geometry.baseY, geometry.elbowX, geometry.elbowY, 10, 23, 20);
+    const forearmBox = segmentBox(geometry.elbowX, geometry.elbowY, geometry.wristX, geometry.wristY, 10, 20, 17);
+    const elbowBox = jointBox(geometry.elbowX, geometry.elbowY, 20);
+    const wristBox = jointBox(geometry.wristX, geometry.wristY, 18);
+    const gripperBox = transformedGripperBox(geometry);
+    const baseBox: CollisionPoint[] = [
+      { x: 151, y: 397 }, { x: 263, y: 397 }, { x: 263, y: 458 }, { x: 151, y: 458 }
+    ];
+    const movingBoxes = [upperBox, elbowBox, forearmBox, wristBox, gripperBox];
+    const clearsFloor = movingBoxes.every((box) => box.every((point) => point.y <= 442));
+
+    return clearsFloor
+      && !boxesOverlap(baseBox, elbowBox)
+      && !boxesOverlap(baseBox, forearmBox)
+      && !boxesOverlap(baseBox, wristBox)
+      && !boxesOverlap(baseBox, gripperBox)
+      && !boxesOverlap(upperBox, wristBox)
+      && !boxesOverlap(upperBox, gripperBox)
+      && !boxesOverlap(elbowBox, wristBox)
+      && !boxesOverlap(elbowBox, gripperBox);
+  }
+
   function buildEmgPath(samples: number[]) {
     return samples.map((sample, index) => {
       const x = (index / (samples.length - 1)) * 1200;
@@ -294,22 +383,34 @@
     const solvedLeft = solveArm('right', 270 - leftTargetX, leftTargetY);
     const solvedRight = solveArm('right', rightTargetX, rightTargetY);
 
-    // Per-joint velocity limits keep the mechanism continuous near IK boundaries.
-    leftPose = enforceSafePose('right', {
+    // Build one bounded candidate frame, then accept it only if every rigid
+    // body's collision box is valid. Rejection holds the last safe frame.
+    const proposedLeftPose = enforceSafePose('right', {
       upperRotation: moveAngleToward(leftPose.upperRotation, solvedLeft.upperRotation, 9),
       forearmRotation: moveAngleToward(leftPose.forearmRotation, solvedLeft.forearmRotation, 13),
       wristRotation: moveAngleToward(leftPose.wristRotation, solvedLeft.wristRotation, 16)
     });
-    rightPose = enforceSafePose('right', {
+    const proposedRightPose = enforceSafePose('right', {
       upperRotation: moveAngleToward(rightPose.upperRotation, solvedRight.upperRotation, 9),
       forearmRotation: moveAngleToward(rightPose.forearmRotation, solvedRight.forearmRotation, 13),
       wristRotation: moveAngleToward(rightPose.wristRotation, solvedRight.wristRotation, 16)
     });
 
-    const desiredLeftTool = calculateArmGeometry('right', leftPose, 270 - leftTargetX, leftTargetY).toolAngle;
-    const desiredRightTool = calculateArmGeometry('right', rightPose, rightTargetX, rightTargetY).toolAngle;
-    leftToolAngle = moveAngleToward(leftToolAngle, desiredLeftTool, 3);
-    rightToolAngle = moveAngleToward(rightToolAngle, desiredRightTool, 3);
+    const desiredLeftTool = calculateArmGeometry('right', proposedLeftPose, 270 - leftTargetX, leftTargetY).toolAngle;
+    const desiredRightTool = calculateArmGeometry('right', proposedRightPose, rightTargetX, rightTargetY).toolAngle;
+    const proposedLeftTool = moveAngleToward(leftToolAngle, desiredLeftTool, 3);
+    const proposedRightTool = moveAngleToward(rightToolAngle, desiredRightTool, 3);
+    const proposedLeftGeometry = calculateArmGeometry('right', proposedLeftPose, 270 - leftTargetX, leftTargetY, proposedLeftTool);
+    const proposedRightGeometry = calculateArmGeometry('right', proposedRightPose, rightTargetX, rightTargetY, proposedRightTool);
+
+    if (geometryIsCollisionFree(proposedLeftGeometry)) {
+      leftPose = proposedLeftPose;
+      leftToolAngle = proposedLeftTool;
+    }
+    if (geometryIsCollisionFree(proposedRightGeometry)) {
+      rightPose = proposedRightPose;
+      rightToolAngle = proposedRightTool;
+    }
 
     armAnimationFrame = requestAnimationFrame(advanceArms);
   }
