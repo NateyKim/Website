@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
 
   const bio = [
     'I am a research engineer at Penn’s GRASP Laboratory working at the intersection of assistive robotics, human movement, and human–robot interaction. I earned an M.S.E. in Robotics and a B.S.E. in Bioengineering from the University of Pennsylvania.',
@@ -11,13 +11,22 @@
   let pointerY = 0;
   let isMoving = false;
   let emgIntensity = 0;
-  let signalPhase = 0;
+  let targetEmgIntensity = 0;
+  let emgSamples = Array(240).fill(0);
+  let activeMotorUnits: Array<{ age: number; amplitude: number }> = [];
   let gripping = false;
   let previousPointerX = 0;
   let previousPointerY = 0;
   let previousMoveTime = 0;
   let movementTimer: ReturnType<typeof setTimeout>;
   let gripTimer: ReturnType<typeof setTimeout>;
+  let emgTimer: ReturnType<typeof setInterval>;
+  let leftRobot: SVGSVGElement;
+  let rightRobot: SVGSVGElement;
+  let leftTargetX = 190;
+  let leftTargetY = 218;
+  let rightTargetX = 80;
+  let rightTargetY = 218;
 
   function handlePointerMove(event: PointerEvent) {
     if (event.pointerType === 'touch') return;
@@ -33,21 +42,30 @@
     previousPointerX = nextX;
     previousPointerY = nextY;
     previousMoveTime = now;
-    emgIntensity = clamp(0.22 + velocity * 0.3, 0.22, 1);
-    signalPhase += 0.65 + emgIntensity * 0.7;
+    targetEmgIntensity = clamp(velocity * 0.24, 0.12, 1);
     isMoving = true;
+
+    if (leftRobot && rightRobot) {
+      const leftRect = leftRobot.getBoundingClientRect();
+      const rightRect = rightRobot.getBoundingClientRect();
+      leftTargetX = ((event.clientX - leftRect.left) / leftRect.width) * 270;
+      leftTargetY = ((event.clientY - leftRect.top) / leftRect.height) * 520 - 10;
+      rightTargetX = ((event.clientX - rightRect.left) / rightRect.width) * 270;
+      rightTargetY = ((event.clientY - rightRect.top) / rightRect.height) * 520 + 10;
+    }
+
     clearTimeout(movementTimer);
     movementTimer = setTimeout(() => {
       isMoving = false;
-      emgIntensity = 0;
-    }, 130);
+      targetEmgIntensity = 0;
+    }, 180);
   }
 
   function resetPointer() {
     pointerX = 0;
     pointerY = 0;
     isMoving = false;
-    emgIntensity = 0;
+    targetEmgIntensity = 0;
   }
 
   function handleScenePress(event: PointerEvent) {
@@ -60,18 +78,35 @@
   const clamp = (value: number, minimum: number, maximum: number) => Math.max(minimum, Math.min(maximum, value));
   const radiansToDegrees = (value: number) => (value * 180) / Math.PI;
 
-  function buildEmgPath(intensity: number, phase: number) {
-    const points = [];
-    for (let x = 0; x <= 1200; x += 10) {
-      const noise = Math.sin(x * 0.18 + phase * 2.1) + 0.56 * Math.sin(x * 0.43 - phase) + 0.28 * Math.sin(x * 0.76 + phase * 1.7);
-      const envelope = 0.25 + 0.75 * Math.pow(Math.abs(Math.sin(x * 0.031 + phase * 0.72)), 4);
-      const y = 90 - noise * envelope * intensity * 18;
-      points.push(`${x === 0 ? 'M' : 'L'} ${x} ${y.toFixed(2)}`);
-    }
-    return points.join(' ');
+  function buildEmgPath(samples: number[]) {
+    return samples.map((sample, index) => {
+      const x = (index / (samples.length - 1)) * 1200;
+      return `${index === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${(90 - sample).toFixed(2)}`;
+    }).join(' ');
   }
 
-  function solveArm(side: 'left' | 'right', x: number, y: number) {
+  const motorUnitKernel = [0, -0.12, -0.48, -0.94, -0.32, 0.68, 1, 0.52, 0.04, -0.38, -0.22, -0.06, 0];
+
+  function advanceEmgSignal() {
+    emgIntensity += (targetEmgIntensity - emgIntensity) * 0.22;
+
+    if (Math.random() < 0.015 + emgIntensity * 0.34) {
+      activeMotorUnits.push({
+        age: 0,
+        amplitude: 15 + emgIntensity * (22 + Math.random() * 18)
+      });
+    }
+
+    let sample = (Math.random() - 0.5) * 3.2;
+    for (const unit of activeMotorUnits) {
+      sample += motorUnitKernel[unit.age] * unit.amplitude;
+      unit.age += 1;
+    }
+    activeMotorUnits = activeMotorUnits.filter((unit) => unit.age < motorUnitKernel.length);
+    emgSamples = [...emgSamples.slice(1), sample];
+  }
+
+  function solveArm(side: 'left' | 'right', targetX: number, targetY: number) {
     const baseX = side === 'left' ? 62 : 208;
     const baseY = 416;
     const linkOne = 118.75;
@@ -79,19 +114,20 @@
     const baseAngleOne = side === 'left' ? -57.38 : -122.62;
     const baseAngleTwo = side === 'left' ? -56.84 : -123.16;
 
-    // Broad, overlapping workspaces let both arms approach the pointer while reach limiting prevents singular poses.
-    const targetX = side === 'left'
-      ? clamp(70 + ((x + 1) / 2) * 220, 70, 290)
-      : clamp(((x + 1) / 2) * 220, 0, 220);
-    const targetY = clamp(170 + y * 160, 20, 350);
     let dx = targetX - baseX;
     let dy = targetY - baseY;
     const maximumReach = linkOne + linkTwo - 1;
-    const distance = Math.hypot(dx, dy);
+    const minimumReach = Math.abs(linkOne - linkTwo) + 18;
+    const distance = Math.hypot(dx, dy) || 1;
 
     if (distance > maximumReach) {
       dx = (dx / distance) * maximumReach;
       dy = (dy / distance) * maximumReach;
+    }
+
+    if (distance < minimumReach) {
+      dx = (dx / distance) * minimumReach;
+      dy = (dy / distance) * minimumReach;
     }
 
     const squaredDistance = dx * dx + dy * dy;
@@ -101,20 +137,25 @@
     const forearm = shoulder + elbow;
     const upperRotation = radiansToDegrees(shoulder) - baseAngleOne;
     const forearmRotation = radiansToDegrees(forearm) - baseAngleTwo - upperRotation;
-    const desiredToolAngle = side === 'left' ? y * 42 : 180 - y * 42;
+    const desiredToolAngle = radiansToDegrees(Math.atan2(targetY - baseY, targetX - baseX));
     const defaultToolAngle = side === 'left' ? 0 : 180;
-    const wristRotation = clamp(desiredToolAngle - defaultToolAngle - upperRotation - forearmRotation, -90, 90);
+    const wristRotation = clamp(desiredToolAngle - defaultToolAngle - upperRotation - forearmRotation, -145, 145);
 
     return { upperRotation, forearmRotation, wristRotation };
   }
 
-  $: emgPath = buildEmgPath(emgIntensity, signalPhase);
-  $: leftPose = solveArm('left', pointerX, pointerY);
-  $: rightPose = solveArm('right', pointerX, pointerY);
+  $: emgPath = buildEmgPath(emgSamples);
+  $: leftPose = solveArm('left', leftTargetX, leftTargetY);
+  $: rightPose = solveArm('right', rightTargetX, rightTargetY);
+
+  onMount(() => {
+    emgTimer = setInterval(advanceEmgSignal, 40);
+  });
 
   onDestroy(() => {
     clearTimeout(movementTimer);
     clearTimeout(gripTimer);
+    clearInterval(emgTimer);
   });
 </script>
 
@@ -141,11 +182,15 @@
         <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
       </filter>
     </defs>
-    <path class="emg-baseline" d="M0 90 H1200" />
+    <g class="emg-guides">
+      <path d="M0 45 H1200 M0 90 H1200 M0 135 H1200" />
+      <path d="M120 20 V160 M360 20 V160 M600 20 V160 M840 20 V160 M1080 20 V160" />
+    </g>
+    <text class="emg-label" x="24" y="29">sEMG · LIVE</text>
     <path class="emg-wave" class:moving={isMoving} d={emgPath} filter="url(#emg-glow)" />
   </svg>
 
-  <svg class="robot robot-left" class:gripping viewBox="0 0 270 520" aria-hidden="true">
+  <svg bind:this={leftRobot} class="robot robot-left" class:gripping viewBox="0 0 270 520" aria-hidden="true">
     <g class="robot-mount">
       <path d="M8 450 H118 M32 450 V420 H92 V450" /><circle cx="62" cy="416" r="19" />
     </g>
@@ -162,7 +207,7 @@
     </g>
   </svg>
 
-  <svg class="robot robot-right" class:gripping viewBox="0 0 270 520" aria-hidden="true">
+  <svg bind:this={rightRobot} class="robot robot-right" class:gripping viewBox="0 0 270 520" aria-hidden="true">
     <g class="robot-mount">
       <path d="M152 450 H262 M178 450 V420 H238 V450" /><circle cx="208" cy="416" r="19" />
     </g>
@@ -260,7 +305,6 @@
     pointer-events: none;
   }
 
-  .emg-baseline,
   .emg-wave {
     fill: none;
     vector-effect: non-scaling-stroke;
@@ -268,20 +312,30 @@
     stroke-linejoin: round;
   }
 
-  .emg-baseline {
-    stroke: rgba(83, 97, 116, 0.28);
-    stroke-width: 1.5;
+  .emg-guides path {
+    fill: none;
+    stroke: rgba(83, 97, 116, 0.12);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .emg-label {
+    fill: rgba(57, 70, 87, 0.62);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
   }
 
   .emg-wave {
     stroke: url(#emg-gradient);
-    stroke-width: 3;
-    opacity: 0;
-    transition: opacity 90ms ease-out;
+    stroke-width: 2.2;
+    opacity: 0.58;
+    transition: opacity 120ms ease-out, stroke-width 120ms ease-out;
   }
 
   .emg-wave.moving {
-    opacity: 0.92;
+    opacity: 0.94;
+    stroke-width: 2.8;
   }
 
   .identity {
