@@ -57,7 +57,7 @@
       const rightRect = rightRobot.getBoundingClientRect();
       // Keep the end effectors on opposite sides of the cursor so the arms
       // approach the target together without occupying the same task space.
-      const collisionClearance = 38;
+      const collisionClearance = 56;
       desiredLeftTargetX = ((event.clientX - collisionClearance - leftRect.left) / leftRect.width) * 270;
       desiredLeftTargetY = ((event.clientY - leftRect.top) / leftRect.height) * 520 - 10;
       desiredRightTargetX = ((event.clientX + collisionClearance - rightRect.left) / rightRect.width) * 270;
@@ -146,7 +146,9 @@
     let dx = wristTargetX - baseX;
     let dy = wristTargetY - baseY;
     const maximumReach = linkOne + linkTwo - 1;
-    const minimumReach = Math.abs(linkOne - linkTwo) + 18;
+    // Keep enough radial clearance that the forearm cannot fold back through
+    // the upper arm when the cursor moves close to the shoulder.
+    const minimumReach = 66;
     const distance = Math.hypot(dx, dy) || 1;
 
     if (distance > maximumReach) {
@@ -170,7 +172,8 @@
     const defaultToolAngle = side === 'left' ? 0 : 180;
     const rawWristRotation = desiredToolAngle - defaultToolAngle - upperRotation - forearmRotation;
     const normalizedWristRotation = ((rawWristRotation + 540) % 360) - 180;
-    const wristRotation = clamp(normalizedWristRotation, -155, 155);
+    // Prevent the gripper from rotating back into its own forearm.
+    const wristRotation = clamp(normalizedWristRotation, -108, 108);
 
     return { upperRotation, forearmRotation, wristRotation };
   }
@@ -179,24 +182,24 @@
 
   function advanceArms() {
     // Target-space slew limits prevent pointer jumps from demanding impossible Cartesian velocities.
-    leftTargetX = moveToward(leftTargetX, desiredLeftTargetX, 6.875);
-    leftTargetY = moveToward(leftTargetY, desiredLeftTargetY, 6.875);
-    rightTargetX = moveToward(rightTargetX, desiredRightTargetX, 6.875);
-    rightTargetY = moveToward(rightTargetY, desiredRightTargetY, 6.875);
+    leftTargetX = moveToward(leftTargetX, desiredLeftTargetX, 12);
+    leftTargetY = moveToward(leftTargetY, desiredLeftTargetY, 12);
+    rightTargetX = moveToward(rightTargetX, desiredRightTargetX, 12);
+    rightTargetY = moveToward(rightTargetY, desiredRightTargetY, 12);
 
     const solvedLeft = solveArm('left', leftTargetX, leftTargetY);
     const solvedRight = solveArm('right', rightTargetX, rightTargetY);
 
     // Per-joint velocity limits keep the mechanism continuous near IK boundaries.
     leftPose = {
-      upperRotation: moveAngleToward(leftPose.upperRotation, solvedLeft.upperRotation, 2.625),
-      forearmRotation: moveAngleToward(leftPose.forearmRotation, solvedLeft.forearmRotation, 3.5),
-      wristRotation: moveAngleToward(leftPose.wristRotation, solvedLeft.wristRotation, 4.25)
+      upperRotation: moveAngleToward(leftPose.upperRotation, solvedLeft.upperRotation, 5),
+      forearmRotation: moveAngleToward(leftPose.forearmRotation, solvedLeft.forearmRotation, 7),
+      wristRotation: moveAngleToward(leftPose.wristRotation, solvedLeft.wristRotation, 8.5)
     };
     rightPose = {
-      upperRotation: moveAngleToward(rightPose.upperRotation, solvedRight.upperRotation, 2.625),
-      forearmRotation: moveAngleToward(rightPose.forearmRotation, solvedRight.forearmRotation, 3.5),
-      wristRotation: moveAngleToward(rightPose.wristRotation, solvedRight.wristRotation, 4.25)
+      upperRotation: moveAngleToward(rightPose.upperRotation, solvedRight.upperRotation, 5),
+      forearmRotation: moveAngleToward(rightPose.forearmRotation, solvedRight.forearmRotation, 7),
+      wristRotation: moveAngleToward(rightPose.wristRotation, solvedRight.wristRotation, 8.5)
     };
 
     armAnimationFrame = requestAnimationFrame(advanceArms);
@@ -427,8 +430,7 @@
   .robot-right { right: max(-4rem, calc((100vw - 1500px) / 2)); }
   .robot-mount path, .arm-segment path { fill: none; stroke: #222c38; stroke-width: 13; stroke-linecap: round; stroke-linejoin: round; }
   .robot-mount circle, .arm-segment circle { fill: #f8fafc; stroke: #222c38; stroke-width: 7; }
-  .arm-segment { transition: transform 128ms cubic-bezier(0.2, 0.75, 0.25, 1); }
-  .wrist { transition: transform 98ms cubic-bezier(0.2, 0.75, 0.25, 1); }
+  .arm-segment, .wrist { will-change: transform; }
   .gripper-base { stroke-width: 8 !important; }
   .gripper-finger {
     stroke-width: 7 !important;
