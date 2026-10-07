@@ -9,32 +9,45 @@
 
   let pointerX = 0;
   let pointerY = 0;
-  let pulseVersion = 0;
-  let waveVisible = false;
+  let isMoving = false;
+  let emgIntensity = 0;
+  let signalPhase = 0;
   let gripping = false;
-  let lastPulse = 0;
-  let waveTimer: ReturnType<typeof setTimeout>;
+  let previousPointerX = 0;
+  let previousPointerY = 0;
+  let previousMoveTime = 0;
+  let movementTimer: ReturnType<typeof setTimeout>;
   let gripTimer: ReturnType<typeof setTimeout>;
 
   function handlePointerMove(event: PointerEvent) {
     if (event.pointerType === 'touch') return;
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    pointerX = Math.max(-1, Math.min(1, ((event.clientX - rect.left) / rect.width) * 2 - 1));
-    pointerY = Math.max(-1, Math.min(1, ((event.clientY - rect.top) / rect.height) * 2 - 1));
-
     const now = performance.now();
-    if (now - lastPulse > 520) {
-      lastPulse = now;
-      pulseVersion += 1;
-      waveVisible = true;
-      clearTimeout(waveTimer);
-      waveTimer = setTimeout(() => (waveVisible = false), 900);
-    }
+    const nextX = Math.max(-1, Math.min(1, ((event.clientX - rect.left) / rect.width) * 2 - 1));
+    const nextY = Math.max(-1, Math.min(1, ((event.clientY - rect.top) / rect.height) * 2 - 1));
+    const elapsed = Math.max(16, now - previousMoveTime);
+    const velocity = Math.hypot(nextX - previousPointerX, nextY - previousPointerY) * (1000 / elapsed);
+
+    pointerX = nextX;
+    pointerY = nextY;
+    previousPointerX = nextX;
+    previousPointerY = nextY;
+    previousMoveTime = now;
+    emgIntensity = clamp(0.22 + velocity * 0.3, 0.22, 1);
+    signalPhase += 0.65 + emgIntensity * 0.7;
+    isMoving = true;
+    clearTimeout(movementTimer);
+    movementTimer = setTimeout(() => {
+      isMoving = false;
+      emgIntensity = 0;
+    }, 130);
   }
 
   function resetPointer() {
     pointerX = 0;
     pointerY = 0;
+    isMoving = false;
+    emgIntensity = 0;
   }
 
   function handleScenePress(event: PointerEvent) {
@@ -47,6 +60,17 @@
   const clamp = (value: number, minimum: number, maximum: number) => Math.max(minimum, Math.min(maximum, value));
   const radiansToDegrees = (value: number) => (value * 180) / Math.PI;
 
+  function buildEmgPath(intensity: number, phase: number) {
+    const points = [];
+    for (let x = 0; x <= 1200; x += 10) {
+      const noise = Math.sin(x * 0.18 + phase * 2.1) + 0.56 * Math.sin(x * 0.43 - phase) + 0.28 * Math.sin(x * 0.76 + phase * 1.7);
+      const envelope = 0.25 + 0.75 * Math.pow(Math.abs(Math.sin(x * 0.031 + phase * 0.72)), 4);
+      const y = 90 - noise * envelope * intensity * 18;
+      points.push(`${x === 0 ? 'M' : 'L'} ${x} ${y.toFixed(2)}`);
+    }
+    return points.join(' ');
+  }
+
   function solveArm(side: 'left' | 'right', x: number, y: number) {
     const baseX = side === 'left' ? 62 : 208;
     const baseY = 416;
@@ -55,14 +79,14 @@
     const baseAngleOne = side === 'left' ? -57.38 : -122.62;
     const baseAngleTwo = side === 'left' ? -56.84 : -123.16;
 
-    // Each target is clamped to that arm's half-space and reachable radius.
+    // Broad, overlapping workspaces let both arms approach the pointer while reach limiting prevents singular poses.
     const targetX = side === 'left'
-      ? clamp(105 + ((x + 1) / 2) * 155, 105, 246)
-      : clamp(24 + ((x + 1) / 2) * 141, 24, 165);
-    const targetY = clamp(225 + y * 125, 105, 350);
+      ? clamp(70 + ((x + 1) / 2) * 220, 70, 290)
+      : clamp(((x + 1) / 2) * 220, 0, 220);
+    const targetY = clamp(170 + y * 160, 20, 350);
     let dx = targetX - baseX;
     let dy = targetY - baseY;
-    const maximumReach = linkOne + linkTwo - 5;
+    const maximumReach = linkOne + linkTwo - 1;
     const distance = Math.hypot(dx, dy);
 
     if (distance > maximumReach) {
@@ -77,15 +101,19 @@
     const forearm = shoulder + elbow;
     const upperRotation = radiansToDegrees(shoulder) - baseAngleOne;
     const forearmRotation = radiansToDegrees(forearm) - baseAngleTwo - upperRotation;
+    const desiredToolAngle = side === 'left' ? y * 42 : 180 - y * 42;
+    const defaultToolAngle = side === 'left' ? 0 : 180;
+    const wristRotation = clamp(desiredToolAngle - defaultToolAngle - upperRotation - forearmRotation, -90, 90);
 
-    return { upperRotation, forearmRotation };
+    return { upperRotation, forearmRotation, wristRotation };
   }
 
+  $: emgPath = buildEmgPath(emgIntensity, signalPhase);
   $: leftPose = solveArm('left', pointerX, pointerY);
   $: rightPose = solveArm('right', pointerX, pointerY);
 
   onDestroy(() => {
-    clearTimeout(waveTimer);
+    clearTimeout(movementTimer);
     clearTimeout(gripTimer);
   });
 </script>
@@ -99,7 +127,7 @@
   <div class="grid-layer"></div>
   <div class="ambient-light"></div>
 
-  <svg class="emg-layer" viewBox="0 0 1200 620" preserveAspectRatio="none" aria-hidden="true">
+  <svg class="emg-layer" viewBox="0 0 1200 180" preserveAspectRatio="none" aria-hidden="true">
     <defs>
       <linearGradient id="emg-gradient" x1="0" x2="1">
         <stop offset="0" stop-color="#00a9ff" stop-opacity="0" />
@@ -113,15 +141,8 @@
         <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
       </filter>
     </defs>
-    {#if waveVisible}
-      {#key pulseVersion}
-        <path
-          class="emg-wave"
-          d="M0 278 H430 L455 278 L474 265 L492 293 L510 244 L530 326 L550 168 L572 386 L594 228 L616 304 L638 260 L662 278 H1200"
-          filter="url(#emg-glow)"
-        />
-      {/key}
-    {/if}
+    <path class="emg-baseline" d="M0 90 H1200" />
+    <path class="emg-wave" class:moving={isMoving} d={emgPath} filter="url(#emg-glow)" />
   </svg>
 
   <svg class="robot robot-left" class:gripping viewBox="0 0 270 520" aria-hidden="true">
@@ -132,8 +153,11 @@
       <path d="M62 416 L126 316" /><circle cx="126" cy="316" r="16" />
       <g class="arm-segment" style={`transform: rotate(${leftPose.forearmRotation}deg); transform-origin: 126px 316px;`}>
         <path d="M126 316 L190 218" /><circle cx="190" cy="218" r="14" />
-        <path class="gripper-finger finger-upper" d="M190 218 H220 V190 H251" />
-        <path class="gripper-finger finger-lower" d="M190 218 H220 V246 H251" />
+        <g class="wrist" style={`transform: rotate(${leftPose.wristRotation}deg); transform-origin: 190px 218px;`}>
+          <path class="gripper-base" d="M190 218 H220 M220 190 V246" />
+          <path class="gripper-finger finger-upper" d="M220 190 H251" />
+          <path class="gripper-finger finger-lower" d="M220 246 H251" />
+        </g>
       </g>
     </g>
   </svg>
@@ -146,8 +170,11 @@
       <path d="M208 416 L144 316" /><circle cx="144" cy="316" r="16" />
       <g class="arm-segment" style={`transform: rotate(${rightPose.forearmRotation}deg); transform-origin: 144px 316px;`}>
         <path d="M144 316 L80 218" /><circle cx="80" cy="218" r="14" />
-        <path class="gripper-finger finger-upper" d="M80 218 H50 V190 H19" />
-        <path class="gripper-finger finger-lower" d="M80 218 H50 V246 H19" />
+        <g class="wrist" style={`transform: rotate(${rightPose.wristRotation}deg); transform-origin: 80px 218px;`}>
+          <path class="gripper-base" d="M80 218 H50 M50 190 V246" />
+          <path class="gripper-finger finger-upper" d="M50 190 H19" />
+          <path class="gripper-finger finger-lower" d="M50 246 H19" />
+        </g>
       </g>
     </g>
   </svg>
@@ -226,13 +253,14 @@
   .emg-layer {
     position: absolute;
     z-index: -1;
-    top: 0;
+    top: 3rem;
     left: 0;
     width: 100%;
-    height: min(66vh, 620px);
+    height: clamp(7rem, 16vh, 10rem);
     pointer-events: none;
   }
 
+  .emg-baseline,
   .emg-wave {
     fill: none;
     vector-effect: non-scaling-stroke;
@@ -240,18 +268,27 @@
     stroke-linejoin: round;
   }
 
+  .emg-baseline {
+    stroke: rgba(83, 97, 116, 0.28);
+    stroke-width: 1.5;
+  }
+
   .emg-wave {
     stroke: url(#emg-gradient);
-    stroke-width: 3.5;
-    stroke-dasharray: 1500;
-    animation: ekg-pulse 0.86s ease-in-out forwards;
+    stroke-width: 3;
+    opacity: 0;
+    transition: opacity 90ms ease-out;
+  }
+
+  .emg-wave.moving {
+    opacity: 0.92;
   }
 
   .identity {
     position: relative;
     z-index: 3;
     width: min(780px, 100%);
-    margin: clamp(5rem, 14vh, 10rem) auto clamp(13rem, 30vh, 22rem);
+    margin: clamp(10rem, 21vh, 14rem) auto clamp(13rem, 30vh, 22rem);
     text-align: center;
   }
 
@@ -282,13 +319,13 @@
   .robot-mount path, .arm-segment path { fill: none; stroke: #222c38; stroke-width: 13; stroke-linecap: round; stroke-linejoin: round; }
   .robot-mount circle, .arm-segment circle { fill: #f8fafc; stroke: #222c38; stroke-width: 7; }
   .arm-segment { transition: transform 170ms cubic-bezier(0.2, 0.75, 0.25, 1); }
+  .wrist { transition: transform 130ms cubic-bezier(0.2, 0.75, 0.25, 1); }
+  .gripper-base { stroke-width: 8 !important; }
   .gripper-finger {
     stroke-width: 7 !important;
     transition: transform 150ms ease-in-out;
   }
 
-  .robot-left .gripper-finger { transform-origin: 190px 218px; }
-  .robot-right .gripper-finger { transform-origin: 80px 218px; }
   .robot-left.gripping .finger-upper { transform: translateY(19px); }
   .robot-left.gripping .finger-lower { transform: translateY(-19px); }
   .robot-right.gripping .finger-upper { transform: translateY(19px); }
@@ -334,12 +371,6 @@
   }
   .bio-panel p { margin: 0; font-size: clamp(1rem, 1.5vw, 1.12rem); line-height: 1.65; }
 
-  @keyframes ekg-pulse {
-    0% { opacity: 0; stroke-dashoffset: 1500; }
-    12% { opacity: 1; }
-    72% { opacity: 1; stroke-dashoffset: 0; }
-    100% { opacity: 0; stroke-dashoffset: -1500; }
-  }
   @keyframes neural-pulse { to { fill: #16aaf3; opacity: 0.55; transform: scale(1.5); } }
 
   @media (max-width: 850px) {
