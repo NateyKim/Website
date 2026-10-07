@@ -55,12 +55,11 @@
     if (leftRobot && rightRobot) {
       const leftRect = leftRobot.getBoundingClientRect();
       const rightRect = rightRobot.getBoundingClientRect();
-      // Treat both robots as one bimanual gripper. Their pinch centers
-      // straddle the pointer, making the midpoint of the grasp the cursor.
-      const halfGraspWidth = 34;
-      desiredLeftTargetX = ((event.clientX - halfGraspWidth - leftRect.left) / leftRect.width) * 270;
+      // Both robots independently aim the center of their pinch aperture at
+      // the cursor; solveArm's tool offset maps this target to the wrist.
+      desiredLeftTargetX = ((event.clientX - leftRect.left) / leftRect.width) * 270;
       desiredLeftTargetY = ((event.clientY - leftRect.top) / leftRect.height) * 520;
-      desiredRightTargetX = ((event.clientX + halfGraspWidth - rightRect.left) / rightRect.width) * 270;
+      desiredRightTargetX = ((event.clientX - rightRect.left) / rightRect.width) * 270;
       desiredRightTargetY = ((event.clientY - rightRect.top) / rightRect.height) * 520;
     }
 
