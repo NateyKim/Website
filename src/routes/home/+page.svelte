@@ -278,6 +278,22 @@
     };
   }
 
+  function debugCollisionBoxes(geometry: ReturnType<typeof calculateArmGeometry>) {
+    const isLeft = geometry.baseX < 135;
+    return [
+      isLeft
+        ? [{ x: 7, y: 397 }, { x: 119, y: 397 }, { x: 119, y: 458 }, { x: 7, y: 458 }]
+        : [{ x: 151, y: 397 }, { x: 263, y: 397 }, { x: 263, y: 458 }, { x: 151, y: 458 }],
+      segmentBox(geometry.baseX, geometry.baseY, geometry.elbowX, geometry.elbowY, 10, 23, 20),
+      jointBox(geometry.elbowX, geometry.elbowY, 20),
+      segmentBox(geometry.elbowX, geometry.elbowY, geometry.wristX, geometry.wristY, 10, 20, 17),
+      jointBox(geometry.wristX, geometry.wristY, 18),
+      transformedGripperBox(geometry)
+    ];
+  }
+
+  const polygonPoints = (box: CollisionPoint[]) => box.map((point) => `${point.x},${point.y}`).join(' ');
+
   function chooseSafeMotion(
     currentPose: { upperRotation: number; forearmRotation: number; wristRotation: number },
     currentTool: number,
@@ -436,6 +452,10 @@
   // SVG centerline; it has no independent IK or collision behavior.
   $: leftGeometry = mirrorArmGeometry(calculateArmGeometry('right', leftPose, 270 - leftTargetX, leftTargetY, leftToolAngle));
   $: rightGeometry = calculateArmGeometry('right', rightPose, rightTargetX, rightTargetY, rightToolAngle);
+  $: leftCollisionBoxes = debugCollisionBoxes(leftGeometry);
+  $: rightCollisionBoxes = debugCollisionBoxes(rightGeometry);
+  $: leftGraspCenter = graspCenter(leftGeometry);
+  $: rightGraspCenter = graspCenter(rightGeometry);
 
   function advanceArms() {
     // Solve from the current pointer position. Joint-space limits below still
@@ -504,6 +524,10 @@
   </svg>
 
   <svg bind:this={leftRobot} class="robot robot-left" class:gripping viewBox="0 0 270 520" aria-hidden="true">
+    <defs><clipPath id="left-workspace-floor"><rect x="-400" y="-400" width="1070" height="842" /></clipPath></defs>
+    <g class="debug-workspace" clip-path="url(#left-workspace-floor)">
+      <circle cx={leftGeometry.baseX} cy={leftGeometry.baseY} r="281.32" />
+    </g>
     <g class="robot-mount">
       <path d="M8 450 H118 M32 450 V420 H92 V450" /><circle cx="62" cy="416" r="19" />
     </g>
@@ -518,9 +542,21 @@
       <path class="gripper-finger finger-upper" d="M30 -28 H61" />
       <path class="gripper-finger finger-lower" d="M30 28 H61" />
     </g>
+    <g class="debug-target">
+      <line x1={leftGraspCenter.x} y1={leftGraspCenter.y} x2={leftTargetX} y2={leftTargetY} />
+      <circle cx={leftGraspCenter.x} cy={leftGraspCenter.y} r="5" />
+      <circle class="mouse-point" cx={leftTargetX} cy={leftTargetY} r="3.5" />
+    </g>
+    <g class="debug-collision">
+      {#each leftCollisionBoxes as box}<polygon points={polygonPoints(box)} />{/each}
+    </g>
   </svg>
 
   <svg bind:this={rightRobot} class="robot robot-right" class:gripping viewBox="0 0 270 520" aria-hidden="true">
+    <defs><clipPath id="right-workspace-floor"><rect x="-400" y="-400" width="1070" height="842" /></clipPath></defs>
+    <g class="debug-workspace" clip-path="url(#right-workspace-floor)">
+      <circle cx={rightGeometry.baseX} cy={rightGeometry.baseY} r="281.32" />
+    </g>
     <g class="robot-mount">
       <path d="M152 450 H262 M178 450 V420 H238 V450" /><circle cx="208" cy="416" r="19" />
     </g>
@@ -534,6 +570,14 @@
       <path class="gripper-base" d="M0 0 H30 M30 -28 V28" />
       <path class="gripper-finger finger-upper" d="M30 -28 H61" />
       <path class="gripper-finger finger-lower" d="M30 28 H61" />
+    </g>
+    <g class="debug-target">
+      <line x1={rightGraspCenter.x} y1={rightGraspCenter.y} x2={rightTargetX} y2={rightTargetY} />
+      <circle cx={rightGraspCenter.x} cy={rightGraspCenter.y} r="5" />
+      <circle class="mouse-point" cx={rightTargetX} cy={rightTargetY} r="3.5" />
+    </g>
+    <g class="debug-collision">
+      {#each rightCollisionBoxes as box}<polygon points={polygonPoints(box)} />{/each}
     </g>
   </svg>
 
@@ -665,6 +709,34 @@
     stroke-width: 7 !important;
     transition: transform 150ms ease-in-out;
   }
+
+  .debug-collision polygon {
+    fill: rgba(255, 35, 35, 0.035);
+    stroke: #ef2929;
+    stroke-width: 1.7;
+    vector-effect: non-scaling-stroke;
+  }
+  .debug-workspace circle {
+    fill: none;
+    stroke: #1688ff;
+    stroke-width: 1.8;
+    stroke-dasharray: 8 6;
+    vector-effect: non-scaling-stroke;
+  }
+  .debug-target { pointer-events: none; }
+  .debug-target line {
+    stroke: #ff3fab;
+    stroke-width: 1.8;
+    stroke-dasharray: 4 5;
+    vector-effect: non-scaling-stroke;
+  }
+  .debug-target circle {
+    fill: #ff3fab;
+    stroke: #fff;
+    stroke-width: 1.5;
+    vector-effect: non-scaling-stroke;
+  }
+  .debug-target .mouse-point { fill: #fff; stroke: #ff3fab; }
 
   .robot-left.gripping .finger-upper { transform: translateY(19px); }
   .robot-left.gripping .finger-lower { transform: translateY(-19px); }
