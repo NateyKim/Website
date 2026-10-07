@@ -215,14 +215,20 @@
     const toolDirection = Math.atan2(constrainedTargetY - baseY, targetX - baseX);
     // The grasp point is the center between the fingertips at x = 61.
     const toolCenterOffset = 61;
-    const wristTargetX = targetX - Math.cos(toolDirection) * toolCenterOffset;
-    const wristTargetY = constrainedTargetY - Math.sin(toolDirection) * toolCenterOffset;
-    let dx = wristTargetX - baseX;
-    let dy = wristTargetY - baseY;
     const maximumReach = linkOne + linkTwo - 1;
     // Keep enough radial clearance that the forearm cannot fold back through
     // the upper arm when the cursor moves close to the shoulder.
     const minimumReach = 66;
+    const targetDistance = Math.hypot(targetX - baseX, constrainedTargetY - baseY);
+    const targetIsBeyondReach = targetDistance > maximumReach + toolCenterOffset;
+    const wristTargetX = targetIsBeyondReach
+      ? baseX + Math.cos(toolDirection) * maximumReach
+      : targetX - Math.cos(toolDirection) * toolCenterOffset;
+    const wristTargetY = targetIsBeyondReach
+      ? baseY + Math.sin(toolDirection) * maximumReach
+      : constrainedTargetY - Math.sin(toolDirection) * toolCenterOffset;
+    let dx = wristTargetX - baseX;
+    let dy = wristTargetY - baseY;
     const distance = Math.hypot(dx, dy) || 1;
 
     if (distance > maximumReach) {
@@ -480,7 +486,7 @@
     position: absolute;
     z-index: 1;
     top: clamp(6rem, 13vh, 9rem);
-    width: clamp(280px, 40vw, 700px);
+    width: clamp(220px, 28vw, 430px);
     overflow: visible;
     opacity: 0.84;
     filter: drop-shadow(0 20px 26px rgba(25, 32, 50, 0.13));
