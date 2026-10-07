@@ -1,38 +1,14 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-
   const bio = [
     'I am a research engineer at Penn’s GRASP Laboratory working at the intersection of assistive robotics, human movement, and human–robot interaction. I earned an M.S.E. in Robotics and a B.S.E. in Bioengineering from the University of Pennsylvania.',
     'My research spans upper-limb exoskeletons, EMG-informed musculoskeletal digital twins, human-in-the-loop control, machine learning for injury assessment, and socially assistive robots. I build systems that translate neuromuscular intent into adaptive, intuitive, and clinically meaningful technologies.',
     'Alongside my work at Penn, I am a research resident at Maingen, where I study machine-learning methods for robotic end-effector design, and a founding mechanical engineer at Tadashi Robotics, where I am helping translate the Ember social-robotics platform into a rehabilitative product.'
   ];
 
-  const youModules = import.meta.glob('/static/koroks/*.png', {
-    eager: true
-  });
-
-  const youImages = Object.entries(youModules).map(([path]) => {
-    const filename = path.split('/').pop();
-    const src = path.replace('/static', '');
-    const alt = `Photo of Natey (${filename})`;
-
-    return { src, alt };
-  });
-
-  let currentIndex = 0;
-  let interval: ReturnType<typeof setInterval>;
-
-  function cycleImages() {
-    if (youImages.length > 0) {
-      currentIndex = (currentIndex + 1) % youImages.length;
-    }
-  }
-
-  onMount(() => {
-    interval = setInterval(cycleImages, 2000);
-
-    return () => clearInterval(interval);
-  });
+  const heroImage = {
+    src: '/koroks/IMG_20230806_122558048_HDR.png',
+    alt: 'Portrait of Natey Kim'
+  };
 </script>
 
 <section class="intro-wrapper">
@@ -55,15 +31,7 @@
 
   <div class="intro-section">
     <div class="intro-left">
-      {#if youImages.length > 0}
-        <img
-          src={youImages[currentIndex].src}
-          alt={youImages[currentIndex].alt}
-          class="clickable-image"
-        />
-      {:else}
-        <p>No images found.</p>
-      {/if}
+      <img src={heroImage.src} alt={heroImage.alt} class="hero-image" />
     </div>
 
     <div class="intro-right">
@@ -142,7 +110,7 @@
     align-items: center;
   }
 
-  .clickable-image {
+  .hero-image {
     width: 300px;
     height: 300px;
     object-fit: cover;
