@@ -33,6 +33,7 @@
   let desiredRightTargetY = 218;
   let leftPose = { upperRotation: 0, forearmRotation: 0, wristRotation: 0 };
   let rightPose = { upperRotation: 0, forearmRotation: 0, wristRotation: 0 };
+  let activeArm: 'left' | 'right' = 'left';
   let armAnimationFrame = 0;
 
   function handlePointerMove(event: PointerEvent) {
@@ -55,13 +56,22 @@
     if (leftRobot && rightRobot) {
       const leftRect = leftRobot.getBoundingClientRect();
       const rightRect = rightRobot.getBoundingClientRect();
-      // Keep the end effectors on opposite sides of the cursor so the arms
-      // approach the target together without occupying the same task space.
-      const collisionClearance = 56;
-      desiredLeftTargetX = ((event.clientX - collisionClearance - leftRect.left) / leftRect.width) * 270;
-      desiredLeftTargetY = ((event.clientY - leftRect.top) / leftRect.height) * 520 - 10;
-      desiredRightTargetX = ((event.clientX + collisionClearance - rightRect.left) / rightRect.width) * 270;
-      desiredRightTargetY = ((event.clientY - rightRect.top) / rightRect.height) * 520 + 10;
+      // The nearest robot owns the target while the other yields. This lets
+      // the center of the pinch aperture sit on the cursor without overlap.
+      if (nextX < -0.08) activeArm = 'left';
+      if (nextX > 0.08) activeArm = 'right';
+
+      if (activeArm === 'left') {
+        desiredLeftTargetX = ((event.clientX - leftRect.left) / leftRect.width) * 270;
+        desiredLeftTargetY = ((event.clientY - leftRect.top) / leftRect.height) * 520;
+        desiredRightTargetX = 80;
+        desiredRightTargetY = 218;
+      } else {
+        desiredLeftTargetX = 190;
+        desiredLeftTargetY = 218;
+        desiredRightTargetX = ((event.clientX - rightRect.left) / rightRect.width) * 270;
+        desiredRightTargetY = ((event.clientY - rightRect.top) / rightRect.height) * 520;
+      }
     }
 
     clearTimeout(movementTimer);

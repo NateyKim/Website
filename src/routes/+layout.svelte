@@ -160,6 +160,23 @@
     </section>
 
     <section id="research-experience" class="major-section mobile-subject" class:mobile-active={isActive(['research-experience', 'publications', 'research-projects'])}>
+      <div class="research-network" aria-hidden="true">
+        <svg viewBox="0 0 1200 900" preserveAspectRatio="none">
+          <g class="research-network-lines">
+            <path d="M0 120 L120 62 L242 142 L370 74 L498 158 L620 58 L748 148 L874 82 L1004 154 L1128 68 L1200 112" />
+            <path d="M0 286 L98 218 L226 304 L350 206 L480 296 L604 194 L734 292 L860 210 L990 306 L1114 214 L1200 278" />
+            <path d="M0 472 L126 382 L252 478 L378 368 L506 466 L634 354 L762 470 L890 374 L1018 482 L1142 388 L1200 438" />
+            <path d="M0 656 L106 566 L234 668 L362 548 L492 658 L620 536 L750 664 L878 554 L1008 674 L1136 572 L1200 626" />
+            <path d="M120 62 L98 218 L126 382 L106 566 M242 142 L226 304 L252 478 L234 668 M370 74 L350 206 L378 368 L362 548 M498 158 L480 296 L506 466 L492 658 M620 58 L604 194 L634 354 L620 536 M748 148 L734 292 L762 470 L750 664 M874 82 L860 210 L890 374 L878 554 M1004 154 L990 306 L1018 482 L1008 674 M1128 68 L1114 214 L1142 388 L1136 572" />
+            <path d="M120 62 L226 304 M242 142 L350 206 M370 74 L480 296 M498 158 L604 194 M620 58 L734 292 M748 148 L860 210 M874 82 L990 306 M1004 154 L1114 214 M98 218 L252 478 M226 304 L378 368 M350 206 L506 466 M480 296 L634 354 M604 194 L762 470 M734 292 L890 374 M860 210 L1018 482 M990 306 L1142 388" />
+          </g>
+          <g class="research-network-nodes">
+            {#each [[120,62],[242,142],[370,74],[498,158],[620,58],[748,148],[874,82],[1004,154],[1128,68],[98,218],[226,304],[350,206],[480,296],[604,194],[734,292],[860,210],[990,306],[1114,214],[126,382],[252,478],[378,368],[506,466],[634,354],[762,470],[890,374],[1018,482],[1142,388],[106,566],[234,668],[362,548],[492,658],[620,536],[750,664],[878,554],[1008,674],[1136,572]] as node}
+              <circle cx={node[0]} cy={node[1]} r="5" />
+            {/each}
+          </g>
+        </svg>
+      </div>
       <WorkExperiencePage kind="research" />
     </section>
 
@@ -313,18 +330,28 @@
     left: 50%;
     width: 100vw;
     height: calc(clamp(24rem, 45vh, 38rem) + 14rem);
-    background-image:
-      radial-gradient(circle at 15% 38%, rgba(117, 102, 255, 0.14) 0 3px, transparent 4px),
-      radial-gradient(circle at 50% 20%, rgba(22, 170, 243, 0.12) 0 3px, transparent 4px),
-      radial-gradient(circle at 82% 48%, rgba(117, 102, 255, 0.12) 0 3px, transparent 4px),
-      linear-gradient(rgba(55, 74, 99, 0.07) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(55, 74, 99, 0.07) 1px, transparent 1px);
-    background-size: 240px 180px, 280px 220px, 260px 200px, 44px 44px, 44px 44px;
+    background: linear-gradient(to bottom, rgba(242, 245, 252, 0.72), rgba(248, 250, 252, 0.34) 62%, transparent);
     content: '';
     mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.82) 48%, transparent 100%);
     pointer-events: none;
     transform: translateX(-50%);
   }
+
+  .research-network {
+    position: absolute;
+    z-index: -1;
+    top: clamp(-38rem, -45vh, -24rem);
+    left: 50%;
+    width: 100vw;
+    height: calc(clamp(24rem, 45vh, 38rem) + 46rem);
+    pointer-events: none;
+    transform: translateX(-50%);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 58%, transparent 100%);
+  }
+
+  .research-network svg { width: 100%; height: 100%; }
+  .research-network-lines path { fill: none; stroke: #73829a; stroke-width: 1.15; opacity: 0.24; vector-effect: non-scaling-stroke; }
+  .research-network-nodes circle { fill: #7566ff; stroke: rgba(248, 250, 252, 0.9); stroke-width: 2.5; opacity: 0.42; vector-effect: non-scaling-stroke; }
 
   .beyond-cta {
     padding: 2.5rem 1rem 3.5rem;
