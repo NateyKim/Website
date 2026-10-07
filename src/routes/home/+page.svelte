@@ -693,16 +693,19 @@
   .job-title { margin: 1.4rem 0 0; color: #394657; font-size: clamp(1.05rem, 2.2vw, 1.55rem); font-weight: 600; }
 
   .robot {
+    --robot-width: clamp(180px, 22vw, 330px);
     position: absolute;
     z-index: 1;
     top: clamp(6rem, 13vh, 9rem);
-    width: clamp(180px, 22vw, 330px);
+    width: var(--robot-width);
     overflow: visible;
     opacity: 0.84;
     filter: drop-shadow(0 20px 26px rgba(25, 32, 50, 0.13));
   }
-  .robot-left { left: clamp(3rem, calc((100vw - 1200px) / 2), 9rem); }
-  .robot-right { right: clamp(3rem, calc((100vw - 1200px) / 2), 9rem); }
+  /* The wall rail is x=8 in a 270-unit viewBox. Offset by that exact scaled
+     amount so the physical mount, not the SVG box, sits on the viewport edge. */
+  .robot-left { left: 0; transform: translateX(-2.963%); }
+  .robot-right { right: 0; transform: translateX(2.963%); }
   .robot-mount path, .arm-segment path, .wrist path { fill: none; stroke: #222c38; stroke-width: 13; stroke-linecap: round; stroke-linejoin: round; }
   .robot-mount circle, .arm-segment circle { fill: #f8fafc; stroke: #222c38; stroke-width: 7; }
   .gripper-base { stroke-width: 8 !important; }
@@ -764,9 +767,7 @@
   @media (max-width: 850px) {
     .home-scene { padding-top: 2.5rem; padding-bottom: 2rem; }
     .identity { margin-top: 7rem; margin-bottom: 16rem; }
-    .robot { top: 12rem; width: 180px; opacity: 0.34; }
-    .robot-left { left: -6rem; }
-    .robot-right { right: -6rem; }
+    .robot { --robot-width: 180px; top: 12rem; opacity: 0.34; }
     .bio-panel { grid-template-columns: 1fr; }
   }
 
