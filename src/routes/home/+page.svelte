@@ -724,7 +724,12 @@
 
   <svg bind:this={leftRobot} class="robot robot-left" class:gripping viewBox="0 0 270 520" aria-hidden="true">
     {#if robotDebug}
-      <defs><clipPath id="left-workspace-wall"><rect x="13" y="-400" width="657" height="1320" /></clipPath></defs>
+      <defs>
+        <clipPath id="left-workspace-wall"><rect x="13" y="-400" width="657" height="1320" /></clipPath>
+        <marker id="left-target-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0 0 L8 4 L0 8 Z" />
+        </marker>
+      </defs>
       <g class="debug-workspace" clip-path="url(#left-workspace-wall)">
         <circle cx={leftGeometry.baseX} cy={leftGeometry.baseY} r="281.32" />
       </g>
@@ -745,7 +750,7 @@
     </g>
     {#if robotDebug}
       <g class="debug-target">
-        <line x1={leftGraspCenter.x} y1={leftGraspCenter.y} x2={leftTargetX} y2={leftTargetY} />
+        <line class="target-vector" x1={leftTargetX} y1={leftTargetY} x2={leftGraspCenter.x} y2={leftGraspCenter.y} marker-end="url(#left-target-arrow)" />
         <circle cx={leftGraspCenter.x} cy={leftGraspCenter.y} r="5" />
         <circle class="mouse-point" cx={leftTargetX} cy={leftTargetY} r="3.5" />
       </g>
@@ -757,7 +762,12 @@
 
   <svg bind:this={rightRobot} class="robot robot-right" class:gripping viewBox="0 0 270 520" aria-hidden="true">
     {#if robotDebug}
-      <defs><clipPath id="right-workspace-wall"><rect x="-400" y="-400" width="657" height="1320" /></clipPath></defs>
+      <defs>
+        <clipPath id="right-workspace-wall"><rect x="-400" y="-400" width="657" height="1320" /></clipPath>
+        <marker id="right-target-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0 0 L8 4 L0 8 Z" />
+        </marker>
+      </defs>
       <g class="debug-workspace" clip-path="url(#right-workspace-wall)">
         <circle cx={rightGeometry.baseX} cy={rightGeometry.baseY} r="281.32" />
       </g>
@@ -778,7 +788,7 @@
     </g>
     {#if robotDebug}
       <g class="debug-target">
-        <line x1={rightGraspCenter.x} y1={rightGraspCenter.y} x2={rightTargetX} y2={rightTargetY} />
+        <line class="target-vector" x1={rightTargetX} y1={rightTargetY} x2={rightGraspCenter.x} y2={rightGraspCenter.y} marker-end="url(#right-target-arrow)" />
         <circle cx={rightGraspCenter.x} cy={rightGraspCenter.y} r="5" />
         <circle class="mouse-point" cx={rightTargetX} cy={rightTargetY} r="3.5" />
       </g>
@@ -940,6 +950,7 @@
     stroke-dasharray: 4 5;
     vector-effect: non-scaling-stroke;
   }
+  marker path { fill: #ff3fab; }
   .debug-target circle {
     fill: #ff3fab;
     stroke: #fff;
