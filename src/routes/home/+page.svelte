@@ -35,8 +35,6 @@
   let rightPose = { upperRotation: 0, forearmRotation: 0, wristRotation: 0 };
   let leftToolAngle = 180;
   let rightToolAngle = 180;
-  let leftRoutingViaNeutral = false;
-  let rightRoutingViaNeutral = false;
   let armAnimationFrame = 0;
   let previousArmTime = 0;
   let robotDebug = true;
@@ -274,14 +272,113 @@
 
   const polygonPoints = (box: CollisionPoint[]) => box.map((point) => `${point.x},${point.y}`).join(' ');
 
+  function exploreSafePaths(
+    currentPose: { upperRotation: number; forearmRotation: number; wristRotation: number },
+    currentTool: number,
+    goalPoses: Array<{ upperRotation: number; forearmRotation: number; wristRotation: number; toolAngle: number }>,
+    targetX: number,
+    targetY: number,
+    maximumSteps: { upper: number; forearm: number; tool: number }
+  ) {
+    type SearchNode = {
+      pose: typeof currentPose;
+      tool: number;
+      firstPose: typeof currentPose;
+      firstTool: number;
+      energy: number;
+      score: number;
+    };
+    const safeGoals = goalPoses.filter((goal) =>
+      geometryIsCollisionFree(calculateArmGeometry('right', goal, targetX, targetY, goal.toolAngle))
+    );
+    const goals = safeGoals.length ? safeGoals : goalPoses;
+    const trackingScore = (pose: typeof currentPose, tool: number) => {
+      const geometry = calculateArmGeometry('right', pose, targetX, targetY, tool);
+      const center = graspCenter(geometry);
+      const trackingError = Math.hypot(center.x - targetX, center.y - targetY);
+      const configurationError = Math.min(...goals.map((goal) =>
+        Math.abs(normalizeAngle(goal.upperRotation - pose.upperRotation))
+        + Math.abs(normalizeAngle(goal.forearmRotation - pose.forearmRotation))
+        + 0.25 * Math.abs(normalizeAngle(goal.toolAngle - tool))
+      ));
+      // Tracking dominates; configuration distance guides equally tracking
+      // candidates toward a valid analytical goal, and energy only breaks ties.
+      return trackingError * 10_000 + configurationError * 3;
+    };
+    let frontier: SearchNode[] = [{
+      pose: currentPose,
+      tool: currentTool,
+      firstPose: currentPose,
+      firstTool: currentTool,
+      energy: 0,
+      score: trackingScore(currentPose, currentTool)
+    }];
+    let best = frontier[0];
+    const directions = [-1, 0, 1];
+
+    // Beam-search several genuinely different joint-space routes. It runs only
+    // when direct IK motion is blocked, keeping ordinary tracking inexpensive.
+    for (let depth = 0; depth < 12; depth += 1) {
+      const candidates: SearchNode[] = [];
+      const seen = new Set<string>();
+      for (const node of frontier) {
+        for (const upperDirection of directions) {
+          for (const forearmDirection of directions) {
+            for (const toolDirection of directions) {
+              if (upperDirection === 0 && forearmDirection === 0 && toolDirection === 0) continue;
+              const pose = enforceSafePose('right', {
+                upperRotation: node.pose.upperRotation + upperDirection * maximumSteps.upper,
+                forearmRotation: node.pose.forearmRotation + forearmDirection * maximumSteps.forearm,
+                wristRotation: 0
+              });
+              const tool = node.tool + toolDirection * maximumSteps.tool;
+              const geometry = calculateArmGeometry('right', pose, targetX, targetY, tool);
+              if (!geometryIsCollisionFree(geometry)) continue;
+              const key = `${Math.round(pose.upperRotation / 2)},${Math.round(pose.forearmRotation / 2)},${Math.round(tool / 3)}`;
+              if (seen.has(key)) continue;
+              seen.add(key);
+              const movementEnergy = node.energy
+                + upperDirection * upperDirection
+                + forearmDirection * forearmDirection
+                + 0.35 * toolDirection * toolDirection;
+              const next: SearchNode = {
+                pose,
+                tool,
+                firstPose: depth === 0 ? pose : node.firstPose,
+                firstTool: depth === 0 ? tool : node.firstTool,
+                energy: movementEnergy,
+                score: trackingScore(pose, tool) + movementEnergy * 0.08
+              };
+              candidates.push(next);
+              if (next.score < best.score) best = next;
+            }
+          }
+        }
+      }
+      if (!candidates.length) break;
+      // Retain a broad set of alternatives so a temporarily worse route is
+      // not discarded merely because another branch has a lower local cost.
+      candidates.sort((first, second) => first.score - second.score);
+      const diverse = new Map<string, SearchNode>();
+      for (const candidate of candidates) {
+        const bucket = `${Math.round(candidate.pose.upperRotation / 18)},${Math.round(candidate.pose.forearmRotation / 18)}`;
+        if (!diverse.has(bucket)) diverse.set(bucket, candidate);
+      }
+      frontier = [...candidates.slice(0, 48), ...[...diverse.values()].slice(0, 32)].slice(0, 80);
+    }
+
+    return best.firstPose === currentPose
+      ? { pose: currentPose, tool: currentTool }
+      : { pose: best.firstPose, tool: best.firstTool };
+  }
+
   function chooseSafeMotion(
     currentPose: { upperRotation: number; forearmRotation: number; wristRotation: number },
     currentTool: number,
     solvedPoses: Array<{ upperRotation: number; forearmRotation: number; wristRotation: number; toolAngle: number }>,
     targetX: number,
     targetY: number,
-    maximumSteps: { upper: number; forearm: number; tool: number },
-    routingViaNeutral: boolean
+    maximumSteps: { upper: number; forearm: number; tool: number }
   ) {
     const configurationDistance = (candidate: (typeof solvedPoses)[number]) =>
       Math.abs(normalizeAngle(candidate.upperRotation - currentPose.upperRotation))
@@ -296,10 +393,7 @@
         + configurationDistance(candidate);
     };
     const solvedPose = [...solvedPoses].sort((first, second) => targetScore(first) - targetScore(second))[0];
-    const neutralPose = { upperRotation: 0, forearmRotation: 0, wristRotation: 0, toolAngle: 180 };
-    const neutralError = configurationDistance(neutralPose);
-    if (routingViaNeutral && neutralError < 4) routingViaNeutral = false;
-    const destination = routingViaNeutral ? neutralPose : solvedPose;
+    const destination = solvedPose;
     const upperError = normalizeAngle(destination.upperRotation - currentPose.upperRotation);
     const forearmError = normalizeAngle(destination.forearmRotation - currentPose.forearmRotation);
     const toolError = normalizeAngle(destination.toolAngle - currentTool);
@@ -317,17 +411,10 @@
       const tool = currentTool + step.tool * fraction;
       const geometry = calculateArmGeometry('right', pose, targetX, targetY, tool);
       if (geometryIsCollisionFree(geometry)) {
-        return { pose, tool, routingViaNeutral };
+        return { pose, tool };
       }
     }
-    // A direct interpolation can hit the base or the other links even when
-    // the opposite analytical elbow branch is valid. Leave that local basin
-    // through the known-safe, inward-facing extended posture, then approach
-    // the globally best branch from there.
-    if (!routingViaNeutral) {
-      return chooseSafeMotion(currentPose, currentTool, solvedPoses, targetX, targetY, maximumSteps, true);
-    }
-    return { pose: currentPose, tool: currentTool, routingViaNeutral };
+    return exploreSafePaths(currentPose, currentTool, solvedPoses, targetX, targetY, maximumSteps);
   }
 
   function buildEmgPath(samples: number[]) {
@@ -439,14 +526,12 @@
     const canonicalLeftTargetX = 270 - leftTargetX;
     const solvedLeft = solveArm('right', canonicalLeftTargetX, leftTargetY);
     const solvedRight = solveArm('right', rightTargetX, rightTargetY);
-    const safeLeft = chooseSafeMotion(leftPose, leftToolAngle, solvedLeft, canonicalLeftTargetX, leftTargetY, maximumSteps, leftRoutingViaNeutral);
-    const safeRight = chooseSafeMotion(rightPose, rightToolAngle, solvedRight, rightTargetX, rightTargetY, maximumSteps, rightRoutingViaNeutral);
+    const safeLeft = chooseSafeMotion(leftPose, leftToolAngle, solvedLeft, canonicalLeftTargetX, leftTargetY, maximumSteps);
+    const safeRight = chooseSafeMotion(rightPose, rightToolAngle, solvedRight, rightTargetX, rightTargetY, maximumSteps);
     leftPose = safeLeft.pose;
     leftToolAngle = safeLeft.tool;
-    leftRoutingViaNeutral = safeLeft.routingViaNeutral;
     rightPose = safeRight.pose;
     rightToolAngle = safeRight.tool;
-    rightRoutingViaNeutral = safeRight.routingViaNeutral;
 
     armAnimationFrame = requestAnimationFrame(advanceArms);
   }
