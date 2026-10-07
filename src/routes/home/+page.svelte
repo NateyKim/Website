@@ -140,15 +140,11 @@
     const wristX = elbowX + Math.cos(forearmAngle) * linkTwo;
     const wristY = elbowY + Math.sin(forearmAngle) * linkTwo;
     const defaultToolAngle = side === 'left' ? 0 : 180;
-    const forearmDegrees = (forearmAngle * 180) / Math.PI;
     const targetToolAngle = requestedToolAngle ?? radiansToDegrees(Math.atan2(targetY - wristY, targetX - wristX));
-    const targetRelativeAngle = ((targetToolAngle - forearmDegrees + 540) % 360) - 180;
-    // Keeping the approach axis within the outward half-plane prevents the
-    // rectangular open-gripper envelope from sweeping back over the forearm.
-    // The mirrored left arm inherits the identical constraint.
-    const safeRelativeAngle = clamp(targetRelativeAngle, -88, -18);
-    const desiredToolAngle = forearmDegrees + safeRelativeAngle;
-    const angleDifference = ((desiredToolAngle - defaultToolAngle + 540) % 360) - 180;
+    // The gripper's local x-axis is the normal of its fixed contact surface.
+    // Keep it aimed directly at the target; the collision boxes, rather than
+    // an arbitrary wrist-angle clamp, decide whether that pose is admissible.
+    const angleDifference = ((targetToolAngle - defaultToolAngle + 540) % 360) - 180;
     const toolBottom = (angle: number) => {
       const radians = (angle * Math.PI) / 180;
       return wristY + Math.max(...gripperEnvelope.map(([x, y]) => x * Math.sin(radians) + y * Math.cos(radians)));
@@ -158,7 +154,7 @@
     // only as far as the complete gripper geometry remains above the floor.
     let safeFraction = 0;
     let unsafeFraction = 1;
-    if (toolBottom(desiredToolAngle) <= 442) {
+    if (toolBottom(defaultToolAngle + angleDifference) <= 442) {
       safeFraction = 1;
     } else {
       for (let iteration = 0; iteration < 12; iteration += 1) {
@@ -324,7 +320,8 @@
           forearmRotation: currentPose.forearmRotation + forearmStep,
           wristRotation: currentPose.wristRotation
         });
-        const desiredTool = calculateArmGeometry('right', candidatePose, targetX, targetY).toolAngle;
+        const poseGeometry = calculateArmGeometry('right', candidatePose, targetX, targetY, currentTool);
+        const desiredTool = radiansToDegrees(Math.atan2(targetY - poseGeometry.wristY, targetX - poseGeometry.wristX));
         const boundedTool = moveAngleToward(currentTool, desiredTool, 3);
         const targetToolStep = boundedTool - currentTool;
         const toolSteps = [targetToolStep, targetToolStep * 0.5, -3, -1.5, 0, 1.5, 3];
@@ -336,6 +333,10 @@
 
           const center = graspCenter(geometry);
           const centerError = Math.hypot(center.x - targetX, center.y - targetY);
+          const approachAngle = radiansToDegrees(Math.atan2(targetY - center.y, targetX - center.x));
+          const orientationError = centerError < 2
+            ? 0
+            : Math.abs(((geometry.toolAngle - approachAngle + 540) % 360) - 180);
           // A tiny motion cost breaks ties without overpowering the primary
           // objective: minimize mouse-to-jaw-center distance.
           const motionCost = 0.002 * (
@@ -343,7 +344,9 @@
             + Math.abs(candidatePose.forearmRotation - currentPose.forearmRotation)
             + Math.abs(candidateTool - currentTool)
           );
-          const score = centerError + motionCost;
+          // Contact-plane orthogonality is a hard tracking priority: one
+          // degree of angular error costs more than any small positional gain.
+          const score = centerError + orientationError * 12 + motionCost;
           if (score < bestScore) {
             bestScore = score;
             bestPose = candidatePose;
