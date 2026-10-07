@@ -112,7 +112,7 @@
     const forearmRotation = Math.min(pose.forearmRotation, maximumForearmRotation);
 
     // Keep the pinch tool from folding backward into its own forearm.
-    const wristRotation = clamp(pose.wristRotation, -72, 72);
+    const wristRotation = clamp(pose.wristRotation, -55, 55);
     return { upperRotation, forearmRotation, wristRotation };
   }
 
@@ -275,34 +275,40 @@
   </svg>
 
   <svg bind:this={leftRobot} class="robot robot-left" class:gripping viewBox="0 0 270 520" aria-hidden="true">
+    <defs><clipPath id="left-floor-boundary"><rect x="-300" y="-300" width="900" height="750" /></clipPath></defs>
     <g class="robot-mount">
       <path d="M8 450 H118 M32 450 V420 H92 V450" /><circle cx="62" cy="416" r="19" />
     </g>
-    <g class="arm-segment" style={`transform: rotate(${leftPose.upperRotation}deg); transform-origin: 62px 416px;`}>
-      <path d="M62 416 L126 316" /><circle cx="126" cy="316" r="16" />
-      <g class="arm-segment" style={`transform: rotate(${leftPose.forearmRotation}deg); transform-origin: 126px 316px;`}>
-        <path d="M126 316 L190 218" /><circle cx="190" cy="218" r="14" />
-        <g class="wrist" style={`transform: rotate(${leftPose.wristRotation}deg); transform-origin: 190px 218px;`}>
-          <path class="gripper-base" d="M190 218 H220 M220 190 V246" />
-          <path class="gripper-finger finger-upper" d="M220 190 H251" />
-          <path class="gripper-finger finger-lower" d="M220 246 H251" />
+    <g clip-path="url(#left-floor-boundary)">
+      <g class="arm-segment" style={`transform: rotate(${leftPose.upperRotation}deg); transform-origin: 62px 416px;`}>
+        <path d="M62 416 L126 316" /><circle cx="126" cy="316" r="16" />
+        <g class="arm-segment" style={`transform: rotate(${leftPose.forearmRotation}deg); transform-origin: 126px 316px;`}>
+          <path d="M126 316 L190 218" /><circle cx="190" cy="218" r="14" />
+          <g class="wrist" style={`transform: rotate(${leftPose.wristRotation}deg); transform-origin: 190px 218px;`}>
+            <path class="gripper-base" d="M190 218 H220 M220 190 V246" />
+            <path class="gripper-finger finger-upper" d="M220 190 H251" />
+            <path class="gripper-finger finger-lower" d="M220 246 H251" />
+          </g>
         </g>
       </g>
     </g>
   </svg>
 
   <svg bind:this={rightRobot} class="robot robot-right" class:gripping viewBox="0 0 270 520" aria-hidden="true">
+    <defs><clipPath id="right-floor-boundary"><rect x="-300" y="-300" width="900" height="750" /></clipPath></defs>
     <g class="robot-mount">
       <path d="M152 450 H262 M178 450 V420 H238 V450" /><circle cx="208" cy="416" r="19" />
     </g>
-    <g class="arm-segment" style={`transform: rotate(${rightPose.upperRotation}deg); transform-origin: 208px 416px;`}>
-      <path d="M208 416 L144 316" /><circle cx="144" cy="316" r="16" />
-      <g class="arm-segment" style={`transform: rotate(${rightPose.forearmRotation}deg); transform-origin: 144px 316px;`}>
-        <path d="M144 316 L80 218" /><circle cx="80" cy="218" r="14" />
-        <g class="wrist" style={`transform: rotate(${rightPose.wristRotation}deg); transform-origin: 80px 218px;`}>
-          <path class="gripper-base" d="M80 218 H50 M50 190 V246" />
-          <path class="gripper-finger finger-upper" d="M50 190 H19" />
-          <path class="gripper-finger finger-lower" d="M50 246 H19" />
+    <g clip-path="url(#right-floor-boundary)">
+      <g class="arm-segment" style={`transform: rotate(${rightPose.upperRotation}deg); transform-origin: 208px 416px;`}>
+        <path d="M208 416 L144 316" /><circle cx="144" cy="316" r="16" />
+        <g class="arm-segment" style={`transform: rotate(${rightPose.forearmRotation}deg); transform-origin: 144px 316px;`}>
+          <path d="M144 316 L80 218" /><circle cx="80" cy="218" r="14" />
+          <g class="wrist" style={`transform: rotate(${rightPose.wristRotation}deg); transform-origin: 80px 218px;`}>
+            <path class="gripper-base" d="M80 218 H50 M50 190 V246" />
+            <path class="gripper-finger finger-upper" d="M50 190 H19" />
+            <path class="gripper-finger finger-lower" d="M50 246 H19" />
+          </g>
         </g>
       </g>
     </g>
@@ -350,7 +356,7 @@
     inset: 0;
     background-image: linear-gradient(rgba(55, 74, 99, 0.11) 1px, transparent 1px), linear-gradient(90deg, rgba(55, 74, 99, 0.11) 1px, transparent 1px);
     background-size: 44px 44px;
-    mask-image: linear-gradient(to bottom, black 0%, black 58%, transparent 91%);
+    mask-image: linear-gradient(to bottom, black 0%, black 72%, rgba(0, 0, 0, 0.62) 91%, transparent 100%);
     transform: scale(1.04);
   }
 

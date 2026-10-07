@@ -163,6 +163,7 @@
       <div class="research-network" aria-hidden="true">
         <svg viewBox="0 0 1200 900" preserveAspectRatio="none">
           <g class="research-network-lines">
+            <path d="M120 0 V62 M370 0 V74 M620 0 V58 M874 0 V82 M1128 0 V68" />
             <path d="M0 120 L120 62 L242 142 L370 74 L498 158 L620 58 L748 148 L874 82 L1004 154 L1128 68 L1200 112" />
             <path d="M0 286 L98 218 L226 304 L350 206 L480 296 L604 194 L734 292 L860 210 L990 306 L1114 214 L1200 278" />
             <path d="M0 472 L126 382 L252 478 L378 368 L506 466 L634 354 L762 470 L890 374 L1018 482 L1142 388 L1200 438" />
@@ -315,7 +316,7 @@
   }
 
   main > section.major-section {
-    margin-top: clamp(24rem, 45vh, 38rem);
+    margin-top: 30rem;
   }
 
   #research-experience {
@@ -326,10 +327,10 @@
   #research-experience::before {
     position: absolute;
     z-index: -1;
-    top: clamp(-38rem, -45vh, -24rem);
+    top: -30rem;
     left: 50%;
     width: 100vw;
-    height: calc(clamp(24rem, 45vh, 38rem) + 14rem);
+    height: 44rem;
     background: linear-gradient(to bottom, rgba(242, 245, 252, 0.72), rgba(248, 250, 252, 0.34) 62%, transparent);
     content: '';
     mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.82) 48%, transparent 100%);
@@ -340,10 +341,12 @@
   .research-network {
     position: absolute;
     z-index: -1;
-    top: calc(clamp(-38rem, -45vh, -24rem) - 8rem);
+    top: -38rem;
     left: 50%;
     width: 100vw;
-    height: calc(clamp(24rem, 45vh, 38rem) + 54rem);
+    height: 84rem;
+    background-image: linear-gradient(rgba(55, 74, 99, 0.09) 1px, transparent 1px), linear-gradient(90deg, rgba(55, 74, 99, 0.09) 1px, transparent 1px);
+    background-size: 44px 44px;
     pointer-events: none;
     transform: translateX(-50%);
     mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 30%, rgba(0, 0, 0, 0.18) 43%, transparent 49%);
@@ -388,6 +391,7 @@
   :global(body) {
     margin: 0;
     overflow-x: hidden;
+    overflow-anchor: none;
   }
 
   @media (max-width: 700px) {
