@@ -50,8 +50,11 @@
   let previousArmTime = 0;
   let robotDebug = true;
   const graspCenterOffset = 45.5;
-  // Collision envelope for the fully open gripper, including stroke width.
-  const gripperEnvelope = [[0, -32], [61, -32], [61, 32], [0, 32]] as const;
+  // Model the two jaws independently so the open pinch aperture remains free.
+  const gripperJawEnvelopes = [
+    [[26, -32], [65, -32], [65, -24], [26, -24]],
+    [[26, 24], [65, 24], [65, 32], [26, 32]]
+  ] as const;
   type CollisionPoint = { x: number; y: number };
 
   function handlePointerMove(event: PointerEvent) {
@@ -192,14 +195,14 @@
     ];
   }
 
-  function transformedGripperBox(geometry: ReturnType<typeof calculateArmGeometry>): CollisionPoint[] {
+  function transformedGripperBoxes(geometry: ReturnType<typeof calculateArmGeometry>): CollisionPoint[][] {
     const radians = (geometry.toolAngle * Math.PI) / 180;
     const cosine = Math.cos(radians);
     const sine = Math.sin(radians);
-    return gripperEnvelope.map(([x, y]) => ({
-      x: geometry.wristX + x * cosine - y * sine,
-      y: geometry.wristY + x * sine + y * cosine
-    }));
+    return gripperJawEnvelopes.map((envelope) => envelope.map(([x, y]) => ({
+        x: geometry.wristX + x * cosine - y * sine,
+        y: geometry.wristY + x * sine + y * cosine
+      })));
   }
 
   function jointBox(centerX: number, centerY: number, radius: number): CollisionPoint[] {
@@ -238,25 +241,25 @@
     const forearmBox = segmentBox(geometry.elbowX, geometry.elbowY, geometry.wristX, geometry.wristY, 10, 20, 17);
     const elbowBox = jointBox(geometry.elbowX, geometry.elbowY, 20);
     const wristBox = jointBox(geometry.wristX, geometry.wristY, 18);
-    const gripperBox = transformedGripperBox(geometry);
+    const gripperBoxes = transformedGripperBoxes(geometry);
     const baseBox: CollisionPoint[] = [
       { x: 220, y: 190 }, { x: 270, y: 190 }, { x: 270, y: 330 }, { x: 220, y: 330 }
     ];
-    const movingBoxes = [upperBox, elbowBox, forearmBox, wristBox, gripperBox];
+    const movingBoxes = [upperBox, elbowBox, forearmBox, wristBox, ...gripperBoxes];
     const clearsWall = movingBoxes.every((box) => box.every((point) => point.x <= 257));
 
     return clearsWall
       && !boxesOverlap(baseBox, elbowBox)
       && !boxesOverlap(baseBox, forearmBox)
       && !boxesOverlap(baseBox, wristBox)
-      && !boxesOverlap(baseBox, gripperBox)
+      && gripperBoxes.every((box) => !boxesOverlap(baseBox, box))
       && !boxesOverlap(upperBox, wristBox)
-      && !boxesOverlap(upperBox, gripperBox)
+      && gripperBoxes.every((box) => !boxesOverlap(upperBox, box))
       && !boxesOverlap(elbowBox, wristBox)
-      && !boxesOverlap(elbowBox, gripperBox)
+      && gripperBoxes.every((box) => !boxesOverlap(elbowBox, box))
       // The forearm box is trimmed before the wrist, so overlap here is a
       // genuine fold-back collision rather than the intended joint contact.
-      && !boxesOverlap(forearmBox, gripperBox);
+      && gripperBoxes.every((box) => !boxesOverlap(forearmBox, box));
   }
 
   function graspCenter(geometry: ReturnType<typeof calculateArmGeometry>) {
@@ -277,7 +280,7 @@
       jointBox(geometry.elbowX, geometry.elbowY, 20),
       segmentBox(geometry.elbowX, geometry.elbowY, geometry.wristX, geometry.wristY, 10, 20, 17),
       jointBox(geometry.wristX, geometry.wristY, 18),
-      transformedGripperBox(geometry)
+      ...transformedGripperBoxes(geometry)
     ];
   }
 
