@@ -289,11 +289,16 @@
       const centerError = Math.hypot(center.x - targetX, center.y - targetY);
       const approach = radiansToDegrees(Math.atan2(targetY - center.y, targetX - center.x));
       const orientationError = centerError < 2 ? 0 : Math.abs(((geometry.toolAngle - approach + 540) % 360) - 180);
-      const ikBias = 0.01 * (
+      const preferredTool = radiansToDegrees(Math.atan2(targetY - geometry.wristY, targetX - geometry.wristX));
+      const toolPostureError = ((tool - preferredTool + 540) % 360) - 180;
+      // Inside the reachable workspace many joint combinations put the tool
+      // near the cursor. Strong convex posture terms select one stable IK
+      // branch and prevent unnecessary shoulder/elbow/wrist redistribution.
+      const ikBias = 0.18 * (
         (pose.upperRotation - solvedPose.upperRotation) ** 2
         + (pose.forearmRotation - solvedPose.forearmRotation) ** 2
-      );
-      return centerError + orientationError * 10 + ikBias;
+      ) + 0.12 * toolPostureError ** 2;
+      return centerError + orientationError * 6 + ikBias;
     };
 
     const epsilon = 0.4;
@@ -311,9 +316,9 @@
       tool: clamp(-(toolGradient * maximumSteps.tool / scaledNorm) * maximumSteps.tool, -maximumSteps.tool, maximumSteps.tool)
     };
     const velocity = {
-      upper: previousVelocity.upper * 0.78 + desiredVelocity.upper * 0.22,
-      forearm: previousVelocity.forearm * 0.78 + desiredVelocity.forearm * 0.22,
-      tool: previousVelocity.tool * 0.78 + desiredVelocity.tool * 0.22
+      upper: previousVelocity.upper * 0.62 + desiredVelocity.upper * 0.38,
+      forearm: previousVelocity.forearm * 0.62 + desiredVelocity.forearm * 0.38,
+      tool: previousVelocity.tool * 0.62 + desiredVelocity.tool * 0.38
     };
     const currentEnergy = energy(currentPose, currentTool);
     for (const fraction of [1, 0.5, 0.25, 0.125]) {
