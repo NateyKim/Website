@@ -309,9 +309,10 @@
     // Tracking accuracy is lexicographically first: A* may optimize motion
     // only among goals whose gripper centers are essentially equally close.
     const bestError = safeGoals[0].error;
-    const eligibleGoals = safeGoals.filter((candidate) =>
+    const equallyAccurateGoals = safeGoals.filter((candidate) =>
       bestError < 0.75 ? candidate.error < 0.75 : candidate.error <= bestError + 1.5
-    ).slice(0, 8);
+    );
+    const eligibleGoals = bestError < 0.75 ? equallyAccurateGoals : equallyAccurateGoals.slice(0, 8);
     const resolution = 12;
     const minimumAngle = -168;
     const count = 29;
@@ -614,23 +615,15 @@
     const maximumReach = linkOne + linkTwo - 1;
     const minimumWristReach = Math.abs(linkOne - linkTwo) + 0.5;
     const maximumGraspReach = maximumReach + toolCenterOffset;
-    const requestedGraspReach = Math.hypot(targetX - baseX, targetY - baseY);
-    const toolDirection = rawDirection;
-    const desiredToolAngle = radiansToDegrees(toolDirection);
-    // Search the complete analytical solution set rather than inventing a
-    // forbidden radius around the mount. The exact requested distance is
-    // included, then a deterministic radial sweep supplies the closest safe
-    // alternative if that exact pose intersects real robot geometry.
-    const graspReaches = [clamp(requestedGraspReach, 0, maximumGraspReach)];
-    for (let index = 0; index <= 28; index += 1) {
-      graspReaches.push((index / 28) * maximumGraspReach);
-    }
-
-    return graspReaches.flatMap((graspReach) => {
-      const signedWristReach = graspReach - toolCenterOffset;
-      if (Math.abs(signedWristReach) < minimumWristReach || Math.abs(signedWristReach) > maximumReach) return [];
-      const dx = Math.cos(toolDirection) * signedWristReach;
-      const dy = Math.sin(toolDirection) * signedWristReach;
+    const radialToolAngle = radiansToDegrees(rawDirection);
+    const solutionsFor = (graspX: number, graspY: number, toolAngle: number) => {
+      const toolRadians = (toolAngle * Math.PI) / 180;
+      const wristX = graspX - Math.cos(toolRadians) * toolCenterOffset;
+      const wristY = graspY - Math.sin(toolRadians) * toolCenterOffset;
+      const dx = wristX - baseX;
+      const dy = wristY - baseY;
+      const wristReach = Math.hypot(dx, dy);
+      if (wristReach < minimumWristReach || wristReach > maximumReach) return [];
       const squaredDistance = dx * dx + dy * dy;
       const cosineElbow = clamp((squaredDistance - linkOne ** 2 - linkTwo ** 2) / (2 * linkOne * linkTwo), -1, 1);
       return [-1, 1].map((elbowSign) => {
@@ -640,11 +633,30 @@
         const upperRotation = normalizeAngle(radiansToDegrees(shoulder) - baseAngleOne);
         const forearmRotation = normalizeAngle(radiansToDegrees(forearm) - baseAngleTwo - upperRotation);
         const defaultToolAngle = side === 'left' ? 0 : 180;
-        const rawWristRotation = desiredToolAngle - defaultToolAngle - upperRotation - forearmRotation;
+        const rawWristRotation = toolAngle - defaultToolAngle - upperRotation - forearmRotation;
         const wristRotation = clamp(normalizeAngle(rawWristRotation), -108, 108);
-        return { upperRotation, forearmRotation, wristRotation, toolAngle: desiredToolAngle };
+        return { upperRotation, forearmRotation, wristRotation, toolAngle: normalizeAngle(toolAngle) };
       });
+    };
+
+    // At an exact grasp-center target, orientation is a free degree of
+    // freedom. Explore the full circle instead of forcing the gripper to point
+    // radially away from its base.
+    const exactSolutions = Array.from({ length: 24 }, (_, index) => radialToolAngle + index * 15)
+      .flatMap((toolAngle) => solutionsFor(targetX, targetY, toolAngle));
+
+    // Radial samples remain fallback goals only for targets outside the exact
+    // collision-free workspace. Their jaws face toward the requested point.
+    const graspReaches: number[] = [];
+    for (let index = 0; index <= 28; index += 1) {
+      graspReaches.push((index / 28) * maximumGraspReach);
+    }
+    const fallbackSolutions = graspReaches.flatMap((graspReach) => {
+      const graspX = baseX + Math.cos(rawDirection) * graspReach;
+      const graspY = baseY + Math.sin(rawDirection) * graspReach;
+      return solutionsFor(graspX, graspY, radialToolAngle);
     });
+    return [...exactSolutions, ...fallbackSolutions];
   }
 
   $: emgPath = buildEmgPath(emgSamples);
