@@ -38,12 +38,8 @@
   let armAnimationFrame = 0;
   let previousArmTime = 0;
   let robotDebug = false;
-  let leftRecovery = false;
-  let rightRecovery = false;
-  let leftStuckFrames = 0;
-  let rightStuckFrames = 0;
-  let leftRecoveryCooldown = 0;
-  let rightRecoveryCooldown = 0;
+  let leftJointVelocity = { upper: 0, forearm: 0, tool: 0 };
+  let rightJointVelocity = { upper: 0, forearm: 0, tool: 0 };
   const graspCenterOffset = 45.5;
   // Collision envelope for the fully open gripper, including stroke width.
   const gripperEnvelope = [[0, -32], [61, -32], [61, 32], [0, 32]] as const;
@@ -283,68 +279,55 @@
     solvedPose: { upperRotation: number; forearmRotation: number; wristRotation: number },
     targetX: number,
     targetY: number,
-    maximumSteps: { upper: number; forearm: number; tool: number }
+    maximumSteps: { upper: number; forearm: number; tool: number },
+    previousVelocity: { upper: number; forearm: number; tool: number }
   ) {
-    const boundedPose = enforceSafePose('right', {
-      upperRotation: moveAngleToward(currentPose.upperRotation, solvedPose.upperRotation, maximumSteps.upper),
-      forearmRotation: moveAngleToward(currentPose.forearmRotation, solvedPose.forearmRotation, maximumSteps.forearm),
-      wristRotation: moveAngleToward(currentPose.wristRotation, solvedPose.wristRotation, maximumSteps.forearm)
-    });
-    const upperTargetStep = boundedPose.upperRotation - currentPose.upperRotation;
-    const forearmTargetStep = boundedPose.forearmRotation - currentPose.forearmRotation;
-    const upperSteps = [upperTargetStep, -maximumSteps.upper, -maximumSteps.upper * 0.5, -maximumSteps.upper * 0.25, 0, maximumSteps.upper * 0.25, maximumSteps.upper * 0.5, maximumSteps.upper];
-    const forearmSteps = [forearmTargetStep, -maximumSteps.forearm, -maximumSteps.forearm * 0.5, -maximumSteps.forearm * 0.25, 0, maximumSteps.forearm * 0.25, maximumSteps.forearm * 0.5, maximumSteps.forearm];
-    let bestPose = currentPose;
-    let bestTool = currentTool;
-    let bestScore = Number.POSITIVE_INFINITY;
+    const energy = (pose: typeof currentPose, tool: number) => {
+      const geometry = calculateArmGeometry('right', pose, targetX, targetY, tool);
+      if (!geometryIsCollisionFree(geometry)) return 1_000_000;
+      const center = graspCenter(geometry);
+      const centerError = Math.hypot(center.x - targetX, center.y - targetY);
+      const approach = radiansToDegrees(Math.atan2(targetY - center.y, targetX - center.x));
+      const orientationError = centerError < 2 ? 0 : Math.abs(((geometry.toolAngle - approach + 540) % 360) - 180);
+      const ikBias = 0.01 * (
+        (pose.upperRotation - solvedPose.upperRotation) ** 2
+        + (pose.forearmRotation - solvedPose.forearmRotation) ** 2
+      );
+      return centerError + orientationError * 10 + ikBias;
+    };
 
-    // Search the complete local velocity envelope, not only the straight path
-    // toward one IK branch. The extra directions let the jaw center slide
-    // around wall/self-collision constraints and escape boundary deadlocks.
-    for (const upperStep of upperSteps) {
-      for (const forearmStep of forearmSteps) {
-        const candidatePose = enforceSafePose('right', {
-          upperRotation: currentPose.upperRotation + upperStep,
-          forearmRotation: currentPose.forearmRotation + forearmStep,
-          wristRotation: currentPose.wristRotation
-        });
-        const poseGeometry = calculateArmGeometry('right', candidatePose, targetX, targetY, currentTool);
-        const desiredTool = radiansToDegrees(Math.atan2(targetY - poseGeometry.wristY, targetX - poseGeometry.wristX));
-        const boundedTool = moveAngleToward(currentTool, desiredTool, maximumSteps.tool);
-        const targetToolStep = boundedTool - currentTool;
-        const toolSteps = [targetToolStep, -maximumSteps.tool, -maximumSteps.tool * 0.5, -maximumSteps.tool * 0.25, 0, maximumSteps.tool * 0.25, maximumSteps.tool * 0.5, maximumSteps.tool];
-
-        for (const toolStep of toolSteps) {
-          const candidateTool = currentTool + toolStep;
-          const geometry = calculateArmGeometry('right', candidatePose, targetX, targetY, candidateTool);
-          if (!geometryIsCollisionFree(geometry)) continue;
-
-          const center = graspCenter(geometry);
-          const centerError = Math.hypot(center.x - targetX, center.y - targetY);
-          const approachAngle = radiansToDegrees(Math.atan2(targetY - center.y, targetX - center.x));
-          const orientationError = centerError < 2
-            ? 0
-            : Math.abs(((geometry.toolAngle - approachAngle + 540) % 360) - 180);
-          // A tiny motion cost breaks ties without overpowering the primary
-          // objective: minimize mouse-to-jaw-center distance.
-          const motionCost = 0.002 * (
-            Math.abs(candidatePose.upperRotation - currentPose.upperRotation)
-            + Math.abs(candidatePose.forearmRotation - currentPose.forearmRotation)
-            + Math.abs(candidateTool - currentTool)
-          );
-          // Contact-plane orthogonality is a hard tracking priority: one
-          // degree of angular error costs more than any small positional gain.
-          const score = centerError + orientationError * 12 + motionCost;
-          if (score < bestScore) {
-            bestScore = score;
-            bestPose = candidatePose;
-            bestTool = candidateTool;
-          }
-        }
+    const epsilon = 0.4;
+    const sample = (upper: number, forearm: number, tool: number) => energy(
+      enforceSafePose('right', { upperRotation: upper, forearmRotation: forearm, wristRotation: 0 }),
+      tool
+    );
+    const upperGradient = (sample(currentPose.upperRotation + epsilon, currentPose.forearmRotation, currentTool) - sample(currentPose.upperRotation - epsilon, currentPose.forearmRotation, currentTool)) / (2 * epsilon);
+    const forearmGradient = (sample(currentPose.upperRotation, currentPose.forearmRotation + epsilon, currentTool) - sample(currentPose.upperRotation, currentPose.forearmRotation - epsilon, currentTool)) / (2 * epsilon);
+    const toolGradient = (sample(currentPose.upperRotation, currentPose.forearmRotation, currentTool + epsilon) - sample(currentPose.upperRotation, currentPose.forearmRotation, currentTool - epsilon)) / (2 * epsilon);
+    const scaledNorm = Math.hypot(upperGradient * maximumSteps.upper, forearmGradient * maximumSteps.forearm, toolGradient * maximumSteps.tool) || 1;
+    const desiredVelocity = {
+      upper: clamp(-(upperGradient * maximumSteps.upper / scaledNorm) * maximumSteps.upper, -maximumSteps.upper, maximumSteps.upper),
+      forearm: clamp(-(forearmGradient * maximumSteps.forearm / scaledNorm) * maximumSteps.forearm, -maximumSteps.forearm, maximumSteps.forearm),
+      tool: clamp(-(toolGradient * maximumSteps.tool / scaledNorm) * maximumSteps.tool, -maximumSteps.tool, maximumSteps.tool)
+    };
+    const velocity = {
+      upper: previousVelocity.upper * 0.78 + desiredVelocity.upper * 0.22,
+      forearm: previousVelocity.forearm * 0.78 + desiredVelocity.forearm * 0.22,
+      tool: previousVelocity.tool * 0.78 + desiredVelocity.tool * 0.22
+    };
+    const currentEnergy = energy(currentPose, currentTool);
+    for (const fraction of [1, 0.5, 0.25, 0.125]) {
+      const pose = enforceSafePose('right', {
+        upperRotation: currentPose.upperRotation + velocity.upper * fraction,
+        forearmRotation: currentPose.forearmRotation + velocity.forearm * fraction,
+        wristRotation: 0
+      });
+      const tool = currentTool + velocity.tool * fraction;
+      if (energy(pose, tool) <= currentEnergy + 0.02) {
+        return { pose, tool, velocity: { upper: velocity.upper * fraction, forearm: velocity.forearm * fraction, tool: velocity.tool * fraction } };
       }
     }
-
-    return { pose: bestPose, tool: bestTool };
+    return { pose: currentPose, tool: currentTool, velocity: { upper: 0, forearm: 0, tool: 0 } };
   }
 
   function buildEmgPath(samples: number[]) {
@@ -464,58 +447,16 @@
     rightTargetY += (desiredRightTargetY - rightTargetY) * targetBlend;
 
     const canonicalLeftTargetX = 270 - leftTargetX;
-    const recoveryTargetX = -25;
-    const recoveryTargetY = 260;
-    const leftRouteX = leftRecovery ? recoveryTargetX : canonicalLeftTargetX;
-    const leftRouteY = leftRecovery ? recoveryTargetY : leftTargetY;
-    const rightRouteX = rightRecovery ? recoveryTargetX : rightTargetX;
-    const rightRouteY = rightRecovery ? recoveryTargetY : rightTargetY;
-    const solvedLeft = solveArm('right', leftRouteX, leftRouteY);
-    const solvedRight = solveArm('right', rightRouteX, rightRouteY);
-
-    const previousLeftPose = leftPose;
-    const previousRightPose = rightPose;
-    const previousLeftTool = leftToolAngle;
-    const previousRightTool = rightToolAngle;
-    const safeLeft = chooseSafeMotion(leftPose, leftToolAngle, solvedLeft, leftRouteX, leftRouteY, maximumSteps);
-    const safeRight = chooseSafeMotion(rightPose, rightToolAngle, solvedRight, rightRouteX, rightRouteY, maximumSteps);
+    const solvedLeft = solveArm('right', canonicalLeftTargetX, leftTargetY);
+    const solvedRight = solveArm('right', rightTargetX, rightTargetY);
+    const safeLeft = chooseSafeMotion(leftPose, leftToolAngle, solvedLeft, canonicalLeftTargetX, leftTargetY, maximumSteps, leftJointVelocity);
+    const safeRight = chooseSafeMotion(rightPose, rightToolAngle, solvedRight, rightTargetX, rightTargetY, maximumSteps, rightJointVelocity);
     leftPose = safeLeft.pose;
     leftToolAngle = safeLeft.tool;
+    leftJointVelocity = safeLeft.velocity;
     rightPose = safeRight.pose;
     rightToolAngle = safeRight.tool;
-
-    const leftMotion = Math.abs(leftPose.upperRotation - previousLeftPose.upperRotation)
-      + Math.abs(leftPose.forearmRotation - previousLeftPose.forearmRotation)
-      + Math.abs(leftToolAngle - previousLeftTool);
-    const rightMotion = Math.abs(rightPose.upperRotation - previousRightPose.upperRotation)
-      + Math.abs(rightPose.forearmRotation - previousRightPose.forearmRotation)
-      + Math.abs(rightToolAngle - previousRightTool);
-    const leftCenter = graspCenter(calculateArmGeometry('right', leftPose, canonicalLeftTargetX, leftTargetY, leftToolAngle));
-    const rightCenter = graspCenter(calculateArmGeometry('right', rightPose, rightTargetX, rightTargetY, rightToolAngle));
-    const leftMouseError = Math.hypot(leftCenter.x - canonicalLeftTargetX, leftCenter.y - leftTargetY);
-    const rightMouseError = Math.hypot(rightCenter.x - rightTargetX, rightCenter.y - rightTargetY);
-
-    leftRecoveryCooldown = Math.max(0, leftRecoveryCooldown - 1);
-    rightRecoveryCooldown = Math.max(0, rightRecoveryCooldown - 1);
-    if (!leftRecovery && leftRecoveryCooldown === 0 && leftMouseError > 28) {
-      leftStuckFrames = leftMotion < 0.025 ? leftStuckFrames + 1 : 0;
-      if (leftStuckFrames > 20) leftRecovery = true;
-    } else if (!leftRecovery) leftStuckFrames = 0;
-    if (!rightRecovery && rightRecoveryCooldown === 0 && rightMouseError > 28) {
-      rightStuckFrames = rightMotion < 0.025 ? rightStuckFrames + 1 : 0;
-      if (rightStuckFrames > 20) rightRecovery = true;
-    } else if (!rightRecovery) rightStuckFrames = 0;
-
-    if (leftRecovery && Math.hypot(leftCenter.x - recoveryTargetX, leftCenter.y - recoveryTargetY) < 24) {
-      leftRecovery = false;
-      leftStuckFrames = 0;
-      leftRecoveryCooldown = 90;
-    }
-    if (rightRecovery && Math.hypot(rightCenter.x - recoveryTargetX, rightCenter.y - recoveryTargetY) < 24) {
-      rightRecovery = false;
-      rightStuckFrames = 0;
-      rightRecoveryCooldown = 90;
-    }
+    rightJointVelocity = safeRight.velocity;
 
     armAnimationFrame = requestAnimationFrame(advanceArms);
   }
