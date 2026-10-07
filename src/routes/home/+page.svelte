@@ -38,6 +38,12 @@
   let armAnimationFrame = 0;
   let previousArmTime = 0;
   let robotDebug = false;
+  let leftRecovery = false;
+  let rightRecovery = false;
+  let leftStuckFrames = 0;
+  let rightStuckFrames = 0;
+  let leftRecoveryCooldown = 0;
+  let rightRecoveryCooldown = 0;
   const graspCenterOffset = 45.5;
   // Collision envelope for the fully open gripper, including stroke width.
   const gripperEnvelope = [[0, -32], [61, -32], [61, 32], [0, 32]] as const;
@@ -457,15 +463,59 @@
     rightTargetX += (desiredRightTargetX - rightTargetX) * targetBlend;
     rightTargetY += (desiredRightTargetY - rightTargetY) * targetBlend;
 
-    const solvedLeft = solveArm('right', 270 - leftTargetX, leftTargetY);
-    const solvedRight = solveArm('right', rightTargetX, rightTargetY);
+    const canonicalLeftTargetX = 270 - leftTargetX;
+    const recoveryTargetX = -25;
+    const recoveryTargetY = 260;
+    const leftRouteX = leftRecovery ? recoveryTargetX : canonicalLeftTargetX;
+    const leftRouteY = leftRecovery ? recoveryTargetY : leftTargetY;
+    const rightRouteX = rightRecovery ? recoveryTargetX : rightTargetX;
+    const rightRouteY = rightRecovery ? recoveryTargetY : rightTargetY;
+    const solvedLeft = solveArm('right', leftRouteX, leftRouteY);
+    const solvedRight = solveArm('right', rightRouteX, rightRouteY);
 
-    const safeLeft = chooseSafeMotion(leftPose, leftToolAngle, solvedLeft, 270 - leftTargetX, leftTargetY, maximumSteps);
-    const safeRight = chooseSafeMotion(rightPose, rightToolAngle, solvedRight, rightTargetX, rightTargetY, maximumSteps);
+    const previousLeftPose = leftPose;
+    const previousRightPose = rightPose;
+    const previousLeftTool = leftToolAngle;
+    const previousRightTool = rightToolAngle;
+    const safeLeft = chooseSafeMotion(leftPose, leftToolAngle, solvedLeft, leftRouteX, leftRouteY, maximumSteps);
+    const safeRight = chooseSafeMotion(rightPose, rightToolAngle, solvedRight, rightRouteX, rightRouteY, maximumSteps);
     leftPose = safeLeft.pose;
     leftToolAngle = safeLeft.tool;
     rightPose = safeRight.pose;
     rightToolAngle = safeRight.tool;
+
+    const leftMotion = Math.abs(leftPose.upperRotation - previousLeftPose.upperRotation)
+      + Math.abs(leftPose.forearmRotation - previousLeftPose.forearmRotation)
+      + Math.abs(leftToolAngle - previousLeftTool);
+    const rightMotion = Math.abs(rightPose.upperRotation - previousRightPose.upperRotation)
+      + Math.abs(rightPose.forearmRotation - previousRightPose.forearmRotation)
+      + Math.abs(rightToolAngle - previousRightTool);
+    const leftCenter = graspCenter(calculateArmGeometry('right', leftPose, canonicalLeftTargetX, leftTargetY, leftToolAngle));
+    const rightCenter = graspCenter(calculateArmGeometry('right', rightPose, rightTargetX, rightTargetY, rightToolAngle));
+    const leftMouseError = Math.hypot(leftCenter.x - canonicalLeftTargetX, leftCenter.y - leftTargetY);
+    const rightMouseError = Math.hypot(rightCenter.x - rightTargetX, rightCenter.y - rightTargetY);
+
+    leftRecoveryCooldown = Math.max(0, leftRecoveryCooldown - 1);
+    rightRecoveryCooldown = Math.max(0, rightRecoveryCooldown - 1);
+    if (!leftRecovery && leftRecoveryCooldown === 0 && leftMouseError > 28) {
+      leftStuckFrames = leftMotion < 0.025 ? leftStuckFrames + 1 : 0;
+      if (leftStuckFrames > 20) leftRecovery = true;
+    } else if (!leftRecovery) leftStuckFrames = 0;
+    if (!rightRecovery && rightRecoveryCooldown === 0 && rightMouseError > 28) {
+      rightStuckFrames = rightMotion < 0.025 ? rightStuckFrames + 1 : 0;
+      if (rightStuckFrames > 20) rightRecovery = true;
+    } else if (!rightRecovery) rightStuckFrames = 0;
+
+    if (leftRecovery && Math.hypot(leftCenter.x - recoveryTargetX, leftCenter.y - recoveryTargetY) < 24) {
+      leftRecovery = false;
+      leftStuckFrames = 0;
+      leftRecoveryCooldown = 90;
+    }
+    if (rightRecovery && Math.hypot(rightCenter.x - recoveryTargetX, rightCenter.y - recoveryTargetY) < 24) {
+      rightRecovery = false;
+      rightStuckFrames = 0;
+      rightRecoveryCooldown = 90;
+    }
 
     armAnimationFrame = requestAnimationFrame(advanceArms);
   }
