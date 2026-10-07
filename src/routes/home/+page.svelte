@@ -159,6 +159,16 @@
     return { baseX, baseY, elbowX, elbowY, wristX, wristY, toolAngle };
   }
 
+  function mirrorArmGeometry(geometry: ReturnType<typeof calculateArmGeometry>) {
+    return {
+      ...geometry,
+      baseX: 270 - geometry.baseX,
+      elbowX: 270 - geometry.elbowX,
+      wristX: 270 - geometry.wristX,
+      toolAngle: 180 - geometry.toolAngle
+    };
+  }
+
   function buildEmgPath(samples: number[]) {
     return samples.map((sample, index) => {
       const x = (index / (samples.length - 1)) * 1200;
@@ -246,7 +256,9 @@
   }
 
   $: emgPath = buildEmgPath(emgSamples);
-  $: leftGeometry = calculateArmGeometry('left', leftPose);
+  // The left mechanism is the proven right mechanism reflected across the
+  // SVG centerline; it has no independent IK or collision behavior.
+  $: leftGeometry = mirrorArmGeometry(calculateArmGeometry('right', leftPose));
   $: rightGeometry = calculateArmGeometry('right', rightPose);
 
   function advanceArms() {
@@ -256,11 +268,11 @@
     rightTargetX = moveToward(rightTargetX, desiredRightTargetX, 12);
     rightTargetY = moveToward(rightTargetY, desiredRightTargetY, 12);
 
-    const solvedLeft = solveArm('left', leftTargetX, leftTargetY);
+    const solvedLeft = solveArm('right', 270 - leftTargetX, leftTargetY);
     const solvedRight = solveArm('right', rightTargetX, rightTargetY);
 
     // Per-joint velocity limits keep the mechanism continuous near IK boundaries.
-    leftPose = enforceSafePose('left', {
+    leftPose = enforceSafePose('right', {
       upperRotation: moveAngleToward(leftPose.upperRotation, solvedLeft.upperRotation, 5),
       forearmRotation: moveAngleToward(leftPose.forearmRotation, solvedLeft.forearmRotation, 7),
       wristRotation: moveAngleToward(leftPose.wristRotation, solvedLeft.wristRotation, 8.5)
