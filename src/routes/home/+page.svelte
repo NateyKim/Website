@@ -98,6 +98,7 @@
 
   const clamp = (value: number, minimum: number, maximum: number) => Math.max(minimum, Math.min(maximum, value));
   const radiansToDegrees = (value: number) => (value * 180) / Math.PI;
+  const normalizeAngle = (value: number) => ((value + 540) % 360) - 180;
   function moveAngleToward(current: number, target: number, maximumStep: number) {
     const difference = ((target - current + 540) % 360) - 180;
     return current + clamp(difference, -maximumStep, maximumStep);
@@ -279,9 +280,9 @@
     targetY: number,
     maximumSteps: { upper: number; forearm: number; tool: number }
   ) {
-    const upperError = solvedPose.upperRotation - currentPose.upperRotation;
-    const forearmError = solvedPose.forearmRotation - currentPose.forearmRotation;
-    const toolError = ((solvedPose.toolAngle - currentTool + 540) % 360) - 180;
+    const upperError = normalizeAngle(solvedPose.upperRotation - currentPose.upperRotation);
+    const forearmError = normalizeAngle(solvedPose.forearmRotation - currentPose.forearmRotation);
+    const toolError = normalizeAngle(solvedPose.toolAngle - currentTool);
     const step = {
       upper: clamp(upperError * 0.18, -maximumSteps.upper, maximumSteps.upper),
       forearm: clamp(forearmError * 0.18, -maximumSteps.forearm, maximumSteps.forearm),
@@ -378,12 +379,15 @@
     const solvedShoulder = Math.atan2(dy, dx) - Math.atan2(linkTwo * Math.sin(elbow), linkOne + linkTwo * Math.cos(elbow));
     const shoulder = solvedShoulder;
     const forearm = shoulder + elbow;
-    const upperRotation = radiansToDegrees(shoulder) - baseAngleOne;
-    const forearmRotation = radiansToDegrees(forearm) - baseAngleTwo - upperRotation;
+    // Normalize equivalent revolutions before the joint-limit and motion
+    // stages. Without this, targets above a wall-mounted base can produce
+    // values such as -315deg instead of 45deg and pin the arm at its limit.
+    const upperRotation = normalizeAngle(radiansToDegrees(shoulder) - baseAngleOne);
+    const forearmRotation = normalizeAngle(radiansToDegrees(forearm) - baseAngleTwo - upperRotation);
     const desiredToolAngle = radiansToDegrees(toolDirection);
     const defaultToolAngle = side === 'left' ? 0 : 180;
     const rawWristRotation = desiredToolAngle - defaultToolAngle - upperRotation - forearmRotation;
-    const normalizedWristRotation = ((rawWristRotation + 540) % 360) - 180;
+    const normalizedWristRotation = normalizeAngle(rawWristRotation);
     // Prevent the gripper from rotating back into its own forearm.
     const wristRotation = clamp(normalizedWristRotation, -108, 108);
 
