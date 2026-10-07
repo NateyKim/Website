@@ -242,6 +242,7 @@
     const elbowBox = jointBox(geometry.elbowX, geometry.elbowY, 20);
     const wristBox = jointBox(geometry.wristX, geometry.wristY, 18);
     const gripperBoxes = transformedGripperBoxes(geometry);
+    const baseJointBox = jointBox(geometry.baseX, geometry.baseY, 23);
     const baseBox: CollisionPoint[] = [
       { x: 220, y: 190 }, { x: 270, y: 190 }, { x: 270, y: 330 }, { x: 220, y: 330 }
     ];
@@ -253,6 +254,10 @@
       && !boxesOverlap(baseBox, forearmBox)
       && !boxesOverlap(baseBox, wristBox)
       && gripperBoxes.every((box) => !boxesOverlap(baseBox, box))
+      && !boxesOverlap(baseJointBox, elbowBox)
+      && !boxesOverlap(baseJointBox, forearmBox)
+      && !boxesOverlap(baseJointBox, wristBox)
+      && gripperBoxes.every((box) => !boxesOverlap(baseJointBox, box))
       && !boxesOverlap(upperBox, wristBox)
       && gripperBoxes.every((box) => !boxesOverlap(upperBox, box))
       && !boxesOverlap(elbowBox, wristBox)
@@ -276,6 +281,7 @@
       isLeft
         ? [{ x: 0, y: 190 }, { x: 50, y: 190 }, { x: 50, y: 330 }, { x: 0, y: 330 }]
         : [{ x: 220, y: 190 }, { x: 270, y: 190 }, { x: 270, y: 330 }, { x: 220, y: 330 }],
+      jointBox(geometry.baseX, geometry.baseY, 23),
       segmentBox(geometry.baseX, geometry.baseY, geometry.elbowX, geometry.elbowY, 10, 23, 20),
       jointBox(geometry.elbowX, geometry.elbowY, 20),
       segmentBox(geometry.elbowX, geometry.elbowY, geometry.wristX, geometry.wristY, 10, 20, 17),
