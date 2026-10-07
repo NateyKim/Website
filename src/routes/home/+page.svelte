@@ -23,12 +23,12 @@
     pointerY = Math.max(-1, Math.min(1, ((event.clientY - rect.top) / rect.height) * 2 - 1));
 
     const now = performance.now();
-    if (now - lastPulse > 700) {
+    if (now - lastPulse > 170) {
       lastPulse = now;
       pulseVersion += 1;
       waveVisible = true;
       clearTimeout(waveTimer);
-      waveTimer = setTimeout(() => (waveVisible = false), 1050);
+      waveTimer = setTimeout(() => (waveVisible = false), 520);
     }
   }
 
@@ -44,10 +44,13 @@
     gripTimer = setTimeout(() => (gripping = false), 420);
   }
 
-  $: leftUpperAngle = -14 + pointerX * 9 + pointerY * 5;
-  $: leftForearmAngle = 14 + pointerX * 12 - pointerY * 8;
-  $: rightUpperAngle = 14 + pointerX * 9 - pointerY * 5;
-  $: rightForearmAngle = -14 + pointerX * 12 + pointerY * 8;
+  const clamp = (value: number, minimum: number, maximum: number) => Math.max(minimum, Math.min(maximum, value));
+
+  // Mirrored, bounded trajectories keep each arm in its own half of the workspace.
+  $: leftUpperAngle = clamp(-16 + pointerX * 12 + pointerY * 8, -30, -3);
+  $: leftForearmAngle = clamp(20 + pointerX * 14 - pointerY * 11, 5, 38);
+  $: rightUpperAngle = clamp(16 + pointerX * 12 - pointerY * 8, 3, 30);
+  $: rightForearmAngle = clamp(-20 + pointerX * 14 + pointerY * 11, -38, -5);
 
   onDestroy(() => {
     clearTimeout(waveTimer);
@@ -74,7 +77,7 @@
         <stop offset="1" stop-color="#cf5fff" stop-opacity="0" />
       </linearGradient>
       <filter id="emg-glow" x="-20%" y="-100%" width="140%" height="300%">
-        <feGaussianBlur stdDeviation="5" result="blur" />
+        <feGaussianBlur stdDeviation="11" result="blur" />
         <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
       </filter>
     </defs>
@@ -97,8 +100,8 @@
       <path d="M62 416 L126 316" /><circle cx="126" cy="316" r="16" />
       <g class="arm-segment" style={`transform: rotate(${leftForearmAngle}deg); transform-origin: 126px 316px;`}>
         <path d="M126 316 L190 218" /><circle cx="190" cy="218" r="14" />
-        <path class="gripper-finger finger-upper" d="M190 218 L226 183 L247 170" />
-        <path class="gripper-finger finger-lower" d="M190 218 L236 225 L258 230" />
+        <path class="gripper-finger finger-upper" d="M190 218 H220 V190 H251" />
+        <path class="gripper-finger finger-lower" d="M190 218 H220 V246 H251" />
       </g>
     </g>
     <circle class="joint-pulse pulse-a" cx="62" cy="416" r="29" />
@@ -113,8 +116,8 @@
       <path d="M208 416 L144 316" /><circle cx="144" cy="316" r="16" />
       <g class="arm-segment" style={`transform: rotate(${rightForearmAngle}deg); transform-origin: 144px 316px;`}>
         <path d="M144 316 L80 218" /><circle cx="80" cy="218" r="14" />
-        <path class="gripper-finger finger-upper" d="M80 218 L44 183 L23 170" />
-        <path class="gripper-finger finger-lower" d="M80 218 L34 225 L12 230" />
+        <path class="gripper-finger finger-upper" d="M80 218 H50 V190 H19" />
+        <path class="gripper-finger finger-lower" d="M80 218 H50 V246 H19" />
       </g>
     </g>
     <circle class="joint-pulse pulse-a" cx="208" cy="416" r="29" />
@@ -125,11 +128,6 @@
     <p class="identity-kicker">Robotics · Biosignals · Human-Centered AI</p>
     <div class="name-row">
       <h1>Natey Kim</h1>
-      <a class="linkedin-link" href="https://www.linkedin.com/in/nateykim" target="_blank" rel="noreferrer" aria-label="Visit Natey Kim’s LinkedIn profile" title="LinkedIn">
-        <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
-          <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V8.98h3.42v1.57h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.29ZM5.32 7.41a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13Zm1.78 13.04H3.54V8.98H7.1v11.47ZM22.23 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.46c.98 0 1.77-.77 1.77-1.73V1.73C24 .77 23.21 0 22.23 0Z" />
-        </svg>
-      </a>
     </div>
     <p class="job-title">Human–Robot Interaction Research Engineer @ UPenn GRASP Lab</p>
   </div>
@@ -168,6 +166,18 @@
     color: #111820;
   }
 
+  .home-scene::after {
+    position: absolute;
+    z-index: -1;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 34%;
+    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.7) 55%, #fff 100%);
+    content: '';
+    pointer-events: none;
+  }
+
   .grid-layer {
     position: absolute;
     z-index: -5;
@@ -204,9 +214,9 @@
 
   .emg-wave {
     stroke: url(#emg-gradient);
-    stroke-width: 4;
+    stroke-width: 6;
     stroke-dasharray: 1500;
-    animation: ekg-pulse 1s ease-out forwards;
+    animation: ekg-pulse 0.48s linear forwards;
   }
 
   .identity {
@@ -230,16 +240,6 @@
   h1 { margin: 0; font-size: clamp(4rem, 10vw, 8rem); font-weight: 800; letter-spacing: -0.07em; line-height: 0.94; }
   .job-title { margin: 1.4rem 0 0; color: #394657; font-size: clamp(1.05rem, 2.2vw, 1.55rem); font-weight: 600; }
 
-  .linkedin-link {
-    display: inline-flex;
-    width: clamp(1.8rem, 3.5vw, 2.5rem);
-    height: clamp(1.8rem, 3.5vw, 2.5rem);
-    color: #0a66c2;
-    transition: transform 0.2s ease, opacity 0.2s ease;
-  }
-  .linkedin-link:hover, .linkedin-link:focus-visible { opacity: 0.78; transform: translateY(-3px); }
-  .linkedin-link svg { width: 100%; height: 100%; fill: currentColor; }
-
   .robot {
     position: absolute;
     z-index: 1;
@@ -261,10 +261,10 @@
 
   .robot-left .gripper-finger { transform-origin: 190px 218px; }
   .robot-right .gripper-finger { transform-origin: 80px 218px; }
-  .robot-left.gripping .finger-upper { transform: rotate(19deg); }
-  .robot-left.gripping .finger-lower { transform: rotate(-16deg); }
-  .robot-right.gripping .finger-upper { transform: rotate(-19deg); }
-  .robot-right.gripping .finger-lower { transform: rotate(16deg); }
+  .robot-left.gripping .finger-upper { transform: translateY(19px); }
+  .robot-left.gripping .finger-lower { transform: translateY(-19px); }
+  .robot-right.gripping .finger-upper { transform: translateY(19px); }
+  .robot-right.gripping .finger-lower { transform: translateY(-19px); }
 
   .joint-pulse {
     fill: none;
@@ -283,7 +283,8 @@
     bottom: 0;
     left: 0;
     height: 390px;
-    background: linear-gradient(to bottom, transparent, rgba(233, 237, 250, 0.72) 48%, rgba(238, 241, 248, 0.96));
+    background: linear-gradient(to bottom, transparent, rgba(233, 237, 250, 0.68) 44%, rgba(255, 255, 255, 0.88));
+    mask-image: linear-gradient(to bottom, transparent 0%, black 22%, black 68%, transparent 100%);
   }
   .neural-transition svg { width: 100%; height: 100%; }
   .neural-lines path { fill: none; stroke: #7b849c; stroke-width: 1.2; opacity: 0.36; vector-effect: non-scaling-stroke; }

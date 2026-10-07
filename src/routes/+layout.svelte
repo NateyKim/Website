@@ -134,6 +134,19 @@
   <a class="nav-link" class:active={activeSection === 'about-me'} href="/about-me">
     Beyond the Work
   </a>
+
+  <a
+    class="nav-link linkedin-nav"
+    href="https://www.linkedin.com/in/nateykim"
+    target="_blank"
+    rel="noreferrer"
+    aria-label="Visit Natey Kim’s LinkedIn profile"
+    title="LinkedIn"
+  >
+    <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+      <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V8.98h3.42v1.57h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.29ZM5.32 7.41a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13Zm1.78 13.04H3.54V8.98H7.1v11.47ZM22.23 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.46c.98 0 1.77-.77 1.77-1.73V1.73C24 .77 23.21 0 22.23 0Z" />
+    </svg>
+  </a>
 </nav>
 
 <main>
@@ -212,6 +225,18 @@
 
   .nav-link:hover {
     background-color: #444;
+  }
+
+  .linkedin-nav {
+    align-items: center;
+    display: inline-flex;
+    margin-left: auto;
+  }
+
+  .linkedin-nav svg {
+    width: 1.35rem;
+    height: 1.35rem;
+    fill: currentColor;
   }
 
   .nav-item {
@@ -329,6 +354,10 @@
     .nav-link,
     .nav-item {
       flex: 0 0 auto;
+    }
+
+    .linkedin-nav {
+      margin-left: 0;
     }
 
     .nav-link {
