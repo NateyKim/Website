@@ -116,7 +116,9 @@
 
   function calculateArmGeometry(
     side: 'left' | 'right',
-    pose: { upperRotation: number; forearmRotation: number; wristRotation: number }
+    pose: { upperRotation: number; forearmRotation: number; wristRotation: number },
+    targetX: number,
+    targetY: number
   ) {
     const baseX = side === 'left' ? 62 : 208;
     const baseY = 416;
@@ -131,7 +133,11 @@
     const wristX = elbowX + Math.cos(forearmAngle) * linkTwo;
     const wristY = elbowY + Math.sin(forearmAngle) * linkTwo;
     const defaultToolAngle = side === 'left' ? 0 : 180;
-    const desiredToolAngle = defaultToolAngle + pose.upperRotation + pose.forearmRotation + pose.wristRotation;
+    const forearmDegrees = (forearmAngle * 180) / Math.PI;
+    const targetToolAngle = radiansToDegrees(Math.atan2(targetY - wristY, targetX - wristX));
+    const targetRelativeAngle = ((targetToolAngle - forearmDegrees + 540) % 360) - 180;
+    const safeRelativeAngle = clamp(targetRelativeAngle, -105, 105);
+    const desiredToolAngle = forearmDegrees + safeRelativeAngle;
     const angleDifference = ((desiredToolAngle - defaultToolAngle + 540) % 360) - 180;
     const toolCorners = [[30, -28], [30, 28], [61, -28], [61, 28]];
     const toolBottom = (angle: number) => {
@@ -263,8 +269,8 @@
   $: emgPath = buildEmgPath(emgSamples);
   // The left mechanism is the proven right mechanism reflected across the
   // SVG centerline; it has no independent IK or collision behavior.
-  $: leftGeometry = mirrorArmGeometry(calculateArmGeometry('right', leftPose));
-  $: rightGeometry = calculateArmGeometry('right', rightPose);
+  $: leftGeometry = mirrorArmGeometry(calculateArmGeometry('right', leftPose, 270 - leftTargetX, leftTargetY));
+  $: rightGeometry = calculateArmGeometry('right', rightPose, rightTargetX, rightTargetY);
 
   function advanceArms() {
     // Solve from the current pointer position. Joint-space limits below still
