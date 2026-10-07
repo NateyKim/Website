@@ -37,6 +37,7 @@
   let rightToolAngle = 180;
   let armAnimationFrame = 0;
   let previousArmTime = 0;
+  let robotDebug = false;
   const graspCenterOffset = 45.5;
   // Collision envelope for the fully open gripper, including stroke width.
   const gripperEnvelope = [[0, -32], [61, -32], [61, 32], [0, 32]] as const;
@@ -469,6 +470,7 @@
   }
 
   onMount(() => {
+    robotDebug = new URLSearchParams(window.location.search).get('robotDebug') === '1';
     emgTimer = setInterval(advanceEmgSignal, 20);
     armAnimationFrame = requestAnimationFrame(advanceArms);
   });
@@ -514,10 +516,12 @@
   </svg>
 
   <svg bind:this={leftRobot} class="robot robot-left" class:gripping viewBox="0 0 270 520" aria-hidden="true">
-    <defs><clipPath id="left-workspace-wall"><rect x="13" y="-400" width="657" height="1320" /></clipPath></defs>
-    <g class="debug-workspace" clip-path="url(#left-workspace-wall)">
-      <circle cx={leftGeometry.baseX} cy={leftGeometry.baseY} r="281.32" />
-    </g>
+    {#if robotDebug}
+      <defs><clipPath id="left-workspace-wall"><rect x="13" y="-400" width="657" height="1320" /></clipPath></defs>
+      <g class="debug-workspace" clip-path="url(#left-workspace-wall)">
+        <circle cx={leftGeometry.baseX} cy={leftGeometry.baseY} r="281.32" />
+      </g>
+    {/if}
     <g class="robot-mount">
       <path d="M8 190 V330 M8 225 H45 V295 H8" /><circle cx="45" cy="260" r="19" />
     </g>
@@ -532,21 +536,25 @@
       <path class="gripper-finger finger-upper" d="M30 -28 H61" />
       <path class="gripper-finger finger-lower" d="M30 28 H61" />
     </g>
-    <g class="debug-target">
-      <line x1={leftGraspCenter.x} y1={leftGraspCenter.y} x2={leftTargetX} y2={leftTargetY} />
-      <circle cx={leftGraspCenter.x} cy={leftGraspCenter.y} r="5" />
-      <circle class="mouse-point" cx={leftTargetX} cy={leftTargetY} r="3.5" />
-    </g>
-    <g class="debug-collision">
-      {#each leftCollisionBoxes as box}<polygon points={polygonPoints(box)} />{/each}
-    </g>
+    {#if robotDebug}
+      <g class="debug-target">
+        <line x1={leftGraspCenter.x} y1={leftGraspCenter.y} x2={leftTargetX} y2={leftTargetY} />
+        <circle cx={leftGraspCenter.x} cy={leftGraspCenter.y} r="5" />
+        <circle class="mouse-point" cx={leftTargetX} cy={leftTargetY} r="3.5" />
+      </g>
+      <g class="debug-collision">
+        {#each leftCollisionBoxes as box}<polygon points={polygonPoints(box)} />{/each}
+      </g>
+    {/if}
   </svg>
 
   <svg bind:this={rightRobot} class="robot robot-right" class:gripping viewBox="0 0 270 520" aria-hidden="true">
-    <defs><clipPath id="right-workspace-wall"><rect x="-400" y="-400" width="657" height="1320" /></clipPath></defs>
-    <g class="debug-workspace" clip-path="url(#right-workspace-wall)">
-      <circle cx={rightGeometry.baseX} cy={rightGeometry.baseY} r="281.32" />
-    </g>
+    {#if robotDebug}
+      <defs><clipPath id="right-workspace-wall"><rect x="-400" y="-400" width="657" height="1320" /></clipPath></defs>
+      <g class="debug-workspace" clip-path="url(#right-workspace-wall)">
+        <circle cx={rightGeometry.baseX} cy={rightGeometry.baseY} r="281.32" />
+      </g>
+    {/if}
     <g class="robot-mount">
       <path d="M262 190 V330 M262 225 H225 V295 H262" /><circle cx="225" cy="260" r="19" />
     </g>
@@ -561,14 +569,16 @@
       <path class="gripper-finger finger-upper" d="M30 -28 H61" />
       <path class="gripper-finger finger-lower" d="M30 28 H61" />
     </g>
-    <g class="debug-target">
-      <line x1={rightGraspCenter.x} y1={rightGraspCenter.y} x2={rightTargetX} y2={rightTargetY} />
-      <circle cx={rightGraspCenter.x} cy={rightGraspCenter.y} r="5" />
-      <circle class="mouse-point" cx={rightTargetX} cy={rightTargetY} r="3.5" />
-    </g>
-    <g class="debug-collision">
-      {#each rightCollisionBoxes as box}<polygon points={polygonPoints(box)} />{/each}
-    </g>
+    {#if robotDebug}
+      <g class="debug-target">
+        <line x1={rightGraspCenter.x} y1={rightGraspCenter.y} x2={rightTargetX} y2={rightTargetY} />
+        <circle cx={rightGraspCenter.x} cy={rightGraspCenter.y} r="5" />
+        <circle class="mouse-point" cx={rightTargetX} cy={rightTargetY} r="3.5" />
+      </g>
+      <g class="debug-collision">
+        {#each rightCollisionBoxes as box}<polygon points={polygonPoints(box)} />{/each}
+      </g>
+    {/if}
   </svg>
 
   <div class="identity">
