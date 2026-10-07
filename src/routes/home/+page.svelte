@@ -23,12 +23,12 @@
     pointerY = Math.max(-1, Math.min(1, ((event.clientY - rect.top) / rect.height) * 2 - 1));
 
     const now = performance.now();
-    if (now - lastPulse > 170) {
+    if (now - lastPulse > 520) {
       lastPulse = now;
       pulseVersion += 1;
       waveVisible = true;
       clearTimeout(waveTimer);
-      waveTimer = setTimeout(() => (waveVisible = false), 520);
+      waveTimer = setTimeout(() => (waveVisible = false), 900);
     }
   }
 
@@ -45,12 +45,44 @@
   }
 
   const clamp = (value: number, minimum: number, maximum: number) => Math.max(minimum, Math.min(maximum, value));
+  const radiansToDegrees = (value: number) => (value * 180) / Math.PI;
 
-  // Mirrored, bounded trajectories keep each arm in its own half of the workspace.
-  $: leftUpperAngle = clamp(-16 + pointerX * 12 + pointerY * 8, -30, -3);
-  $: leftForearmAngle = clamp(20 + pointerX * 14 - pointerY * 11, 5, 38);
-  $: rightUpperAngle = clamp(16 + pointerX * 12 - pointerY * 8, 3, 30);
-  $: rightForearmAngle = clamp(-20 + pointerX * 14 + pointerY * 11, -38, -5);
+  function solveArm(side: 'left' | 'right', x: number, y: number) {
+    const baseX = side === 'left' ? 62 : 208;
+    const baseY = 416;
+    const linkOne = 118.75;
+    const linkTwo = 117.07;
+    const baseAngleOne = side === 'left' ? -57.38 : -122.62;
+    const baseAngleTwo = side === 'left' ? -56.84 : -123.16;
+
+    // Each target is clamped to that arm's half-space and reachable radius.
+    const targetX = side === 'left'
+      ? clamp(105 + ((x + 1) / 2) * 155, 105, 246)
+      : clamp(24 + ((x + 1) / 2) * 141, 24, 165);
+    const targetY = clamp(225 + y * 125, 105, 350);
+    let dx = targetX - baseX;
+    let dy = targetY - baseY;
+    const maximumReach = linkOne + linkTwo - 5;
+    const distance = Math.hypot(dx, dy);
+
+    if (distance > maximumReach) {
+      dx = (dx / distance) * maximumReach;
+      dy = (dy / distance) * maximumReach;
+    }
+
+    const squaredDistance = dx * dx + dy * dy;
+    const cosineElbow = clamp((squaredDistance - linkOne ** 2 - linkTwo ** 2) / (2 * linkOne * linkTwo), -1, 1);
+    const elbow = Math.acos(cosineElbow) * (side === 'left' ? 1 : -1);
+    const shoulder = Math.atan2(dy, dx) - Math.atan2(linkTwo * Math.sin(elbow), linkOne + linkTwo * Math.cos(elbow));
+    const forearm = shoulder + elbow;
+    const upperRotation = radiansToDegrees(shoulder) - baseAngleOne;
+    const forearmRotation = radiansToDegrees(forearm) - baseAngleTwo - upperRotation;
+
+    return { upperRotation, forearmRotation };
+  }
+
+  $: leftPose = solveArm('left', pointerX, pointerY);
+  $: rightPose = solveArm('right', pointerX, pointerY);
 
   onDestroy(() => {
     clearTimeout(waveTimer);
@@ -77,7 +109,7 @@
         <stop offset="1" stop-color="#cf5fff" stop-opacity="0" />
       </linearGradient>
       <filter id="emg-glow" x="-20%" y="-100%" width="140%" height="300%">
-        <feGaussianBlur stdDeviation="11" result="blur" />
+        <feGaussianBlur stdDeviation="4" result="blur" />
         <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
       </filter>
     </defs>
@@ -96,32 +128,28 @@
     <g class="robot-mount">
       <path d="M8 450 H118 M32 450 V420 H92 V450" /><circle cx="62" cy="416" r="19" />
     </g>
-    <g class="arm-segment" style={`transform: rotate(${leftUpperAngle}deg); transform-origin: 62px 416px;`}>
+    <g class="arm-segment" style={`transform: rotate(${leftPose.upperRotation}deg); transform-origin: 62px 416px;`}>
       <path d="M62 416 L126 316" /><circle cx="126" cy="316" r="16" />
-      <g class="arm-segment" style={`transform: rotate(${leftForearmAngle}deg); transform-origin: 126px 316px;`}>
+      <g class="arm-segment" style={`transform: rotate(${leftPose.forearmRotation}deg); transform-origin: 126px 316px;`}>
         <path d="M126 316 L190 218" /><circle cx="190" cy="218" r="14" />
         <path class="gripper-finger finger-upper" d="M190 218 H220 V190 H251" />
         <path class="gripper-finger finger-lower" d="M190 218 H220 V246 H251" />
       </g>
     </g>
-    <circle class="joint-pulse pulse-a" cx="62" cy="416" r="29" />
-    <circle class="joint-pulse pulse-b" cx="126" cy="316" r="25" />
   </svg>
 
   <svg class="robot robot-right" class:gripping viewBox="0 0 270 520" aria-hidden="true">
     <g class="robot-mount">
       <path d="M152 450 H262 M178 450 V420 H238 V450" /><circle cx="208" cy="416" r="19" />
     </g>
-    <g class="arm-segment" style={`transform: rotate(${rightUpperAngle}deg); transform-origin: 208px 416px;`}>
+    <g class="arm-segment" style={`transform: rotate(${rightPose.upperRotation}deg); transform-origin: 208px 416px;`}>
       <path d="M208 416 L144 316" /><circle cx="144" cy="316" r="16" />
-      <g class="arm-segment" style={`transform: rotate(${rightForearmAngle}deg); transform-origin: 144px 316px;`}>
+      <g class="arm-segment" style={`transform: rotate(${rightPose.forearmRotation}deg); transform-origin: 144px 316px;`}>
         <path d="M144 316 L80 218" /><circle cx="80" cy="218" r="14" />
         <path class="gripper-finger finger-upper" d="M80 218 H50 V190 H19" />
         <path class="gripper-finger finger-lower" d="M80 218 H50 V246 H19" />
       </g>
     </g>
-    <circle class="joint-pulse pulse-a" cx="208" cy="416" r="29" />
-    <circle class="joint-pulse pulse-b" cx="144" cy="316" r="25" />
   </svg>
 
   <div class="identity">
@@ -214,9 +242,9 @@
 
   .emg-wave {
     stroke: url(#emg-gradient);
-    stroke-width: 6;
+    stroke-width: 3.5;
     stroke-dasharray: 1500;
-    animation: ekg-pulse 0.48s linear forwards;
+    animation: ekg-pulse 0.86s ease-in-out forwards;
   }
 
   .identity {
@@ -266,16 +294,6 @@
   .robot-right.gripping .finger-upper { transform: translateY(19px); }
   .robot-right.gripping .finger-lower { transform: translateY(-19px); }
 
-  .joint-pulse {
-    fill: none;
-    stroke: #7566ff;
-    stroke-width: 2;
-    transform-box: fill-box;
-    transform-origin: center;
-    animation: joint-pulse 2.8s ease-out infinite;
-  }
-  .pulse-b { animation-delay: -1.3s; }
-
   .neural-transition {
     position: absolute;
     z-index: -2;
@@ -322,7 +340,6 @@
     72% { opacity: 1; stroke-dashoffset: 0; }
     100% { opacity: 0; stroke-dashoffset: -1500; }
   }
-  @keyframes joint-pulse { 0% { opacity: 0.8; transform: scale(0.65); } 78%, 100% { opacity: 0; transform: scale(1.65); } }
   @keyframes neural-pulse { to { fill: #16aaf3; opacity: 0.55; transform: scale(1.5); } }
 
   @media (max-width: 850px) {

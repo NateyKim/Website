@@ -301,6 +301,31 @@
     margin-top: clamp(24rem, 45vh, 38rem);
   }
 
+  #research-experience {
+    position: relative;
+    isolation: isolate;
+  }
+
+  #research-experience::before {
+    position: absolute;
+    z-index: -1;
+    top: clamp(-38rem, -45vh, -24rem);
+    left: 50%;
+    width: 100vw;
+    height: calc(clamp(24rem, 45vh, 38rem) + 14rem);
+    background-image:
+      radial-gradient(circle at 15% 38%, rgba(117, 102, 255, 0.14) 0 3px, transparent 4px),
+      radial-gradient(circle at 50% 20%, rgba(22, 170, 243, 0.12) 0 3px, transparent 4px),
+      radial-gradient(circle at 82% 48%, rgba(117, 102, 255, 0.12) 0 3px, transparent 4px),
+      linear-gradient(rgba(55, 74, 99, 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(55, 74, 99, 0.07) 1px, transparent 1px);
+    background-size: 240px 180px, 280px 220px, 260px 200px, 44px 44px, 44px 44px;
+    content: '';
+    mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.82) 48%, transparent 100%);
+    pointer-events: none;
+    transform: translateX(-50%);
+  }
+
   .beyond-cta {
     padding: 2.5rem 1rem 3.5rem;
     background: #f5f5f5;
@@ -376,6 +401,10 @@
 
     main > section.major-section {
       margin-top: 0;
+    }
+
+    #research-experience::before {
+      display: none;
     }
 
     main > section + section {
