@@ -27,6 +27,13 @@
   let leftTargetY = 218;
   let rightTargetX = 80;
   let rightTargetY = 218;
+  let desiredLeftTargetX = 190;
+  let desiredLeftTargetY = 218;
+  let desiredRightTargetX = 80;
+  let desiredRightTargetY = 218;
+  let leftPose = { upperRotation: 0, forearmRotation: 0, wristRotation: 0 };
+  let rightPose = { upperRotation: 0, forearmRotation: 0, wristRotation: 0 };
+  let armAnimationFrame = 0;
 
   function handlePointerMove(event: PointerEvent) {
     if (event.pointerType === 'touch') return;
@@ -48,10 +55,10 @@
     if (leftRobot && rightRobot) {
       const leftRect = leftRobot.getBoundingClientRect();
       const rightRect = rightRobot.getBoundingClientRect();
-      leftTargetX = ((event.clientX - leftRect.left) / leftRect.width) * 270;
-      leftTargetY = ((event.clientY - leftRect.top) / leftRect.height) * 520 - 10;
-      rightTargetX = ((event.clientX - rightRect.left) / rightRect.width) * 270;
-      rightTargetY = ((event.clientY - rightRect.top) / rightRect.height) * 520 + 10;
+      desiredLeftTargetX = ((event.clientX - leftRect.left) / leftRect.width) * 270;
+      desiredLeftTargetY = ((event.clientY - leftRect.top) / leftRect.height) * 520 - 10;
+      desiredRightTargetX = ((event.clientX - rightRect.left) / rightRect.width) * 270;
+      desiredRightTargetY = ((event.clientY - rightRect.top) / rightRect.height) * 520 + 10;
     }
 
     clearTimeout(movementTimer);
@@ -66,6 +73,10 @@
     pointerY = 0;
     isMoving = false;
     targetEmgIntensity = 0;
+    desiredLeftTargetX = 190;
+    desiredLeftTargetY = 218;
+    desiredRightTargetX = 80;
+    desiredRightTargetY = 218;
   }
 
   function handleScenePress(event: PointerEvent) {
@@ -77,6 +88,12 @@
 
   const clamp = (value: number, minimum: number, maximum: number) => Math.max(minimum, Math.min(maximum, value));
   const radiansToDegrees = (value: number) => (value * 180) / Math.PI;
+  const moveToward = (current: number, target: number, maximumStep: number) => current + clamp(target - current, -maximumStep, maximumStep);
+
+  function moveAngleToward(current: number, target: number, maximumStep: number) {
+    const difference = ((target - current + 540) % 360) - 180;
+    return current + clamp(difference, -maximumStep, maximumStep);
+  }
 
   function buildEmgPath(samples: number[]) {
     return samples.map((sample, index) => {
@@ -145,17 +162,42 @@
   }
 
   $: emgPath = buildEmgPath(emgSamples);
-  $: leftPose = solveArm('left', leftTargetX, leftTargetY);
-  $: rightPose = solveArm('right', rightTargetX, rightTargetY);
+
+  function advanceArms() {
+    // Target-space slew limits prevent pointer jumps from demanding impossible Cartesian velocities.
+    leftTargetX = moveToward(leftTargetX, desiredLeftTargetX, 5.5);
+    leftTargetY = moveToward(leftTargetY, desiredLeftTargetY, 5.5);
+    rightTargetX = moveToward(rightTargetX, desiredRightTargetX, 5.5);
+    rightTargetY = moveToward(rightTargetY, desiredRightTargetY, 5.5);
+
+    const solvedLeft = solveArm('left', leftTargetX, leftTargetY);
+    const solvedRight = solveArm('right', rightTargetX, rightTargetY);
+
+    // Per-joint velocity limits keep the mechanism continuous near IK boundaries.
+    leftPose = {
+      upperRotation: moveAngleToward(leftPose.upperRotation, solvedLeft.upperRotation, 2.1),
+      forearmRotation: moveAngleToward(leftPose.forearmRotation, solvedLeft.forearmRotation, 2.8),
+      wristRotation: moveAngleToward(leftPose.wristRotation, solvedLeft.wristRotation, 3.4)
+    };
+    rightPose = {
+      upperRotation: moveAngleToward(rightPose.upperRotation, solvedRight.upperRotation, 2.1),
+      forearmRotation: moveAngleToward(rightPose.forearmRotation, solvedRight.forearmRotation, 2.8),
+      wristRotation: moveAngleToward(rightPose.wristRotation, solvedRight.wristRotation, 3.4)
+    };
+
+    armAnimationFrame = requestAnimationFrame(advanceArms);
+  }
 
   onMount(() => {
     emgTimer = setInterval(advanceEmgSignal, 40);
+    armAnimationFrame = requestAnimationFrame(advanceArms);
   });
 
   onDestroy(() => {
     clearTimeout(movementTimer);
     clearTimeout(gripTimer);
     clearInterval(emgTimer);
+    cancelAnimationFrame(armAnimationFrame);
   });
 </script>
 
@@ -186,7 +228,6 @@
       <path d="M0 45 H1200 M0 90 H1200 M0 135 H1200" />
       <path d="M120 20 V160 M360 20 V160 M600 20 V160 M840 20 V160 M1080 20 V160" />
     </g>
-    <text class="emg-label" x="24" y="29">sEMG · LIVE</text>
     <path class="emg-wave" class:moving={isMoving} d={emgPath} filter="url(#emg-glow)" />
   </svg>
 
@@ -317,13 +358,6 @@
     stroke: rgba(83, 97, 116, 0.12);
     stroke-width: 1;
     vector-effect: non-scaling-stroke;
-  }
-
-  .emg-label {
-    fill: rgba(57, 70, 87, 0.62);
-    font-size: 13px;
-    font-weight: 800;
-    letter-spacing: 0.14em;
   }
 
   .emg-wave {
