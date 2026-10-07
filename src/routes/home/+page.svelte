@@ -306,26 +306,31 @@
       forearmRotation: moveAngleToward(currentPose.forearmRotation, solvedPose.forearmRotation, 13),
       wristRotation: moveAngleToward(currentPose.wristRotation, solvedPose.wristRotation, 16)
     });
-    const factors = [1, 0.75, 0.5, 0.25, 0];
+    const upperTargetStep = boundedPose.upperRotation - currentPose.upperRotation;
+    const forearmTargetStep = boundedPose.forearmRotation - currentPose.forearmRotation;
+    const upperSteps = [upperTargetStep, upperTargetStep * 0.5, -9, -4.5, 0, 4.5, 9];
+    const forearmSteps = [forearmTargetStep, forearmTargetStep * 0.5, -13, -6.5, 0, 6.5, 13];
     let bestPose = currentPose;
     let bestTool = currentTool;
     let bestScore = Number.POSITIVE_INFINITY;
 
-    // Search only inside the per-frame velocity envelope. This allows the arm
-    // to slide along a collision boundary rather than freezing at it, while
-    // every accepted shoulder, elbow and wrist change remains continuous.
-    for (const upperFactor of factors) {
-      for (const forearmFactor of factors) {
+    // Search the complete local velocity envelope, not only the straight path
+    // toward one IK branch. The extra directions let the jaw center slide
+    // around floor/self-collision constraints and escape boundary deadlocks.
+    for (const upperStep of upperSteps) {
+      for (const forearmStep of forearmSteps) {
         const candidatePose = enforceSafePose('right', {
-          upperRotation: currentPose.upperRotation + (boundedPose.upperRotation - currentPose.upperRotation) * upperFactor,
-          forearmRotation: currentPose.forearmRotation + (boundedPose.forearmRotation - currentPose.forearmRotation) * forearmFactor,
+          upperRotation: currentPose.upperRotation + upperStep,
+          forearmRotation: currentPose.forearmRotation + forearmStep,
           wristRotation: currentPose.wristRotation
         });
         const desiredTool = calculateArmGeometry('right', candidatePose, targetX, targetY).toolAngle;
         const boundedTool = moveAngleToward(currentTool, desiredTool, 3);
+        const targetToolStep = boundedTool - currentTool;
+        const toolSteps = [targetToolStep, targetToolStep * 0.5, -3, -1.5, 0, 1.5, 3];
 
-        for (const toolFactor of factors) {
-          const candidateTool = currentTool + (boundedTool - currentTool) * toolFactor;
+        for (const toolStep of toolSteps) {
+          const candidateTool = currentTool + toolStep;
           const geometry = calculateArmGeometry('right', candidatePose, targetX, targetY, candidateTool);
           if (!geometryIsCollisionFree(geometry)) continue;
 
