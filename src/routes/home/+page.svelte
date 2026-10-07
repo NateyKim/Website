@@ -48,7 +48,7 @@
   let rightPlan: ArmPlan | null = null;
   let armAnimationFrame = 0;
   let previousArmTime = 0;
-  let robotDebug = true;
+  let robotDebug = false;
   const graspCenterOffset = 45.5;
   // Model the two jaws independently so the open pinch aperture remains free.
   const gripperJawEnvelopes = [
@@ -703,7 +703,7 @@
   }
 
   onMount(() => {
-    robotDebug = new URLSearchParams(window.location.search).get('robotDebug') !== '0';
+    robotDebug = new URLSearchParams(window.location.search).get('robotDebug') === '1';
     emgTimer = setInterval(advanceEmgSignal, 20);
     armAnimationFrame = requestAnimationFrame(advanceArms);
   });
