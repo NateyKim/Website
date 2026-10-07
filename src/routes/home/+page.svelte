@@ -286,8 +286,8 @@
     });
     const upperTargetStep = boundedPose.upperRotation - currentPose.upperRotation;
     const forearmTargetStep = boundedPose.forearmRotation - currentPose.forearmRotation;
-    const upperSteps = [upperTargetStep, upperTargetStep * 0.5, -maximumSteps.upper, -maximumSteps.upper * 0.5, 0, maximumSteps.upper * 0.5, maximumSteps.upper];
-    const forearmSteps = [forearmTargetStep, forearmTargetStep * 0.5, -maximumSteps.forearm, -maximumSteps.forearm * 0.5, 0, maximumSteps.forearm * 0.5, maximumSteps.forearm];
+    const upperSteps = [upperTargetStep, -maximumSteps.upper, -maximumSteps.upper * 0.5, -maximumSteps.upper * 0.25, 0, maximumSteps.upper * 0.25, maximumSteps.upper * 0.5, maximumSteps.upper];
+    const forearmSteps = [forearmTargetStep, -maximumSteps.forearm, -maximumSteps.forearm * 0.5, -maximumSteps.forearm * 0.25, 0, maximumSteps.forearm * 0.25, maximumSteps.forearm * 0.5, maximumSteps.forearm];
     let bestPose = currentPose;
     let bestTool = currentTool;
     let bestScore = Number.POSITIVE_INFINITY;
@@ -306,7 +306,7 @@
         const desiredTool = radiansToDegrees(Math.atan2(targetY - poseGeometry.wristY, targetX - poseGeometry.wristX));
         const boundedTool = moveAngleToward(currentTool, desiredTool, maximumSteps.tool);
         const targetToolStep = boundedTool - currentTool;
-        const toolSteps = [targetToolStep, targetToolStep * 0.5, -maximumSteps.tool, -maximumSteps.tool * 0.5, 0, maximumSteps.tool * 0.5, maximumSteps.tool];
+        const toolSteps = [targetToolStep, -maximumSteps.tool, -maximumSteps.tool * 0.5, -maximumSteps.tool * 0.25, 0, maximumSteps.tool * 0.25, maximumSteps.tool * 0.5, maximumSteps.tool];
 
         for (const toolStep of toolSteps) {
           const candidateTool = currentTool + toolStep;
@@ -449,12 +449,13 @@
       forearm: 230 * elapsedSeconds,
       tool: 105 * elapsedSeconds
     };
-    // Solve from the current pointer position. Joint-space limits below still
-    // smooth the mechanism without adding a second layer of cursor lag.
-    leftTargetX = desiredLeftTargetX;
-    leftTargetY = desiredLeftTargetY;
-    rightTargetX = desiredRightTargetX;
-    rightTargetY = desiredRightTargetY;
+    // A short refresh-rate-independent low-pass removes mouse-event quantizing
+    // without making the mechanism feel detached from the cursor.
+    const targetBlend = 1 - Math.exp(-elapsedSeconds / 0.055);
+    leftTargetX += (desiredLeftTargetX - leftTargetX) * targetBlend;
+    leftTargetY += (desiredLeftTargetY - leftTargetY) * targetBlend;
+    rightTargetX += (desiredRightTargetX - rightTargetX) * targetBlend;
+    rightTargetY += (desiredRightTargetY - rightTargetY) * targetBlend;
 
     const solvedLeft = solveArm('right', 270 - leftTargetX, leftTargetY);
     const solvedRight = solveArm('right', rightTargetX, rightTargetY);
