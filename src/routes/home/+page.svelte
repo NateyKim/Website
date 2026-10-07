@@ -103,7 +103,7 @@
   ) {
     const baseAngleOne = side === 'left' ? -57.38 : -122.62;
     const baseAngleTwo = side === 'left' ? -56.84 : -123.16;
-    const highestDownwardLinkAngle = -6;
+    const highestDownwardLinkAngle = -12;
 
     // These are hard per-frame limits, not merely IK target limits. Therefore
     // interpolation can never render either link on the floor side of a base.
@@ -112,8 +112,51 @@
     const forearmRotation = Math.min(pose.forearmRotation, maximumForearmRotation);
 
     // Keep the pinch tool from folding backward into its own forearm.
-    const wristRotation = clamp(pose.wristRotation, -55, 55);
+    const wristRotation = clamp(pose.wristRotation, -35, 35);
     return { upperRotation, forearmRotation, wristRotation };
+  }
+
+  function calculateArmGeometry(
+    side: 'left' | 'right',
+    pose: { upperRotation: number; forearmRotation: number; wristRotation: number }
+  ) {
+    const baseX = side === 'left' ? 62 : 208;
+    const baseY = 416;
+    const linkOne = 118.75;
+    const linkTwo = 117.07;
+    const baseAngleOne = side === 'left' ? -57.38 : -122.62;
+    const baseAngleTwo = side === 'left' ? -56.84 : -123.16;
+    const shoulderAngle = ((baseAngleOne + pose.upperRotation) * Math.PI) / 180;
+    const forearmAngle = ((baseAngleTwo + pose.upperRotation + pose.forearmRotation) * Math.PI) / 180;
+    const elbowX = baseX + Math.cos(shoulderAngle) * linkOne;
+    const elbowY = baseY + Math.sin(shoulderAngle) * linkOne;
+    const wristX = elbowX + Math.cos(forearmAngle) * linkTwo;
+    const wristY = elbowY + Math.sin(forearmAngle) * linkTwo;
+    const defaultToolAngle = side === 'left' ? 0 : 180;
+    const desiredToolAngle = defaultToolAngle + pose.upperRotation + pose.forearmRotation + pose.wristRotation;
+    const angleDifference = ((desiredToolAngle - defaultToolAngle + 540) % 360) - 180;
+    const toolCorners = [[30, -28], [30, 28], [61, -28], [61, 28]];
+    const toolBottom = (angle: number) => {
+      const radians = (angle * Math.PI) / 180;
+      return wristY + Math.max(...toolCorners.map(([x, y]) => x * Math.sin(radians) + y * Math.cos(radians)));
+    };
+
+    // The horizontal tool pose is always safe. Move toward the requested pose
+    // only as far as the complete gripper geometry remains above the floor.
+    let safeFraction = 0;
+    let unsafeFraction = 1;
+    if (toolBottom(desiredToolAngle) <= 442) {
+      safeFraction = 1;
+    } else {
+      for (let iteration = 0; iteration < 12; iteration += 1) {
+        const candidate = (safeFraction + unsafeFraction) / 2;
+        if (toolBottom(defaultToolAngle + angleDifference * candidate) <= 442) safeFraction = candidate;
+        else unsafeFraction = candidate;
+      }
+    }
+    const toolAngle = defaultToolAngle + angleDifference * safeFraction;
+
+    return { baseX, baseY, elbowX, elbowY, wristX, wristY, toolAngle };
   }
 
   function buildEmgPath(samples: number[]) {
@@ -203,6 +246,8 @@
   }
 
   $: emgPath = buildEmgPath(emgSamples);
+  $: leftGeometry = calculateArmGeometry('left', leftPose);
+  $: rightGeometry = calculateArmGeometry('right', rightPose);
 
   function advanceArms() {
     // Target-space slew limits prevent pointer jumps from demanding impossible Cartesian velocities.
@@ -275,42 +320,36 @@
   </svg>
 
   <svg bind:this={leftRobot} class="robot robot-left" class:gripping viewBox="0 0 270 520" aria-hidden="true">
-    <defs><clipPath id="left-floor-boundary"><rect x="-300" y="-300" width="900" height="750" /></clipPath></defs>
     <g class="robot-mount">
       <path d="M8 450 H118 M32 450 V420 H92 V450" /><circle cx="62" cy="416" r="19" />
     </g>
-    <g clip-path="url(#left-floor-boundary)">
-      <g class="arm-segment" style={`transform: rotate(${leftPose.upperRotation}deg); transform-origin: 62px 416px;`}>
-        <path d="M62 416 L126 316" /><circle cx="126" cy="316" r="16" />
-        <g class="arm-segment" style={`transform: rotate(${leftPose.forearmRotation}deg); transform-origin: 126px 316px;`}>
-          <path d="M126 316 L190 218" /><circle cx="190" cy="218" r="14" />
-          <g class="wrist" style={`transform: rotate(${leftPose.wristRotation}deg); transform-origin: 190px 218px;`}>
-            <path class="gripper-base" d="M190 218 H220 M220 190 V246" />
-            <path class="gripper-finger finger-upper" d="M220 190 H251" />
-            <path class="gripper-finger finger-lower" d="M220 246 H251" />
-          </g>
-        </g>
-      </g>
+    <g class="arm-segment">
+      <path d={`M${leftGeometry.baseX} ${leftGeometry.baseY} L${leftGeometry.elbowX} ${leftGeometry.elbowY}`} />
+      <circle cx={leftGeometry.elbowX} cy={leftGeometry.elbowY} r="16" />
+      <path d={`M${leftGeometry.elbowX} ${leftGeometry.elbowY} L${leftGeometry.wristX} ${leftGeometry.wristY}`} />
+      <circle cx={leftGeometry.wristX} cy={leftGeometry.wristY} r="14" />
+    </g>
+    <g class="wrist" transform={`translate(${leftGeometry.wristX} ${leftGeometry.wristY}) rotate(${leftGeometry.toolAngle})`}>
+      <path class="gripper-base" d="M0 0 H30 M30 -28 V28" />
+      <path class="gripper-finger finger-upper" d="M30 -28 H61" />
+      <path class="gripper-finger finger-lower" d="M30 28 H61" />
     </g>
   </svg>
 
   <svg bind:this={rightRobot} class="robot robot-right" class:gripping viewBox="0 0 270 520" aria-hidden="true">
-    <defs><clipPath id="right-floor-boundary"><rect x="-300" y="-300" width="900" height="750" /></clipPath></defs>
     <g class="robot-mount">
       <path d="M152 450 H262 M178 450 V420 H238 V450" /><circle cx="208" cy="416" r="19" />
     </g>
-    <g clip-path="url(#right-floor-boundary)">
-      <g class="arm-segment" style={`transform: rotate(${rightPose.upperRotation}deg); transform-origin: 208px 416px;`}>
-        <path d="M208 416 L144 316" /><circle cx="144" cy="316" r="16" />
-        <g class="arm-segment" style={`transform: rotate(${rightPose.forearmRotation}deg); transform-origin: 144px 316px;`}>
-          <path d="M144 316 L80 218" /><circle cx="80" cy="218" r="14" />
-          <g class="wrist" style={`transform: rotate(${rightPose.wristRotation}deg); transform-origin: 80px 218px;`}>
-            <path class="gripper-base" d="M80 218 H50 M50 190 V246" />
-            <path class="gripper-finger finger-upper" d="M50 190 H19" />
-            <path class="gripper-finger finger-lower" d="M50 246 H19" />
-          </g>
-        </g>
-      </g>
+    <g class="arm-segment">
+      <path d={`M${rightGeometry.baseX} ${rightGeometry.baseY} L${rightGeometry.elbowX} ${rightGeometry.elbowY}`} />
+      <circle cx={rightGeometry.elbowX} cy={rightGeometry.elbowY} r="16" />
+      <path d={`M${rightGeometry.elbowX} ${rightGeometry.elbowY} L${rightGeometry.wristX} ${rightGeometry.wristY}`} />
+      <circle cx={rightGeometry.wristX} cy={rightGeometry.wristY} r="14" />
+    </g>
+    <g class="wrist" transform={`translate(${rightGeometry.wristX} ${rightGeometry.wristY}) rotate(${rightGeometry.toolAngle})`}>
+      <path class="gripper-base" d="M0 0 H30 M30 -28 V28" />
+      <path class="gripper-finger finger-upper" d="M30 -28 H61" />
+      <path class="gripper-finger finger-lower" d="M30 28 H61" />
     </g>
   </svg>
 
@@ -435,9 +474,8 @@
   }
   .robot-left { left: max(-4rem, calc((100vw - 1500px) / 2)); }
   .robot-right { right: max(-4rem, calc((100vw - 1500px) / 2)); }
-  .robot-mount path, .arm-segment path { fill: none; stroke: #222c38; stroke-width: 13; stroke-linecap: round; stroke-linejoin: round; }
+  .robot-mount path, .arm-segment path, .wrist path { fill: none; stroke: #222c38; stroke-width: 13; stroke-linecap: round; stroke-linejoin: round; }
   .robot-mount circle, .arm-segment circle { fill: #f8fafc; stroke: #222c38; stroke-width: 7; }
-  .arm-segment, .wrist { will-change: transform; }
   .gripper-base { stroke-width: 8 !important; }
   .gripper-finger {
     stroke-width: 7 !important;
