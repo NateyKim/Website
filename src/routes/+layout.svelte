@@ -346,12 +346,12 @@
     height: calc(clamp(24rem, 45vh, 38rem) + 54rem);
     pointer-events: none;
     transform: translateX(-50%);
-    mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 56%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 30%, rgba(0, 0, 0, 0.18) 43%, transparent 49%);
   }
 
   .research-network svg { width: 100%; height: 100%; }
-  .research-network-lines path { fill: none; stroke: #73829a; stroke-width: 1.15; opacity: 0.24; vector-effect: non-scaling-stroke; }
-  .research-network-nodes circle { fill: #7566ff; stroke: rgba(248, 250, 252, 0.9); stroke-width: 2.5; opacity: 0.42; vector-effect: non-scaling-stroke; }
+  .research-network-lines path { fill: none; stroke: #73829a; stroke-width: 1.15; opacity: 0.14; vector-effect: non-scaling-stroke; }
+  .research-network-nodes circle { fill: #7566ff; stroke: rgba(248, 250, 252, 0.9); stroke-width: 2.5; opacity: 0.22; vector-effect: non-scaling-stroke; }
 
   .beyond-cta {
     padding: 2.5rem 1rem 3.5rem;

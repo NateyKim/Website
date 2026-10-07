@@ -136,7 +136,9 @@
     const baseAngleOne = side === 'left' ? -57.38 : -122.62;
     const baseAngleTwo = side === 'left' ? -56.84 : -123.16;
     const floorY = 450;
-    const gripperClearance = 46;
+    // Clearance includes the rotated fingers, keeping the complete tool above
+    // the invisible floor rather than constraining only its center point.
+    const gripperClearance = 82;
     const constrainedTargetY = Math.min(targetY, floorY - gripperClearance);
 
     const toolDirection = Math.atan2(constrainedTargetY - baseY, targetX - baseX);
