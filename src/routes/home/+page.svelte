@@ -166,8 +166,12 @@
     const squaredDistance = dx * dx + dy * dy;
     const cosineElbow = clamp((squaredDistance - linkOne ** 2 - linkTwo ** 2) / (2 * linkOne * linkTwo), -1, 1);
     const elbow = Math.acos(cosineElbow) * (side === 'left' ? 1 : -1);
-    const shoulder = Math.atan2(dy, dx) - Math.atan2(linkTwo * Math.sin(elbow), linkOne + linkTwo * Math.cos(elbow));
-    const forearm = shoulder + elbow;
+    const solvedShoulder = Math.atan2(dy, dx) - Math.atan2(linkTwo * Math.sin(elbow), linkOne + linkTwo * Math.cos(elbow));
+    // In screen coordinates, positive shoulder angles point below the base.
+    // Clamp the shoulder itself so the elbow and upper arm cannot bow through
+    // the invisible floor when the pointer is below the robot.
+    const shoulder = Math.min(solvedShoulder, -0.1);
+    const forearm = Math.min(shoulder + elbow, -0.05);
     const upperRotation = radiansToDegrees(shoulder) - baseAngleOne;
     const forearmRotation = radiansToDegrees(forearm) - baseAngleTwo - upperRotation;
     const desiredToolAngle = radiansToDegrees(toolDirection);
