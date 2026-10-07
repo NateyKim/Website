@@ -97,6 +97,25 @@
     return current + clamp(difference, -maximumStep, maximumStep);
   }
 
+  function enforceSafePose(
+    side: 'left' | 'right',
+    pose: { upperRotation: number; forearmRotation: number; wristRotation: number }
+  ) {
+    const baseAngleOne = side === 'left' ? -57.38 : -122.62;
+    const baseAngleTwo = side === 'left' ? -56.84 : -123.16;
+    const highestDownwardLinkAngle = -6;
+
+    // These are hard per-frame limits, not merely IK target limits. Therefore
+    // interpolation can never render either link on the floor side of a base.
+    const upperRotation = Math.min(pose.upperRotation, highestDownwardLinkAngle - baseAngleOne);
+    const maximumForearmRotation = highestDownwardLinkAngle - baseAngleTwo - upperRotation;
+    const forearmRotation = Math.min(pose.forearmRotation, maximumForearmRotation);
+
+    // Keep the pinch tool from folding backward into its own forearm.
+    const wristRotation = clamp(pose.wristRotation, -72, 72);
+    return { upperRotation, forearmRotation, wristRotation };
+  }
+
   function buildEmgPath(samples: number[]) {
     return samples.map((sample, index) => {
       const x = (index / (samples.length - 1)) * 1200;
@@ -196,16 +215,16 @@
     const solvedRight = solveArm('right', rightTargetX, rightTargetY);
 
     // Per-joint velocity limits keep the mechanism continuous near IK boundaries.
-    leftPose = {
+    leftPose = enforceSafePose('left', {
       upperRotation: moveAngleToward(leftPose.upperRotation, solvedLeft.upperRotation, 5),
       forearmRotation: moveAngleToward(leftPose.forearmRotation, solvedLeft.forearmRotation, 7),
       wristRotation: moveAngleToward(leftPose.wristRotation, solvedLeft.wristRotation, 8.5)
-    };
-    rightPose = {
+    });
+    rightPose = enforceSafePose('right', {
       upperRotation: moveAngleToward(rightPose.upperRotation, solvedRight.upperRotation, 5),
       forearmRotation: moveAngleToward(rightPose.forearmRotation, solvedRight.forearmRotation, 7),
       wristRotation: moveAngleToward(rightPose.wristRotation, solvedRight.wristRotation, 8.5)
-    };
+    });
 
     armAnimationFrame = requestAnimationFrame(advanceArms);
   }
