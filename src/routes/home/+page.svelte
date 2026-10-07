@@ -37,6 +37,8 @@
   let rightToolAngle = 180;
   let armAnimationFrame = 0;
   const graspCenterOffset = 45.5;
+  // Collision envelope for the fully open gripper, including stroke width.
+  const gripperEnvelope = [[0, -32], [61, -32], [61, 32], [0, 32]] as const;
 
   function handlePointerMove(event: PointerEvent) {
     if (event.pointerType === 'touch') return;
@@ -140,15 +142,15 @@
     const forearmDegrees = (forearmAngle * 180) / Math.PI;
     const targetToolAngle = requestedToolAngle ?? radiansToDegrees(Math.atan2(targetY - wristY, targetX - wristX));
     const targetRelativeAngle = ((targetToolAngle - forearmDegrees + 540) % 360) - 180;
-    // The canonical right wrist may only point outward from its forearm. The
-    // mirrored left arm inherits the same non-self-colliding interval.
-    const safeRelativeAngle = clamp(targetRelativeAngle, -92, -18);
+    // Keeping the approach axis within the outward half-plane prevents the
+    // rectangular open-gripper envelope from sweeping back over the forearm.
+    // The mirrored left arm inherits the identical constraint.
+    const safeRelativeAngle = clamp(targetRelativeAngle, -88, -18);
     const desiredToolAngle = forearmDegrees + safeRelativeAngle;
     const angleDifference = ((desiredToolAngle - defaultToolAngle + 540) % 360) - 180;
-    const toolCorners = [[30, -28], [30, 28], [61, -28], [61, 28]];
     const toolBottom = (angle: number) => {
       const radians = (angle * Math.PI) / 180;
-      return wristY + Math.max(...toolCorners.map(([x, y]) => x * Math.sin(radians) + y * Math.cos(radians)));
+      return wristY + Math.max(...gripperEnvelope.map(([x, y]) => x * Math.sin(radians) + y * Math.cos(radians)));
     };
 
     // The horizontal tool pose is always safe. Move toward the requested pose
@@ -229,7 +231,9 @@
     const maximumReach = linkOne + linkTwo - 1;
     // Keep enough radial clearance that the forearm cannot fold back through
     // the upper arm when the cursor moves close to the shoulder.
-    const minimumReach = 66;
+    // Keep the wrist far enough from the shoulder/base that the complete
+    // 61-by-64 open-gripper rectangle cannot overlap the proximal mechanism.
+    const minimumReach = 92;
     const targetDistance = Math.hypot(targetX - baseX, constrainedTargetY - baseY);
     const targetIsBeyondReach = targetDistance > maximumReach + toolCenterOffset;
     const wristTargetX = targetIsBeyondReach
@@ -292,20 +296,20 @@
 
     // Per-joint velocity limits keep the mechanism continuous near IK boundaries.
     leftPose = enforceSafePose('right', {
-      upperRotation: moveAngleToward(leftPose.upperRotation, solvedLeft.upperRotation, 14),
-      forearmRotation: moveAngleToward(leftPose.forearmRotation, solvedLeft.forearmRotation, 20),
-      wristRotation: moveAngleToward(leftPose.wristRotation, solvedLeft.wristRotation, 24)
+      upperRotation: moveAngleToward(leftPose.upperRotation, solvedLeft.upperRotation, 9),
+      forearmRotation: moveAngleToward(leftPose.forearmRotation, solvedLeft.forearmRotation, 13),
+      wristRotation: moveAngleToward(leftPose.wristRotation, solvedLeft.wristRotation, 16)
     });
     rightPose = enforceSafePose('right', {
-      upperRotation: moveAngleToward(rightPose.upperRotation, solvedRight.upperRotation, 14),
-      forearmRotation: moveAngleToward(rightPose.forearmRotation, solvedRight.forearmRotation, 20),
-      wristRotation: moveAngleToward(rightPose.wristRotation, solvedRight.wristRotation, 24)
+      upperRotation: moveAngleToward(rightPose.upperRotation, solvedRight.upperRotation, 9),
+      forearmRotation: moveAngleToward(rightPose.forearmRotation, solvedRight.forearmRotation, 13),
+      wristRotation: moveAngleToward(rightPose.wristRotation, solvedRight.wristRotation, 16)
     });
 
     const desiredLeftTool = calculateArmGeometry('right', leftPose, 270 - leftTargetX, leftTargetY).toolAngle;
     const desiredRightTool = calculateArmGeometry('right', rightPose, rightTargetX, rightTargetY).toolAngle;
-    leftToolAngle = moveAngleToward(leftToolAngle, desiredLeftTool, 5);
-    rightToolAngle = moveAngleToward(rightToolAngle, desiredRightTool, 5);
+    leftToolAngle = moveAngleToward(leftToolAngle, desiredLeftTool, 3);
+    rightToolAngle = moveAngleToward(rightToolAngle, desiredRightTool, 3);
 
     armAnimationFrame = requestAnimationFrame(advanceArms);
   }
