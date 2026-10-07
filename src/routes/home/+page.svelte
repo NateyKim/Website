@@ -213,7 +213,8 @@
     const constrainedTargetY = Math.min(targetY, floorY - gripperClearance);
 
     const toolDirection = Math.atan2(constrainedTargetY - baseY, targetX - baseX);
-    const toolCenterOffset = 55;
+    // The grasp point is the center between the fingertips at x = 61.
+    const toolCenterOffset = 61;
     const wristTargetX = targetX - Math.cos(toolDirection) * toolCenterOffset;
     const wristTargetY = constrainedTargetY - Math.sin(toolDirection) * toolCenterOffset;
     let dx = wristTargetX - baseX;
@@ -263,24 +264,24 @@
 
   function advanceArms() {
     // Target-space slew limits prevent pointer jumps from demanding impossible Cartesian velocities.
-    leftTargetX = moveToward(leftTargetX, desiredLeftTargetX, 12);
-    leftTargetY = moveToward(leftTargetY, desiredLeftTargetY, 12);
-    rightTargetX = moveToward(rightTargetX, desiredRightTargetX, 12);
-    rightTargetY = moveToward(rightTargetY, desiredRightTargetY, 12);
+    leftTargetX = moveToward(leftTargetX, desiredLeftTargetX, 28);
+    leftTargetY = moveToward(leftTargetY, desiredLeftTargetY, 28);
+    rightTargetX = moveToward(rightTargetX, desiredRightTargetX, 28);
+    rightTargetY = moveToward(rightTargetY, desiredRightTargetY, 28);
 
     const solvedLeft = solveArm('right', 270 - leftTargetX, leftTargetY);
     const solvedRight = solveArm('right', rightTargetX, rightTargetY);
 
     // Per-joint velocity limits keep the mechanism continuous near IK boundaries.
     leftPose = enforceSafePose('right', {
-      upperRotation: moveAngleToward(leftPose.upperRotation, solvedLeft.upperRotation, 5),
-      forearmRotation: moveAngleToward(leftPose.forearmRotation, solvedLeft.forearmRotation, 7),
-      wristRotation: moveAngleToward(leftPose.wristRotation, solvedLeft.wristRotation, 8.5)
+      upperRotation: moveAngleToward(leftPose.upperRotation, solvedLeft.upperRotation, 10),
+      forearmRotation: moveAngleToward(leftPose.forearmRotation, solvedLeft.forearmRotation, 14),
+      wristRotation: moveAngleToward(leftPose.wristRotation, solvedLeft.wristRotation, 18)
     });
     rightPose = enforceSafePose('right', {
-      upperRotation: moveAngleToward(rightPose.upperRotation, solvedRight.upperRotation, 5),
-      forearmRotation: moveAngleToward(rightPose.forearmRotation, solvedRight.forearmRotation, 7),
-      wristRotation: moveAngleToward(rightPose.wristRotation, solvedRight.wristRotation, 8.5)
+      upperRotation: moveAngleToward(rightPose.upperRotation, solvedRight.upperRotation, 10),
+      forearmRotation: moveAngleToward(rightPose.forearmRotation, solvedRight.forearmRotation, 14),
+      wristRotation: moveAngleToward(rightPose.wristRotation, solvedRight.wristRotation, 18)
     });
 
     armAnimationFrame = requestAnimationFrame(advanceArms);
@@ -479,7 +480,7 @@
     position: absolute;
     z-index: 1;
     top: clamp(6rem, 13vh, 9rem);
-    width: clamp(180px, 22vw, 330px);
+    width: clamp(280px, 40vw, 700px);
     overflow: visible;
     opacity: 0.84;
     filter: drop-shadow(0 20px 26px rgba(25, 32, 50, 0.13));
