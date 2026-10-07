@@ -35,6 +35,8 @@
   let rightPose = { upperRotation: 0, forearmRotation: 0, wristRotation: 0 };
   let leftToolAngle = 180;
   let rightToolAngle = 180;
+  let leftRoutingViaNeutral = false;
+  let rightRoutingViaNeutral = false;
   let armAnimationFrame = 0;
   let previousArmTime = 0;
   let robotDebug = true;
@@ -275,14 +277,32 @@
   function chooseSafeMotion(
     currentPose: { upperRotation: number; forearmRotation: number; wristRotation: number },
     currentTool: number,
-    solvedPose: { upperRotation: number; forearmRotation: number; wristRotation: number; toolAngle: number },
+    solvedPoses: Array<{ upperRotation: number; forearmRotation: number; wristRotation: number; toolAngle: number }>,
     targetX: number,
     targetY: number,
-    maximumSteps: { upper: number; forearm: number; tool: number }
+    maximumSteps: { upper: number; forearm: number; tool: number },
+    routingViaNeutral: boolean
   ) {
-    const upperError = normalizeAngle(solvedPose.upperRotation - currentPose.upperRotation);
-    const forearmError = normalizeAngle(solvedPose.forearmRotation - currentPose.forearmRotation);
-    const toolError = normalizeAngle(solvedPose.toolAngle - currentTool);
+    const configurationDistance = (candidate: (typeof solvedPoses)[number]) =>
+      Math.abs(normalizeAngle(candidate.upperRotation - currentPose.upperRotation))
+      + Math.abs(normalizeAngle(candidate.forearmRotation - currentPose.forearmRotation))
+      + 0.35 * Math.abs(normalizeAngle(candidate.toolAngle - currentTool));
+    const targetScore = (candidate: (typeof solvedPoses)[number]) => {
+      const geometry = calculateArmGeometry('right', candidate, targetX, targetY, candidate.toolAngle);
+      const center = graspCenter(geometry);
+      const trackingError = Math.hypot(center.x - targetX, center.y - targetY);
+      return (geometryIsCollisionFree(geometry) ? 0 : 1_000_000)
+        + trackingError * 10_000
+        + configurationDistance(candidate);
+    };
+    const solvedPose = [...solvedPoses].sort((first, second) => targetScore(first) - targetScore(second))[0];
+    const neutralPose = { upperRotation: 0, forearmRotation: 0, wristRotation: 0, toolAngle: 180 };
+    const neutralError = configurationDistance(neutralPose);
+    if (routingViaNeutral && neutralError < 4) routingViaNeutral = false;
+    const destination = routingViaNeutral ? neutralPose : solvedPose;
+    const upperError = normalizeAngle(destination.upperRotation - currentPose.upperRotation);
+    const forearmError = normalizeAngle(destination.forearmRotation - currentPose.forearmRotation);
+    const toolError = normalizeAngle(destination.toolAngle - currentTool);
     const step = {
       upper: clamp(upperError * 0.18, -maximumSteps.upper, maximumSteps.upper),
       forearm: clamp(forearmError * 0.18, -maximumSteps.forearm, maximumSteps.forearm),
@@ -297,10 +317,17 @@
       const tool = currentTool + step.tool * fraction;
       const geometry = calculateArmGeometry('right', pose, targetX, targetY, tool);
       if (geometryIsCollisionFree(geometry)) {
-        return { pose, tool };
+        return { pose, tool, routingViaNeutral };
       }
     }
-    return { pose: currentPose, tool: currentTool };
+    // A direct interpolation can hit the base or the other links even when
+    // the opposite analytical elbow branch is valid. Leave that local basin
+    // through the known-safe, inward-facing extended posture, then approach
+    // the globally best branch from there.
+    if (!routingViaNeutral) {
+      return chooseSafeMotion(currentPose, currentTool, solvedPoses, targetX, targetY, maximumSteps, true);
+    }
+    return { pose: currentPose, tool: currentTool, routingViaNeutral };
   }
 
   function buildEmgPath(samples: number[]) {
@@ -375,23 +402,20 @@
 
     const squaredDistance = dx * dx + dy * dy;
     const cosineElbow = clamp((squaredDistance - linkOne ** 2 - linkTwo ** 2) / (2 * linkOne * linkTwo), -1, 1);
-    const elbow = Math.acos(cosineElbow) * (side === 'left' ? 1 : -1);
-    const solvedShoulder = Math.atan2(dy, dx) - Math.atan2(linkTwo * Math.sin(elbow), linkOne + linkTwo * Math.cos(elbow));
-    const shoulder = solvedShoulder;
-    const forearm = shoulder + elbow;
-    // Normalize equivalent revolutions before the joint-limit and motion
-    // stages. Without this, targets above a wall-mounted base can produce
-    // values such as -315deg instead of 45deg and pin the arm at its limit.
-    const upperRotation = normalizeAngle(radiansToDegrees(shoulder) - baseAngleOne);
-    const forearmRotation = normalizeAngle(radiansToDegrees(forearm) - baseAngleTwo - upperRotation);
     const desiredToolAngle = radiansToDegrees(toolDirection);
-    const defaultToolAngle = side === 'left' ? 0 : 180;
-    const rawWristRotation = desiredToolAngle - defaultToolAngle - upperRotation - forearmRotation;
-    const normalizedWristRotation = normalizeAngle(rawWristRotation);
-    // Prevent the gripper from rotating back into its own forearm.
-    const wristRotation = clamp(normalizedWristRotation, -108, 108);
-
-    return { upperRotation, forearmRotation, wristRotation, toolAngle: desiredToolAngle };
+    return [-1, 1].map((elbowSign) => {
+      const elbow = Math.acos(cosineElbow) * elbowSign;
+      const shoulder = Math.atan2(dy, dx) - Math.atan2(linkTwo * Math.sin(elbow), linkOne + linkTwo * Math.cos(elbow));
+      const forearm = shoulder + elbow;
+      // Both elbow-up and elbow-down are genuine solutions. Normalizing them
+      // makes the global selector compare equivalent configurations correctly.
+      const upperRotation = normalizeAngle(radiansToDegrees(shoulder) - baseAngleOne);
+      const forearmRotation = normalizeAngle(radiansToDegrees(forearm) - baseAngleTwo - upperRotation);
+      const defaultToolAngle = side === 'left' ? 0 : 180;
+      const rawWristRotation = desiredToolAngle - defaultToolAngle - upperRotation - forearmRotation;
+      const wristRotation = clamp(normalizeAngle(rawWristRotation), -108, 108);
+      return { upperRotation, forearmRotation, wristRotation, toolAngle: desiredToolAngle };
+    });
   }
 
   $: emgPath = buildEmgPath(emgSamples);
@@ -425,12 +449,14 @@
     const canonicalLeftTargetX = 270 - leftTargetX;
     const solvedLeft = solveArm('right', canonicalLeftTargetX, leftTargetY);
     const solvedRight = solveArm('right', rightTargetX, rightTargetY);
-    const safeLeft = chooseSafeMotion(leftPose, leftToolAngle, solvedLeft, canonicalLeftTargetX, leftTargetY, maximumSteps);
-    const safeRight = chooseSafeMotion(rightPose, rightToolAngle, solvedRight, rightTargetX, rightTargetY, maximumSteps);
+    const safeLeft = chooseSafeMotion(leftPose, leftToolAngle, solvedLeft, canonicalLeftTargetX, leftTargetY, maximumSteps, leftRoutingViaNeutral);
+    const safeRight = chooseSafeMotion(rightPose, rightToolAngle, solvedRight, rightTargetX, rightTargetY, maximumSteps, rightRoutingViaNeutral);
     leftPose = safeLeft.pose;
     leftToolAngle = safeLeft.tool;
+    leftRoutingViaNeutral = safeLeft.routingViaNeutral;
     rightPose = safeRight.pose;
     rightToolAngle = safeRight.tool;
+    rightRoutingViaNeutral = safeRight.routingViaNeutral;
 
     armAnimationFrame = requestAnimationFrame(advanceArms);
   }
