@@ -37,7 +37,7 @@
   let rightToolAngle = 180;
   let armAnimationFrame = 0;
   let previousArmTime = 0;
-  let robotDebug = false;
+  let robotDebug = true;
   let leftJointVelocity = { upper: 0, forearm: 0, tool: 0 };
   let rightJointVelocity = { upper: 0, forearm: 0, tool: 0 };
   const graspCenterOffset = 45.5;
@@ -462,7 +462,7 @@
   }
 
   onMount(() => {
-    robotDebug = new URLSearchParams(window.location.search).get('robotDebug') === '1';
+    robotDebug = new URLSearchParams(window.location.search).get('robotDebug') !== '0';
     emgTimer = setInterval(advanceEmgSignal, 20);
     armAnimationFrame = requestAnimationFrame(advanceArms);
   });
