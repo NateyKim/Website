@@ -43,8 +43,6 @@
     progress: number;
     targetX: number;
     targetY: number;
-    bestTrackingError: number;
-    stagnantTime: number;
   };
   let leftPlan: ArmPlan | null = null;
   let rightPlan: ArmPlan | null = null;
@@ -311,7 +309,9 @@
     // Tracking accuracy is lexicographically first: A* may optimize motion
     // only among goals whose gripper centers are essentially equally close.
     const bestError = safeGoals[0].error;
-    const eligibleGoals = safeGoals.filter((candidate) => candidate.error <= bestError + 1.5).slice(0, 8);
+    const eligibleGoals = safeGoals.filter((candidate) =>
+      bestError < 0.75 ? candidate.error < 0.75 : candidate.error <= bestError + 1.5
+    ).slice(0, 8);
     const resolution = 12;
     const minimumAngle = -168;
     const count = 29;
@@ -337,6 +337,24 @@
       const center = graspCenter(calculateArmGeometry('right', pose, targetX, targetY, tool));
       return Math.hypot(center.x - targetX, center.y - targetY);
     };
+    const transitionIsFree = (from: ArmWaypoint, to: ArmWaypoint, enforceTracking = false) => {
+      const allowedTrackingError = Math.max(
+        trackingErrorAt(from.pose, from.tool),
+        trackingErrorAt(to.pose, to.tool)
+      ) + 10;
+      for (let sample = 1; sample <= 12; sample += 1) {
+        const amount = sample / 12;
+        const pose = {
+          upperRotation: from.pose.upperRotation + normalizeAngle(to.pose.upperRotation - from.pose.upperRotation) * amount,
+          forearmRotation: from.pose.forearmRotation + normalizeAngle(to.pose.forearmRotation - from.pose.forearmRotation) * amount,
+          wristRotation: 0
+        };
+        const interpolatedTool = from.tool + normalizeAngle(to.tool - from.tool) * amount;
+        if (!geometryIsCollisionFree(calculateArmGeometry('right', pose, targetX, targetY, interpolatedTool))) return false;
+        if (enforceTracking && trackingErrorAt(pose, interpolatedTool) > allowedTrackingError) return false;
+      }
+      return true;
+    };
 
     const start = {
       upper: indexAt(currentPose.upperRotation),
@@ -344,6 +362,7 @@
       tool: toolIndexAt(currentTool)
     };
     const goalKeys = new Set<string>();
+    const exactGoalForKey = new Map<string, ArmPose & { toolAngle: number }>();
     for (const { goal } of eligibleGoals) {
       const centerUpper = indexAt(goal.upperRotation);
       const centerForearm = indexAt(goal.forearmRotation);
@@ -354,8 +373,13 @@
             const upper = centerUpper + du;
             const forearm = centerForearm + df;
             const tool = (centerTool + dt + toolCount) % toolCount;
-            if (upper >= 0 && upper < count && forearm >= 0 && forearm < count && isFree(upper, forearm, tool)) {
-              goalKeys.add(keyOf(upper, forearm, tool));
+            const gridWaypoint = { pose: poseAt(upper, forearm), tool: toolAt(tool) };
+            const exactWaypoint = { pose: goal, tool: goal.toolAngle };
+            if (upper >= 0 && upper < count && forearm >= 0 && forearm < count
+              && isFree(upper, forearm, tool) && transitionIsFree(gridWaypoint, exactWaypoint)) {
+              const key = keyOf(upper, forearm, tool);
+              goalKeys.add(key);
+              exactGoalForKey.set(key, goal);
             }
           }
         }
@@ -438,32 +462,9 @@
       const [upper, forearm, tool] = key.split(',').map(Number);
       gridPath.unshift({ pose: poseAt(upper, forearm), tool: toolAt(tool) });
     }
-    const exactGoal = eligibleGoals.reduce((best, candidate) => {
-      const last = gridPath.at(-1)?.pose ?? currentPose;
-      const distance = Math.abs(normalizeAngle(candidate.goal.upperRotation - last.upperRotation))
-        + Math.abs(normalizeAngle(candidate.goal.forearmRotation - last.forearmRotation));
-      return distance < best.distance ? { pose: candidate.goal, distance } : best;
-    }, { pose: eligibleGoals[0].goal, distance: Infinity }).pose;
+    const exactGoal = exactGoalForKey.get(reached) ?? eligibleGoals[0].goal;
     gridPath.push({ pose: exactGoal, tool: exactGoal.toolAngle });
 
-    const collisionFreeSegment = (from: ArmWaypoint, to: ArmWaypoint) => {
-      const allowedTrackingError = Math.max(
-        trackingErrorAt(from.pose, from.tool),
-        trackingErrorAt(to.pose, to.tool)
-      ) + 10;
-      for (let sample = 1; sample <= 10; sample += 1) {
-        const amount = sample / 10;
-        const pose = {
-          upperRotation: from.pose.upperRotation + normalizeAngle(to.pose.upperRotation - from.pose.upperRotation) * amount,
-          forearmRotation: from.pose.forearmRotation + normalizeAngle(to.pose.forearmRotation - from.pose.forearmRotation) * amount,
-          wristRotation: 0
-        };
-        const interpolatedTool = from.tool + normalizeAngle(to.tool - from.tool) * amount;
-        if (!geometryIsCollisionFree(calculateArmGeometry('right', pose, targetX, targetY, interpolatedTool))) return false;
-        if (trackingErrorAt(pose, interpolatedTool) > allowedTrackingError) return false;
-      }
-      return true;
-    };
     // Greedy line-of-sight shortcutting removes A*'s grid staircase while
     // retaining collision checks along every replacement segment.
     const smoothed: ArmWaypoint[] = [];
@@ -471,7 +472,7 @@
     for (let index = 0; index < gridPath.length;) {
       let furthest = index;
       for (let candidate = gridPath.length - 1; candidate >= index; candidate -= 1) {
-        if (collisionFreeSegment(anchor, gridPath[candidate])) { furthest = candidate; break; }
+        if (transitionIsFree(anchor, gridPath[candidate], true)) { furthest = candidate; break; }
       }
       smoothed.push(gridPath[furthest]);
       anchor = gridPath[furthest];
@@ -534,23 +535,13 @@
       };
       const tool = existingPlan.segmentStart.tool + normalizeAngle(waypoint.tool - existingPlan.segmentStart.tool) * blend;
       if (geometryIsCollisionFree(calculateArmGeometry('right', pose, targetX, targetY, tool))) {
-        const center = graspCenter(calculateArmGeometry('right', pose, targetX, targetY, tool));
-        const trackingError = Math.hypot(center.x - targetX, center.y - targetY);
-        if (trackingError < existingPlan.bestTrackingError - 0.75) {
-          existingPlan.bestTrackingError = trackingError;
-          existingPlan.stagnantTime = 0;
-        } else {
-          existingPlan.stagnantTime += elapsedSeconds;
+        if (t >= 1) {
+          existingPlan.waypoints.shift();
+          existingPlan.segmentStart = { pose, tool };
+          existingPlan.progress = 0;
+          if (!existingPlan.waypoints.length) existingPlan = null;
         }
-        if (existingPlan.stagnantTime <= 1.1) {
-          if (t >= 1) {
-            existingPlan.waypoints.shift();
-            existingPlan.segmentStart = { pose, tool };
-            existingPlan.progress = 0;
-            if (!existingPlan.waypoints.length) existingPlan = null;
-          }
-          return { pose, tool, plan: existingPlan };
-        }
+        return { pose, tool, plan: existingPlan };
       }
       existingPlan = null;
     }
@@ -568,15 +559,12 @@
       }
     }
     const waypoints = planConfigurationPath(currentPose, currentTool, solvedPoses, targetX, targetY);
-    const currentCenter = graspCenter(calculateArmGeometry('right', currentPose, targetX, targetY, currentTool));
     const plan = waypoints.length ? {
       waypoints,
       segmentStart: { pose: currentPose, tool: currentTool },
       progress: 0,
       targetX,
-      targetY,
-      bestTrackingError: Math.hypot(currentCenter.x - targetX, currentCenter.y - targetY),
-      stagnantTime: 0
+      targetY
     } : null;
     return { pose: currentPose, tool: currentTool, plan };
   }
