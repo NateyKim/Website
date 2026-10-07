@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onDestroy } from 'svelte';
+
   const bio = [
     'I am a research engineer at Penn’s GRASP Laboratory working at the intersection of assistive robotics, human movement, and human–robot interaction. I earned an M.S.E. in Robotics and a B.S.E. in Bioengineering from the University of Pennsylvania.',
     'My research spans upper-limb exoskeletons, EMG-informed musculoskeletal digital twins, human-in-the-loop control, machine learning for injury assessment, and socially assistive robots. I build systems that translate neuromuscular intent into adaptive, intuitive, and clinically meaningful technologies.',
@@ -7,12 +9,27 @@
 
   let pointerX = 0;
   let pointerY = 0;
+  let pulseVersion = 0;
+  let waveVisible = false;
+  let gripping = false;
+  let lastPulse = 0;
+  let waveTimer: ReturnType<typeof setTimeout>;
+  let gripTimer: ReturnType<typeof setTimeout>;
 
   function handlePointerMove(event: PointerEvent) {
     if (event.pointerType === 'touch') return;
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
     pointerX = Math.max(-1, Math.min(1, ((event.clientX - rect.left) / rect.width) * 2 - 1));
     pointerY = Math.max(-1, Math.min(1, ((event.clientY - rect.top) / rect.height) * 2 - 1));
+
+    const now = performance.now();
+    if (now - lastPulse > 700) {
+      lastPulse = now;
+      pulseVersion += 1;
+      waveVisible = true;
+      clearTimeout(waveTimer);
+      waveTimer = setTimeout(() => (waveVisible = false), 1050);
+    }
   }
 
   function resetPointer() {
@@ -20,33 +37,29 @@
     pointerY = 0;
   }
 
-  function buildWavePath(x: number, y: number) {
-    const baseline = 278 + y * 24;
-    const amplitude = 50 + Math.abs(x) * 30;
-    const a = (value: number) => baseline + value * amplitude;
-    return [
-      `M 0 ${baseline}`, `L 180 ${baseline}`, `L 210 ${a(-0.08)}`, `L 230 ${a(0.1)}`,
-      `L 250 ${a(-0.22)}`, `L 270 ${a(0.28)}`, `L 292 ${a(-0.82)}`, `L 316 ${a(1.05)}`,
-      `L 340 ${a(-0.45)}`, `L 366 ${a(0.18)}`, `L 398 ${baseline}`, `L 550 ${baseline}`,
-      `L 576 ${a(-0.12)}`, `L 598 ${a(0.14)}`, `L 620 ${a(-0.58)}`, `L 642 ${a(0.7)}`,
-      `L 666 ${a(-0.25)}`, `L 692 ${baseline}`, `L 850 ${baseline}`, `L 874 ${a(-0.08)}`,
-      `L 898 ${a(0.1)}`, `L 922 ${a(-0.34)}`, `L 946 ${a(0.4)}`, `L 972 ${baseline}`,
-      `L 1200 ${baseline}`
-    ].join(' ');
+  function handleScenePress(event: PointerEvent) {
+    if ((event.target as HTMLElement).closest('a')) return;
+    gripping = true;
+    clearTimeout(gripTimer);
+    gripTimer = setTimeout(() => (gripping = false), 420);
   }
 
-  $: wavePath = buildWavePath(pointerX, pointerY);
   $: leftUpperAngle = -14 + pointerX * 9 + pointerY * 5;
   $: leftForearmAngle = 14 + pointerX * 12 - pointerY * 8;
   $: rightUpperAngle = 14 + pointerX * 9 - pointerY * 5;
   $: rightForearmAngle = -14 + pointerX * 12 + pointerY * 8;
+
+  onDestroy(() => {
+    clearTimeout(waveTimer);
+    clearTimeout(gripTimer);
+  });
 </script>
 
 <section
   class="home-scene"
   on:pointermove={handlePointerMove}
   on:pointerleave={resetPointer}
-  style={`--drift-x: ${pointerX * 12}px; --drift-y: ${pointerY * 10}px;`}
+  on:pointerdown={handleScenePress}
 >
   <div class="grid-layer"></div>
   <div class="ambient-light"></div>
@@ -65,11 +78,18 @@
         <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
       </filter>
     </defs>
-    <path class="emg-shadow" d={wavePath} />
-    <path class="emg-wave" d={wavePath} filter="url(#emg-glow)" />
+    {#if waveVisible}
+      {#key pulseVersion}
+        <path
+          class="emg-wave"
+          d="M0 278 H430 L455 278 L474 265 L492 293 L510 244 L530 326 L550 168 L572 386 L594 228 L616 304 L638 260 L662 278 H1200"
+          filter="url(#emg-glow)"
+        />
+      {/key}
+    {/if}
   </svg>
 
-  <svg class="robot robot-left" viewBox="0 0 270 520" aria-hidden="true">
+  <svg class="robot robot-left" class:gripping viewBox="0 0 270 520" aria-hidden="true">
     <g class="robot-mount">
       <path d="M8 450 H118 M32 450 V420 H92 V450" /><circle cx="62" cy="416" r="19" />
     </g>
@@ -77,14 +97,15 @@
       <path d="M62 416 L126 316" /><circle cx="126" cy="316" r="16" />
       <g class="arm-segment" style={`transform: rotate(${leftForearmAngle}deg); transform-origin: 126px 316px;`}>
         <path d="M126 316 L190 218" /><circle cx="190" cy="218" r="14" />
-        <path class="gripper" d="M190 218 L226 183 M190 218 L236 225 M226 183 L247 170 M236 225 L258 230" />
+        <path class="gripper-finger finger-upper" d="M190 218 L226 183 L247 170" />
+        <path class="gripper-finger finger-lower" d="M190 218 L236 225 L258 230" />
       </g>
     </g>
     <circle class="joint-pulse pulse-a" cx="62" cy="416" r="29" />
     <circle class="joint-pulse pulse-b" cx="126" cy="316" r="25" />
   </svg>
 
-  <svg class="robot robot-right" viewBox="0 0 270 520" aria-hidden="true">
+  <svg class="robot robot-right" class:gripping viewBox="0 0 270 520" aria-hidden="true">
     <g class="robot-mount">
       <path d="M152 450 H262 M178 450 V420 H238 V450" /><circle cx="208" cy="416" r="19" />
     </g>
@@ -92,7 +113,8 @@
       <path d="M208 416 L144 316" /><circle cx="144" cy="316" r="16" />
       <g class="arm-segment" style={`transform: rotate(${rightForearmAngle}deg); transform-origin: 144px 316px;`}>
         <path d="M144 316 L80 218" /><circle cx="80" cy="218" r="14" />
-        <path class="gripper" d="M80 218 L44 183 M80 218 L34 225 M44 183 L23 170 M34 225 L12 230" />
+        <path class="gripper-finger finger-upper" d="M80 218 L44 183 L23 170" />
+        <path class="gripper-finger finger-lower" d="M80 218 L34 225 L12 230" />
       </g>
     </g>
     <circle class="joint-pulse pulse-a" cx="208" cy="416" r="29" />
@@ -153,8 +175,7 @@
     background-image: linear-gradient(rgba(55, 74, 99, 0.11) 1px, transparent 1px), linear-gradient(90deg, rgba(55, 74, 99, 0.11) 1px, transparent 1px);
     background-size: 44px 44px;
     mask-image: linear-gradient(to bottom, black 0%, black 58%, transparent 91%);
-    transform: translate(var(--drift-x), var(--drift-y)) scale(1.04);
-    transition: transform 180ms ease-out;
+    transform: scale(1.04);
   }
 
   .ambient-light {
@@ -174,20 +195,18 @@
     pointer-events: none;
   }
 
-  .emg-shadow, .emg-wave {
+  .emg-wave {
     fill: none;
     vector-effect: non-scaling-stroke;
     stroke-linecap: round;
     stroke-linejoin: round;
-    transition: d 120ms ease-out;
   }
 
-  .emg-shadow { stroke: rgba(74, 87, 111, 0.13); stroke-width: 12; }
   .emg-wave {
     stroke: url(#emg-gradient);
-    stroke-width: 3.5;
-    stroke-dasharray: 260 44;
-    animation: wave-travel 5s linear infinite;
+    stroke-width: 4;
+    stroke-dasharray: 1500;
+    animation: ekg-pulse 1s ease-out forwards;
   }
 
   .identity {
@@ -235,7 +254,17 @@
   .robot-mount path, .arm-segment path { fill: none; stroke: #222c38; stroke-width: 13; stroke-linecap: round; stroke-linejoin: round; }
   .robot-mount circle, .arm-segment circle { fill: #f8fafc; stroke: #222c38; stroke-width: 7; }
   .arm-segment { transition: transform 170ms cubic-bezier(0.2, 0.75, 0.25, 1); }
-  .arm-segment .gripper { stroke-width: 7; }
+  .gripper-finger {
+    stroke-width: 7 !important;
+    transition: transform 150ms ease-in-out;
+  }
+
+  .robot-left .gripper-finger { transform-origin: 190px 218px; }
+  .robot-right .gripper-finger { transform-origin: 80px 218px; }
+  .robot-left.gripping .finger-upper { transform: rotate(19deg); }
+  .robot-left.gripping .finger-lower { transform: rotate(-16deg); }
+  .robot-right.gripping .finger-upper { transform: rotate(-19deg); }
+  .robot-right.gripping .finger-lower { transform: rotate(16deg); }
 
   .joint-pulse {
     fill: none;
@@ -273,7 +302,7 @@
     position: relative;
     z-index: 4;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr;
     gap: 1.5rem;
     width: min(1200px, 100%);
     margin: 0 auto;
@@ -286,7 +315,12 @@
   }
   .bio-panel p { margin: 0; font-size: clamp(1rem, 1.5vw, 1.12rem); line-height: 1.65; }
 
-  @keyframes wave-travel { to { stroke-dashoffset: -608; } }
+  @keyframes ekg-pulse {
+    0% { opacity: 0; stroke-dashoffset: 1500; }
+    12% { opacity: 1; }
+    72% { opacity: 1; stroke-dashoffset: 0; }
+    100% { opacity: 0; stroke-dashoffset: -1500; }
+  }
   @keyframes joint-pulse { 0% { opacity: 0.8; transform: scale(0.65); } 78%, 100% { opacity: 0; transform: scale(1.65); } }
   @keyframes neural-pulse { to { fill: #16aaf3; opacity: 0.55; transform: scale(1.5); } }
 
