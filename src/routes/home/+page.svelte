@@ -36,6 +36,7 @@
   let leftToolAngle = 180;
   let rightToolAngle = 180;
   let armAnimationFrame = 0;
+  let previousArmTime = 0;
   const graspCenterOffset = 45.5;
   // Collision envelope for the fully open gripper, including stroke width.
   const gripperEnvelope = [[0, -32], [61, -32], [61, 32], [0, 32]] as const;
@@ -274,17 +275,18 @@
     currentTool: number,
     solvedPose: { upperRotation: number; forearmRotation: number; wristRotation: number },
     targetX: number,
-    targetY: number
+    targetY: number,
+    maximumSteps: { upper: number; forearm: number; tool: number }
   ) {
     const boundedPose = enforceSafePose('right', {
-      upperRotation: moveAngleToward(currentPose.upperRotation, solvedPose.upperRotation, 9),
-      forearmRotation: moveAngleToward(currentPose.forearmRotation, solvedPose.forearmRotation, 13),
-      wristRotation: moveAngleToward(currentPose.wristRotation, solvedPose.wristRotation, 16)
+      upperRotation: moveAngleToward(currentPose.upperRotation, solvedPose.upperRotation, maximumSteps.upper),
+      forearmRotation: moveAngleToward(currentPose.forearmRotation, solvedPose.forearmRotation, maximumSteps.forearm),
+      wristRotation: moveAngleToward(currentPose.wristRotation, solvedPose.wristRotation, maximumSteps.forearm)
     });
     const upperTargetStep = boundedPose.upperRotation - currentPose.upperRotation;
     const forearmTargetStep = boundedPose.forearmRotation - currentPose.forearmRotation;
-    const upperSteps = [upperTargetStep, upperTargetStep * 0.5, -9, -4.5, 0, 4.5, 9];
-    const forearmSteps = [forearmTargetStep, forearmTargetStep * 0.5, -13, -6.5, 0, 6.5, 13];
+    const upperSteps = [upperTargetStep, upperTargetStep * 0.5, -maximumSteps.upper, -maximumSteps.upper * 0.5, 0, maximumSteps.upper * 0.5, maximumSteps.upper];
+    const forearmSteps = [forearmTargetStep, forearmTargetStep * 0.5, -maximumSteps.forearm, -maximumSteps.forearm * 0.5, 0, maximumSteps.forearm * 0.5, maximumSteps.forearm];
     let bestPose = currentPose;
     let bestTool = currentTool;
     let bestScore = Number.POSITIVE_INFINITY;
@@ -301,9 +303,9 @@
         });
         const poseGeometry = calculateArmGeometry('right', candidatePose, targetX, targetY, currentTool);
         const desiredTool = radiansToDegrees(Math.atan2(targetY - poseGeometry.wristY, targetX - poseGeometry.wristX));
-        const boundedTool = moveAngleToward(currentTool, desiredTool, 3);
+        const boundedTool = moveAngleToward(currentTool, desiredTool, maximumSteps.tool);
         const targetToolStep = boundedTool - currentTool;
-        const toolSteps = [targetToolStep, targetToolStep * 0.5, -3, -1.5, 0, 1.5, 3];
+        const toolSteps = [targetToolStep, targetToolStep * 0.5, -maximumSteps.tool, -maximumSteps.tool * 0.5, 0, maximumSteps.tool * 0.5, maximumSteps.tool];
 
         for (const toolStep of toolSteps) {
           const candidateTool = currentTool + toolStep;
@@ -436,7 +438,16 @@
   $: leftGraspCenter = graspCenter(leftGeometry);
   $: rightGraspCenter = graspCenter(rightGeometry);
 
-  function advanceArms() {
+  function advanceArms(timestamp = performance.now()) {
+    const elapsedSeconds = previousArmTime === 0
+      ? 1 / 60
+      : clamp((timestamp - previousArmTime) / 1000, 1 / 240, 1 / 30);
+    previousArmTime = timestamp;
+    const maximumSteps = {
+      upper: 210 * elapsedSeconds,
+      forearm: 280 * elapsedSeconds,
+      tool: 135 * elapsedSeconds
+    };
     // Solve from the current pointer position. Joint-space limits below still
     // smooth the mechanism without adding a second layer of cursor lag.
     leftTargetX = desiredLeftTargetX;
@@ -447,8 +458,8 @@
     const solvedLeft = solveArm('right', 270 - leftTargetX, leftTargetY);
     const solvedRight = solveArm('right', rightTargetX, rightTargetY);
 
-    const safeLeft = chooseSafeMotion(leftPose, leftToolAngle, solvedLeft, 270 - leftTargetX, leftTargetY);
-    const safeRight = chooseSafeMotion(rightPose, rightToolAngle, solvedRight, rightTargetX, rightTargetY);
+    const safeLeft = chooseSafeMotion(leftPose, leftToolAngle, solvedLeft, 270 - leftTargetX, leftTargetY, maximumSteps);
+    const safeRight = chooseSafeMotion(rightPose, rightToolAngle, solvedRight, rightTargetX, rightTargetY, maximumSteps);
     leftPose = safeLeft.pose;
     leftToolAngle = safeLeft.tool;
     rightPose = safeRight.pose;
