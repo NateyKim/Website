@@ -368,59 +368,43 @@
     const baseAngleOne = side === 'left' ? 0 : 180;
     const baseAngleTwo = side === 'left' ? 0 : 180;
 
-    // This canonical arm is mounted on the right wall, so points to the right
-    // of its shoulder are behind the mounting plane. Project them onto the
-    // nearest usable interior line instead of letting IK alternate between
-    // impossible branches or trigger the fully extended escape posture.
-    const interiorTargetX = Math.min(targetX, baseX - 36);
-    const rawDirection = Math.atan2(targetY - baseY, interiorTargetX - baseX);
+    const rawDirection = Math.atan2(targetY - baseY, targetX - baseX);
     // The grasp point is halfway through the open jaw, between its fixed
     // crossbar at x=30 and fingertip line at x=61.
     const toolCenterOffset = graspCenterOffset;
     const maximumReach = linkOne + linkTwo - 1;
-    // Keep enough radial clearance that the forearm cannot fold back through
-    // the upper arm when the cursor moves close to the shoulder.
-    // Keep the wrist far enough from the shoulder/base that the complete
-    // 61-by-64 open-gripper rectangle cannot overlap the proximal mechanism.
-    const minimumReach = 92;
-    const minimumGraspReach = minimumReach + toolCenterOffset;
+    const minimumWristReach = Math.abs(linkOne - linkTwo) + 0.5;
     const maximumGraspReach = maximumReach + toolCenterOffset;
-    const requestedGraspReach = Math.hypot(interiorTargetX - baseX, targetY - baseY);
-    const graspReach = clamp(requestedGraspReach, minimumGraspReach, maximumGraspReach);
+    const requestedGraspReach = Math.hypot(targetX - baseX, targetY - baseY);
     const toolDirection = rawDirection;
-    const projectedGraspX = baseX + Math.cos(toolDirection) * graspReach;
-    const projectedGraspY = baseY + Math.sin(toolDirection) * graspReach;
-    const wristTargetX = projectedGraspX - Math.cos(toolDirection) * toolCenterOffset;
-    const wristTargetY = projectedGraspY - Math.sin(toolDirection) * toolCenterOffset;
-    let dx = wristTargetX - baseX;
-    let dy = wristTargetY - baseY;
-    const distance = Math.hypot(dx, dy) || 1;
-
-    if (distance > maximumReach) {
-      dx = (dx / distance) * maximumReach;
-      dy = (dy / distance) * maximumReach;
-    }
-
-    if (distance < minimumReach) {
-      dx = (dx / distance) * minimumReach;
-      dy = (dy / distance) * minimumReach;
-    }
-
-    const squaredDistance = dx * dx + dy * dy;
-    const cosineElbow = clamp((squaredDistance - linkOne ** 2 - linkTwo ** 2) / (2 * linkOne * linkTwo), -1, 1);
     const desiredToolAngle = radiansToDegrees(toolDirection);
-    return [-1, 1].map((elbowSign) => {
-      const elbow = Math.acos(cosineElbow) * elbowSign;
-      const shoulder = Math.atan2(dy, dx) - Math.atan2(linkTwo * Math.sin(elbow), linkOne + linkTwo * Math.cos(elbow));
-      const forearm = shoulder + elbow;
-      // Both elbow-up and elbow-down are genuine solutions. Normalizing them
-      // makes the global selector compare equivalent configurations correctly.
-      const upperRotation = normalizeAngle(radiansToDegrees(shoulder) - baseAngleOne);
-      const forearmRotation = normalizeAngle(radiansToDegrees(forearm) - baseAngleTwo - upperRotation);
-      const defaultToolAngle = side === 'left' ? 0 : 180;
-      const rawWristRotation = desiredToolAngle - defaultToolAngle - upperRotation - forearmRotation;
-      const wristRotation = clamp(normalizeAngle(rawWristRotation), -108, 108);
-      return { upperRotation, forearmRotation, wristRotation, toolAngle: desiredToolAngle };
+    // Search the complete analytical solution set rather than inventing a
+    // forbidden radius around the mount. The exact requested distance is
+    // included, then a deterministic radial sweep supplies the closest safe
+    // alternative if that exact pose intersects real robot geometry.
+    const graspReaches = [clamp(requestedGraspReach, 0, maximumGraspReach)];
+    for (let index = 0; index <= 28; index += 1) {
+      graspReaches.push((index / 28) * maximumGraspReach);
+    }
+
+    return graspReaches.flatMap((graspReach) => {
+      const signedWristReach = graspReach - toolCenterOffset;
+      if (Math.abs(signedWristReach) < minimumWristReach || Math.abs(signedWristReach) > maximumReach) return [];
+      const dx = Math.cos(toolDirection) * signedWristReach;
+      const dy = Math.sin(toolDirection) * signedWristReach;
+      const squaredDistance = dx * dx + dy * dy;
+      const cosineElbow = clamp((squaredDistance - linkOne ** 2 - linkTwo ** 2) / (2 * linkOne * linkTwo), -1, 1);
+      return [-1, 1].map((elbowSign) => {
+        const elbow = Math.acos(cosineElbow) * elbowSign;
+        const shoulder = Math.atan2(dy, dx) - Math.atan2(linkTwo * Math.sin(elbow), linkOne + linkTwo * Math.cos(elbow));
+        const forearm = shoulder + elbow;
+        const upperRotation = normalizeAngle(radiansToDegrees(shoulder) - baseAngleOne);
+        const forearmRotation = normalizeAngle(radiansToDegrees(forearm) - baseAngleTwo - upperRotation);
+        const defaultToolAngle = side === 'left' ? 0 : 180;
+        const rawWristRotation = desiredToolAngle - defaultToolAngle - upperRotation - forearmRotation;
+        const wristRotation = clamp(normalizeAngle(rawWristRotation), -108, 108);
+        return { upperRotation, forearmRotation, wristRotation, toolAngle: desiredToolAngle };
+      });
     });
   }
 
