@@ -130,11 +130,14 @@
     const linkTwo = 117.07;
     const baseAngleOne = side === 'left' ? -57.38 : -122.62;
     const baseAngleTwo = side === 'left' ? -56.84 : -123.16;
+    const floorY = 450;
+    const gripperClearance = 46;
+    const constrainedTargetY = Math.min(targetY, floorY - gripperClearance);
 
-    const toolDirection = Math.atan2(targetY - baseY, targetX - baseX);
+    const toolDirection = Math.atan2(constrainedTargetY - baseY, targetX - baseX);
     const toolCenterOffset = 55;
     const wristTargetX = targetX - Math.cos(toolDirection) * toolCenterOffset;
-    const wristTargetY = targetY - Math.sin(toolDirection) * toolCenterOffset;
+    const wristTargetY = constrainedTargetY - Math.sin(toolDirection) * toolCenterOffset;
     let dx = wristTargetX - baseX;
     let dy = wristTargetY - baseY;
     const maximumReach = linkOne + linkTwo - 1;
@@ -240,6 +243,10 @@
   </svg>
 
   <svg bind:this={leftRobot} class="robot robot-left" class:gripping viewBox="0 0 270 520" aria-hidden="true">
+    <g class="workspace-floor">
+      <rect x="0" y="450" width="270" height="70" />
+      <path d="M0 450 H270" />
+    </g>
     <g class="robot-mount">
       <path d="M8 450 H118 M32 450 V420 H92 V450" /><circle cx="62" cy="416" r="19" />
     </g>
@@ -257,6 +264,10 @@
   </svg>
 
   <svg bind:this={rightRobot} class="robot robot-right" class:gripping viewBox="0 0 270 520" aria-hidden="true">
+    <g class="workspace-floor">
+      <rect x="0" y="450" width="270" height="70" />
+      <path d="M0 450 H270" />
+    </g>
     <g class="robot-mount">
       <path d="M152 450 H262 M178 450 V420 H238 V450" /><circle cx="208" cy="416" r="19" />
     </g>
@@ -417,6 +428,8 @@
   }
   .robot-left { left: max(-4rem, calc((100vw - 1500px) / 2)); }
   .robot-right { right: max(-4rem, calc((100vw - 1500px) / 2)); }
+  .workspace-floor rect { fill: rgba(34, 44, 56, 0.07); }
+  .workspace-floor path { fill: none; stroke: #222c38; stroke-width: 5; }
   .robot-mount path, .arm-segment path { fill: none; stroke: #222c38; stroke-width: 13; stroke-linecap: round; stroke-linejoin: round; }
   .robot-mount circle, .arm-segment circle { fill: #f8fafc; stroke: #222c38; stroke-width: 7; }
   .arm-segment { transition: transform 128ms cubic-bezier(0.2, 0.75, 0.25, 1); }
