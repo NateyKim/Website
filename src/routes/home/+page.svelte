@@ -102,22 +102,16 @@
   }
 
   function enforceSafePose(
-    side: 'left' | 'right',
+    _side: 'left' | 'right',
     pose: { upperRotation: number; forearmRotation: number; wristRotation: number }
   ) {
-    const baseAngleOne = side === 'left' ? -57.38 : -122.62;
-    const baseAngleTwo = side === 'left' ? -56.84 : -123.16;
-    const highestDownwardLinkAngle = -12;
-
-    // These are hard per-frame limits, not merely IK target limits. Therefore
-    // interpolation can never render either link on the floor side of a base.
-    const upperRotation = Math.min(pose.upperRotation, highestDownwardLinkAngle - baseAngleOne);
-    const maximumForearmRotation = highestDownwardLinkAngle - baseAngleTwo - upperRotation;
-    const forearmRotation = Math.min(pose.forearmRotation, maximumForearmRotation);
-
-    // Keep the pinch tool from folding backward into its own forearm.
-    const wristRotation = clamp(pose.wristRotation, -35, 35);
-    return { upperRotation, forearmRotation, wristRotation };
+    // Wall mounting removes the former upper/lower floor half-plane. Keep
+    // angles finite; the per-part collision solver determines valid poses.
+    return {
+      upperRotation: clamp(pose.upperRotation, -175, 175),
+      forearmRotation: clamp(pose.forearmRotation, -175, 175),
+      wristRotation: clamp(pose.wristRotation, -175, 175)
+    };
   }
 
   function calculateArmGeometry(
@@ -127,12 +121,12 @@
     targetY: number,
     requestedToolAngle?: number
   ) {
-    const baseX = side === 'left' ? 62 : 208;
-    const baseY = 416;
+    const baseX = side === 'left' ? 45 : 225;
+    const baseY = 260;
     const linkOne = 118.75;
     const linkTwo = 117.07;
-    const baseAngleOne = side === 'left' ? -57.38 : -122.62;
-    const baseAngleTwo = side === 'left' ? -56.84 : -123.16;
+    const baseAngleOne = side === 'left' ? 0 : 180;
+    const baseAngleTwo = side === 'left' ? 0 : 180;
     const shoulderAngle = ((baseAngleOne + pose.upperRotation) * Math.PI) / 180;
     const forearmAngle = ((baseAngleTwo + pose.upperRotation + pose.forearmRotation) * Math.PI) / 180;
     const elbowX = baseX + Math.cos(shoulderAngle) * linkOne;
@@ -145,25 +139,7 @@
     // Keep it aimed directly at the target; the collision boxes, rather than
     // an arbitrary wrist-angle clamp, decide whether that pose is admissible.
     const angleDifference = ((targetToolAngle - defaultToolAngle + 540) % 360) - 180;
-    const toolBottom = (angle: number) => {
-      const radians = (angle * Math.PI) / 180;
-      return wristY + Math.max(...gripperEnvelope.map(([x, y]) => x * Math.sin(radians) + y * Math.cos(radians)));
-    };
-
-    // The horizontal tool pose is always safe. Move toward the requested pose
-    // only as far as the complete gripper geometry remains above the floor.
-    let safeFraction = 0;
-    let unsafeFraction = 1;
-    if (toolBottom(defaultToolAngle + angleDifference) <= 442) {
-      safeFraction = 1;
-    } else {
-      for (let iteration = 0; iteration < 12; iteration += 1) {
-        const candidate = (safeFraction + unsafeFraction) / 2;
-        if (toolBottom(defaultToolAngle + angleDifference * candidate) <= 442) safeFraction = candidate;
-        else unsafeFraction = candidate;
-      }
-    }
-    const toolAngle = defaultToolAngle + angleDifference * safeFraction;
+    const toolAngle = defaultToolAngle + angleDifference;
 
     return { baseX, baseY, elbowX, elbowY, wristX, wristY, toolAngle };
   }
@@ -250,12 +226,12 @@
     const wristBox = jointBox(geometry.wristX, geometry.wristY, 18);
     const gripperBox = transformedGripperBox(geometry);
     const baseBox: CollisionPoint[] = [
-      { x: 151, y: 397 }, { x: 263, y: 397 }, { x: 263, y: 458 }, { x: 151, y: 458 }
+      { x: 220, y: 190 }, { x: 270, y: 190 }, { x: 270, y: 330 }, { x: 220, y: 330 }
     ];
     const movingBoxes = [upperBox, elbowBox, forearmBox, wristBox, gripperBox];
-    const clearsFloor = movingBoxes.every((box) => box.every((point) => point.y <= 442));
+    const clearsWall = movingBoxes.every((box) => box.every((point) => point.x <= 257));
 
-    return clearsFloor
+    return clearsWall
       && !boxesOverlap(baseBox, elbowBox)
       && !boxesOverlap(baseBox, forearmBox)
       && !boxesOverlap(baseBox, wristBox)
@@ -281,8 +257,8 @@
     const isLeft = geometry.baseX < 135;
     return [
       isLeft
-        ? [{ x: 7, y: 397 }, { x: 119, y: 397 }, { x: 119, y: 458 }, { x: 7, y: 458 }]
-        : [{ x: 151, y: 397 }, { x: 263, y: 397 }, { x: 263, y: 458 }, { x: 151, y: 458 }],
+        ? [{ x: 0, y: 190 }, { x: 50, y: 190 }, { x: 50, y: 330 }, { x: 0, y: 330 }]
+        : [{ x: 220, y: 190 }, { x: 270, y: 190 }, { x: 270, y: 330 }, { x: 220, y: 330 }],
       segmentBox(geometry.baseX, geometry.baseY, geometry.elbowX, geometry.elbowY, 10, 23, 20),
       jointBox(geometry.elbowX, geometry.elbowY, 20),
       segmentBox(geometry.elbowX, geometry.elbowY, geometry.wristX, geometry.wristY, 10, 20, 17),
@@ -315,7 +291,7 @@
 
     // Search the complete local velocity envelope, not only the straight path
     // toward one IK branch. The extra directions let the jaw center slide
-    // around floor/self-collision constraints and escape boundary deadlocks.
+    // around wall/self-collision constraints and escape boundary deadlocks.
     for (const upperStep of upperSteps) {
       for (const forearmStep of forearmSteps) {
         const candidatePose = enforceSafePose('right', {
@@ -393,19 +369,14 @@
   }
 
   function solveArm(side: 'left' | 'right', targetX: number, targetY: number) {
-    const baseX = side === 'left' ? 62 : 208;
-    const baseY = 416;
+    const baseX = side === 'left' ? 45 : 225;
+    const baseY = 260;
     const linkOne = 118.75;
     const linkTwo = 117.07;
-    const baseAngleOne = side === 'left' ? -57.38 : -122.62;
-    const baseAngleTwo = side === 'left' ? -56.84 : -123.16;
-    const floorY = 450;
-    // Clearance includes the rotated fingers, keeping the complete tool above
-    // the invisible floor rather than constraining only its center point.
-    const gripperClearance = 82;
-    const constrainedTargetY = Math.min(targetY, floorY - gripperClearance);
+    const baseAngleOne = side === 'left' ? 0 : 180;
+    const baseAngleTwo = side === 'left' ? 0 : 180;
 
-    const toolDirection = Math.atan2(constrainedTargetY - baseY, targetX - baseX);
+    const toolDirection = Math.atan2(targetY - baseY, targetX - baseX);
     // The grasp point is halfway through the open jaw, between its fixed
     // crossbar at x=30 and fingertip line at x=61.
     const toolCenterOffset = graspCenterOffset;
@@ -415,14 +386,14 @@
     // Keep the wrist far enough from the shoulder/base that the complete
     // 61-by-64 open-gripper rectangle cannot overlap the proximal mechanism.
     const minimumReach = 92;
-    const targetDistance = Math.hypot(targetX - baseX, constrainedTargetY - baseY);
+    const targetDistance = Math.hypot(targetX - baseX, targetY - baseY);
     const targetIsBeyondReach = targetDistance > maximumReach + toolCenterOffset;
     const wristTargetX = targetIsBeyondReach
       ? baseX + Math.cos(toolDirection) * maximumReach
       : targetX - Math.cos(toolDirection) * toolCenterOffset;
     const wristTargetY = targetIsBeyondReach
       ? baseY + Math.sin(toolDirection) * maximumReach
-      : constrainedTargetY - Math.sin(toolDirection) * toolCenterOffset;
+      : targetY - Math.sin(toolDirection) * toolCenterOffset;
     let dx = wristTargetX - baseX;
     let dy = wristTargetY - baseY;
     const distance = Math.hypot(dx, dy) || 1;
@@ -441,11 +412,8 @@
     const cosineElbow = clamp((squaredDistance - linkOne ** 2 - linkTwo ** 2) / (2 * linkOne * linkTwo), -1, 1);
     const elbow = Math.acos(cosineElbow) * (side === 'left' ? 1 : -1);
     const solvedShoulder = Math.atan2(dy, dx) - Math.atan2(linkTwo * Math.sin(elbow), linkOne + linkTwo * Math.cos(elbow));
-    // In screen coordinates, positive shoulder angles point below the base.
-    // Clamp the shoulder itself so the elbow and upper arm cannot bow through
-    // the invisible floor when the pointer is below the robot.
-    const shoulder = Math.min(solvedShoulder, -0.1);
-    const forearm = Math.min(shoulder + elbow, -0.05);
+    const shoulder = solvedShoulder;
+    const forearm = shoulder + elbow;
     const upperRotation = radiansToDegrees(shoulder) - baseAngleOne;
     const forearmRotation = radiansToDegrees(forearm) - baseAngleTwo - upperRotation;
     const desiredToolAngle = radiansToDegrees(toolDirection);
@@ -535,12 +503,12 @@
   </svg>
 
   <svg bind:this={leftRobot} class="robot robot-left" class:gripping viewBox="0 0 270 520" aria-hidden="true">
-    <defs><clipPath id="left-workspace-floor"><rect x="-400" y="-400" width="1070" height="842" /></clipPath></defs>
-    <g class="debug-workspace" clip-path="url(#left-workspace-floor)">
+    <defs><clipPath id="left-workspace-wall"><rect x="13" y="-400" width="657" height="1320" /></clipPath></defs>
+    <g class="debug-workspace" clip-path="url(#left-workspace-wall)">
       <circle cx={leftGeometry.baseX} cy={leftGeometry.baseY} r="281.32" />
     </g>
     <g class="robot-mount">
-      <path d="M8 450 H118 M32 450 V420 H92 V450" /><circle cx="62" cy="416" r="19" />
+      <path d="M8 190 V330 M8 225 H45 V295 H8" /><circle cx="45" cy="260" r="19" />
     </g>
     <g class="arm-segment">
       <path d={`M${leftGeometry.baseX} ${leftGeometry.baseY} L${leftGeometry.elbowX} ${leftGeometry.elbowY}`} />
@@ -564,12 +532,12 @@
   </svg>
 
   <svg bind:this={rightRobot} class="robot robot-right" class:gripping viewBox="0 0 270 520" aria-hidden="true">
-    <defs><clipPath id="right-workspace-floor"><rect x="-400" y="-400" width="1070" height="842" /></clipPath></defs>
-    <g class="debug-workspace" clip-path="url(#right-workspace-floor)">
+    <defs><clipPath id="right-workspace-wall"><rect x="-400" y="-400" width="657" height="1320" /></clipPath></defs>
+    <g class="debug-workspace" clip-path="url(#right-workspace-wall)">
       <circle cx={rightGeometry.baseX} cy={rightGeometry.baseY} r="281.32" />
     </g>
     <g class="robot-mount">
-      <path d="M152 450 H262 M178 450 V420 H238 V450" /><circle cx="208" cy="416" r="19" />
+      <path d="M262 190 V330 M262 225 H225 V295 H262" /><circle cx="225" cy="260" r="19" />
     </g>
     <g class="arm-segment">
       <path d={`M${rightGeometry.baseX} ${rightGeometry.baseY} L${rightGeometry.elbowX} ${rightGeometry.elbowY}`} />
