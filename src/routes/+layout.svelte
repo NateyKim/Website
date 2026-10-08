@@ -161,7 +161,7 @@
 
     <section id="research-experience" class="major-section mobile-subject" class:mobile-active={isActive(['research-experience', 'publications', 'research-projects'])}>
       <div class="research-network" aria-hidden="true">
-        <svg viewBox="0 0 1200 900" preserveAspectRatio="none">
+        <svg viewBox="0 0 1200 900" preserveAspectRatio="xMidYMin slice">
           <g class="research-network-lines">
             <path d="M120 0 V62 M370 0 V74 M620 0 V58 M874 0 V82 M1128 0 V68" />
             <path d="M0 120 L120 62 L242 142 L370 74 L498 158 L620 58 L748 148 L874 82 L1004 154 L1128 68 L1200 112" />
@@ -330,10 +330,9 @@
     top: -30rem;
     left: 50%;
     width: 100vw;
-    height: 44rem;
-    background: linear-gradient(to bottom, rgba(242, 245, 252, 0.72), rgba(248, 250, 252, 0.34) 62%, transparent);
+    height: 60rem;
+    background: linear-gradient(to bottom, rgba(248, 250, 252, 0.96) 0%, rgba(248, 250, 252, 0.74) 38%, rgba(255, 255, 255, 0.28) 72%, transparent 100%);
     content: '';
-    mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.82) 48%, transparent 100%);
     pointer-events: none;
     transform: translateX(-50%);
   }
@@ -345,14 +344,15 @@
     left: 50%;
     width: 100vw;
     height: 84rem;
+    background-color: #f8fafc;
     background-image: linear-gradient(rgba(55, 74, 99, 0.09) 1px, transparent 1px), linear-gradient(90deg, rgba(55, 74, 99, 0.09) 1px, transparent 1px);
     background-size: 44px 44px;
     pointer-events: none;
     transform: translateX(-50%);
-    mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 30%, rgba(0, 0, 0, 0.18) 43%, transparent 49%);
+    mask-image: linear-gradient(to bottom, black 0%, black 28%, rgba(0, 0, 0, 0.78) 46%, rgba(0, 0, 0, 0.28) 68%, transparent 88%);
   }
 
-  .research-network svg { width: 100%; height: 100%; }
+  .research-network svg { width: 100%; height: 100%; overflow: hidden; }
   .research-network-lines path { fill: none; stroke: #73829a; stroke-width: 1.15; opacity: 0.14; vector-effect: non-scaling-stroke; }
   .research-network-nodes circle { fill: #7566ff; stroke: rgba(248, 250, 252, 0.9); stroke-width: 2.5; opacity: 0.22; vector-effect: non-scaling-stroke; }
 
@@ -435,6 +435,10 @@
     }
 
     #research-experience::before {
+      display: none;
+    }
+
+    .research-network {
       display: none;
     }
 

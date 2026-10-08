@@ -869,8 +869,8 @@
     right: 0;
     bottom: 0;
     left: 0;
-    height: 34%;
-    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.7) 55%, #fff 100%);
+    height: 26%;
+    background: linear-gradient(to bottom, transparent, rgba(248, 250, 252, 0.42) 68%, #f8fafc 100%);
     content: '';
     pointer-events: none;
   }
@@ -881,7 +881,7 @@
     inset: 0;
     background-image: linear-gradient(rgba(55, 74, 99, 0.11) 1px, transparent 1px), linear-gradient(90deg, rgba(55, 74, 99, 0.11) 1px, transparent 1px);
     background-size: 44px 44px;
-    mask-image: linear-gradient(to bottom, black 0%, black 72%, rgba(0, 0, 0, 0.62) 91%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 0%, black 80%, rgba(0, 0, 0, 0.72) 94%, transparent 100%);
     transform: scale(1.04);
   }
 
