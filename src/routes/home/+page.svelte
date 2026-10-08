@@ -634,8 +634,10 @@
       if (wristReach < minimumWristReach || wristReach > maximumReach) return [];
       const squaredDistance = dx * dx + dy * dy;
       const cosineElbow = clamp((squaredDistance - linkOne ** 2 - linkTwo ** 2) / (2 * linkOne * linkTwo), -1, 1);
-      return [-1, 1].map((elbowSign) => {
-        const elbow = Math.acos(cosineElbow) * elbowSign;
+      const elbowMagnitude = cosineElbow > 0.9995 ? 0 : Math.acos(cosineElbow);
+      const elbowSigns = elbowMagnitude === 0 ? [1] : [-1, 1];
+      return elbowSigns.map((elbowSign) => {
+        const elbow = elbowMagnitude * elbowSign;
         const shoulder = Math.atan2(dy, dx) - Math.atan2(linkTwo * Math.sin(elbow), linkOne + linkTwo * Math.cos(elbow));
         const forearm = shoulder + elbow;
         const upperRotation = normalizeAngle(radiansToDegrees(shoulder) - baseAngleOne);
