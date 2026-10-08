@@ -35,6 +35,8 @@
   let rightPose = { upperRotation: 0, forearmRotation: 0, wristRotation: 0 };
   let leftToolAngle = 180;
   let rightToolAngle = 180;
+  let leftElbowPreference = -1;
+  let rightElbowPreference = -1;
   type ArmPose = typeof leftPose;
   type ArmWaypoint = { pose: ArmPose; tool: number };
   type ArmPlan = {
@@ -490,7 +492,8 @@
     targetY: number,
     maximumSteps: { upper: number; forearm: number; tool: number },
     elapsedSeconds: number,
-    existingPlan: ArmPlan | null
+    existingPlan: ArmPlan | null,
+    elbowPreference: number
   ) {
     const configurationDistance = (candidate: (typeof solvedPoses)[number]) =>
       Math.abs(normalizeAngle(candidate.upperRotation - currentPose.upperRotation))
@@ -502,7 +505,8 @@
       const trackingError = Math.hypot(center.x - targetX, center.y - targetY);
       return (geometryIsCollisionFree(geometry) ? 0 : 1_000_000)
         + trackingError * 10_000
-        + configurationDistance(candidate);
+        + configurationDistance(candidate)
+        + (Math.sign(candidate.forearmRotation || elbowPreference) === elbowPreference ? 0 : 220);
     };
     const solvedPose = [...solvedPoses].sort((first, second) => targetScore(first) - targetScore(second))[0];
     const planTargetMoved = existingPlan && Math.hypot(targetX - existingPlan.targetX, targetY - existingPlan.targetY) > 14;
@@ -647,7 +651,8 @@
 
     // Radial samples remain fallback goals only for targets outside the exact
     // collision-free workspace. Their jaws face toward the requested point.
-    const graspReaches: number[] = [];
+    const requestedGraspReach = Math.hypot(targetX - baseX, targetY - baseY);
+    const graspReaches: number[] = [clamp(requestedGraspReach, 0, maximumGraspReach)];
     for (let index = 0; index <= 28; index += 1) {
       graspReaches.push((index / 28) * maximumGraspReach);
     }
@@ -690,12 +695,14 @@
     const canonicalLeftTargetX = 270 - leftTargetX;
     const solvedLeft = solveArm('right', canonicalLeftTargetX, leftTargetY);
     const solvedRight = solveArm('right', rightTargetX, rightTargetY);
-    const safeLeft = chooseSafeMotion(leftPose, leftToolAngle, solvedLeft, canonicalLeftTargetX, leftTargetY, maximumSteps, elapsedSeconds, leftPlan);
-    const safeRight = chooseSafeMotion(rightPose, rightToolAngle, solvedRight, rightTargetX, rightTargetY, maximumSteps, elapsedSeconds, rightPlan);
+    const safeLeft = chooseSafeMotion(leftPose, leftToolAngle, solvedLeft, canonicalLeftTargetX, leftTargetY, maximumSteps, elapsedSeconds, leftPlan, leftElbowPreference);
+    const safeRight = chooseSafeMotion(rightPose, rightToolAngle, solvedRight, rightTargetX, rightTargetY, maximumSteps, elapsedSeconds, rightPlan, rightElbowPreference);
     leftPose = safeLeft.pose;
+    if (Math.abs(leftPose.forearmRotation) > 4) leftElbowPreference = Math.sign(leftPose.forearmRotation);
     leftToolAngle = safeLeft.tool;
     leftPlan = safeLeft.plan;
     rightPose = safeRight.pose;
+    if (Math.abs(rightPose.forearmRotation) > 4) rightElbowPreference = Math.sign(rightPose.forearmRotation);
     rightToolAngle = safeRight.tool;
     rightPlan = safeRight.plan;
 
