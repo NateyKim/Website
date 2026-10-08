@@ -620,6 +620,10 @@
     const minimumWristReach = Math.abs(linkOne - linkTwo) + 0.5;
     const maximumGraspReach = maximumReach + toolCenterOffset;
     const radialToolAngle = radiansToDegrees(rawDirection);
+    const requestedGraspReach = Math.hypot(targetX - baseX, targetY - baseY);
+    const projectedGraspReach = Math.min(requestedGraspReach, maximumGraspReach);
+    const projectedTargetX = baseX + Math.cos(rawDirection) * projectedGraspReach;
+    const projectedTargetY = baseY + Math.sin(rawDirection) * projectedGraspReach;
     const solutionsFor = (graspX: number, graspY: number, toolAngle: number) => {
       const toolRadians = (toolAngle * Math.PI) / 180;
       const wristX = graspX - Math.cos(toolRadians) * toolCenterOffset;
@@ -643,15 +647,14 @@
       });
     };
 
-    // At an exact grasp-center target, orientation is a free degree of
-    // freedom. Explore the full circle instead of forcing the gripper to point
-    // radially away from its base.
+    // An outside cursor is projected continuously onto the nearest point of
+    // the circular reach boundary. That projected point becomes the exact IK
+    // goal, with gripper orientation retained as a free degree of freedom.
     const exactSolutions = Array.from({ length: 24 }, (_, index) => radialToolAngle + index * 15)
-      .flatMap((toolAngle) => solutionsFor(targetX, targetY, toolAngle));
+      .flatMap((toolAngle) => solutionsFor(projectedTargetX, projectedTargetY, toolAngle));
 
     // Radial samples remain fallback goals only for targets outside the exact
     // collision-free workspace. Their jaws face toward the requested point.
-    const requestedGraspReach = Math.hypot(targetX - baseX, targetY - baseY);
     const graspReaches: number[] = [clamp(requestedGraspReach, 0, maximumGraspReach)];
     for (let index = 0; index <= 28; index += 1) {
       graspReaches.push((index / 28) * maximumGraspReach);
