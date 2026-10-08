@@ -616,7 +616,10 @@
     // The grasp point is halfway through the open jaw, between its fixed
     // crossbar at x=30 and fingertip line at x=61.
     const toolCenterOffset = graspCenterOffset;
-    const maximumReach = linkOne + linkTwo - 1;
+    // Use the exact rendered link length at the workspace boundary. A hidden
+    // one-unit safety subtraction made the projected target disagree with the
+    // straight-elbow geometry and caused boundary branch chatter.
+    const maximumReach = linkOne + linkTwo;
     const minimumWristReach = Math.abs(linkOne - linkTwo) + 0.5;
     const maximumGraspReach = maximumReach + toolCenterOffset;
     const radialToolAngle = radiansToDegrees(rawDirection);
@@ -631,7 +634,7 @@
       const dx = wristX - baseX;
       const dy = wristY - baseY;
       const wristReach = Math.hypot(dx, dy);
-      if (wristReach < minimumWristReach || wristReach > maximumReach) return [];
+      if (wristReach < minimumWristReach || wristReach > maximumReach + 1e-6) return [];
       const squaredDistance = dx * dx + dy * dy;
       const cosineElbow = clamp((squaredDistance - linkOne ** 2 - linkTwo ** 2) / (2 * linkOne * linkTwo), -1, 1);
       const elbowMagnitude = cosineElbow > 0.9995 ? 0 : Math.acos(cosineElbow);
