@@ -324,19 +324,6 @@
     isolation: isolate;
   }
 
-  #research-experience::before {
-    position: absolute;
-    z-index: -1;
-    top: -30rem;
-    left: 50%;
-    width: 100vw;
-    height: 60rem;
-    background: linear-gradient(to bottom, rgba(248, 250, 252, 0.5) 0%, rgba(248, 250, 252, 0.22) 48%, transparent 86%);
-    content: '';
-    pointer-events: none;
-    transform: translateX(-50%);
-  }
-
   .research-network {
     position: absolute;
     z-index: -1;
@@ -438,10 +425,6 @@
 
     main > section.major-section {
       margin-top: 0;
-    }
-
-    #research-experience::before {
-      display: none;
     }
 
     .research-network {
