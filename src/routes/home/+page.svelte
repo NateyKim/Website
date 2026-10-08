@@ -857,22 +857,18 @@
     position: relative;
     isolation: isolate;
     min-height: calc(100vh - 60px);
-    padding: clamp(4rem, 9vh, 7rem) max(1rem, calc((100vw - 1200px) / 2)) 4rem;
-    overflow: hidden;
-    background: #f8fafc;
+    padding: clamp(4rem, 9vh, 7rem) max(1rem, calc((100vw - 1200px) / 2)) 7rem;
+    overflow-x: clip;
+    overflow-y: visible;
+    background: linear-gradient(
+      to bottom,
+      #f8fafc 0%,
+      #f8fafc 58%,
+      rgba(248, 250, 252, 0.86) 74%,
+      rgba(248, 250, 252, 0.34) 91%,
+      transparent 100%
+    );
     color: #111820;
-  }
-
-  .home-scene::after {
-    position: absolute;
-    z-index: -1;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    height: 26%;
-    background: linear-gradient(to bottom, transparent, rgba(248, 250, 252, 0.42) 68%, #f8fafc 100%);
-    content: '';
-    pointer-events: none;
   }
 
   .grid-layer {
@@ -881,7 +877,7 @@
     inset: 0;
     background-image: linear-gradient(rgba(55, 74, 99, 0.11) 1px, transparent 1px), linear-gradient(90deg, rgba(55, 74, 99, 0.11) 1px, transparent 1px);
     background-size: 44px 44px;
-    mask-image: linear-gradient(to bottom, black 0%, black 80%, rgba(0, 0, 0, 0.72) 94%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 0%, black 72%, rgba(0, 0, 0, 0.56) 91%, transparent 100%);
     transform: scale(1.04);
   }
 

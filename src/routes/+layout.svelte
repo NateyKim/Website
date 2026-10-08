@@ -331,7 +331,7 @@
     left: 50%;
     width: 100vw;
     height: 60rem;
-    background: linear-gradient(to bottom, rgba(248, 250, 252, 0.96) 0%, rgba(248, 250, 252, 0.74) 38%, rgba(255, 255, 255, 0.28) 72%, transparent 100%);
+    background: linear-gradient(to bottom, rgba(248, 250, 252, 0.5) 0%, rgba(248, 250, 252, 0.22) 48%, transparent 86%);
     content: '';
     pointer-events: none;
     transform: translateX(-50%);
@@ -344,12 +344,11 @@
     left: 50%;
     width: 100vw;
     height: 84rem;
-    background-color: #f8fafc;
     background-image: linear-gradient(rgba(55, 74, 99, 0.09) 1px, transparent 1px), linear-gradient(90deg, rgba(55, 74, 99, 0.09) 1px, transparent 1px);
     background-size: 44px 44px;
     pointer-events: none;
     transform: translateX(-50%);
-    mask-image: linear-gradient(to bottom, black 0%, black 28%, rgba(0, 0, 0, 0.78) 46%, rgba(0, 0, 0, 0.28) 68%, transparent 88%);
+    mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.45) 8%, black 22%, rgba(0, 0, 0, 0.76) 48%, rgba(0, 0, 0, 0.25) 72%, transparent 92%);
   }
 
   .research-network svg {
