@@ -352,7 +352,14 @@
     mask-image: linear-gradient(to bottom, black 0%, black 28%, rgba(0, 0, 0, 0.78) 46%, rgba(0, 0, 0, 0.28) 68%, transparent 88%);
   }
 
-  .research-network svg { width: 100%; height: 100%; overflow: hidden; }
+  .research-network svg {
+    position: absolute;
+    top: -10rem;
+    left: 0;
+    width: 100%;
+    height: calc(100% + 10rem);
+    overflow: hidden;
+  }
   .research-network-lines path { fill: none; stroke: #73829a; stroke-width: 1.15; opacity: 0.14; vector-effect: non-scaling-stroke; }
   .research-network-nodes circle { fill: #7566ff; stroke: rgba(248, 250, 252, 0.9); stroke-width: 2.5; opacity: 0.22; vector-effect: non-scaling-stroke; }
 
