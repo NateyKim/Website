@@ -11,6 +11,7 @@
   import PetSelector from './PetSelector.svelte';
   import ReactiveSignal from './ReactiveSignal.svelte';
   let menuImpulse = 0;
+  let eyeX = 330, eyeY = 700;
   let gearAngle = 0;
   let gearSelection = -1;
   function updateGear(index: number) {
@@ -140,6 +141,7 @@
       node.style.setProperty('--signal-x', ((gear.left + gear.width / 2 - stage.left) / stage.width * 100) + '%');
       node.style.setProperty('--signal-y', ((gear.top + gear.height / 2 - stage.top) / stage.height * 100) + '%');
       const x = gear.left + gear.width / 2 - stage.left, y = gear.top + gear.height / 2 - stage.top;
+      eyeX = x / stage.width * 1000; eyeY = y / stage.height * 1000;
       node.style.setProperty('--divide-top', ((x + y * Math.tan(Math.PI / 20)) / stage.width * 100) + '%');
       node.style.setProperty('--divide-bottom', ((x - (stage.height-y) * Math.tan(Math.PI / 20)) / stage.width * 100) + '%');
     }
@@ -164,15 +166,15 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V17 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V17 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V18 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V18 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
 <div class="experiment" class:subsection={!!section} bind:this={shell} tabindex="-1">
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="version-number">V17</span>
+    <span class="version-number">V18</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
@@ -180,6 +182,18 @@
       <DepthScene /><div class="entry-beam" aria-hidden="true"></div>
       <div class="signal-divider" aria-hidden="true"><ReactiveSignal vertical divider {menuImpulse} /></div>
       <div class="main-robot-menu" aria-label="Main menu"><ExperimentMenu items={mainChoices} onSelect={openMain} onActivity={updateGear} /></div>
+      <svg class="diffraction" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+        <g class="glass-facets">
+          <path d={'M'+eyeX+' '+eyeY+'L0 900L65 1000Z'} />
+          <path d={'M'+eyeX+' '+eyeY+'L105 1000L150 900Z'} />
+          <path d={'M'+eyeX+' '+eyeY+'L220 1000L260 945Z'} />
+        </g>
+        <g class="refracted-rays">
+          <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX-75)+' '+(eyeY+95)+'L18 970'} />
+          <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX-12)+' '+(eyeY+105)+'L120 1000'} />
+          <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX+30)+' '+(eyeY+120)+'L250 1000'} />
+        </g>
+      </svg>
       <div class="gear-cutout" aria-hidden="true"><div class="cutout-shard"></div><div class="main-gear"><PauseGear rotation={gearAngle} /></div></div>
     </div>
   {:else}
@@ -253,10 +267,10 @@
   .gear-cutout { position:absolute; z-index:2; top:40%; left:7%; width:49%; height:59%; transform:perspective(1200px) rotateX(34deg) rotateZ(18deg) rotateY(12deg); transform-style:preserve-3d; }
   .gear-cutout::before { content:''; position:absolute; inset:0; background:#001347; clip-path:polygon(0 50%,18% 18%,43% 3%,68% 12%,100% 50%,78% 81%,53% 97%,27% 85%); transform:translate(16px,18px); }
   .cutout-shard { position:absolute; inset:0; background:#f1ffff; clip-path:polygon(0 50%,18% 18%,43% 3%,68% 12%,100% 50%,78% 81%,53% 97%,27% 85%); }
-  .cutout-shard::after { content:''; position:absolute; inset:4%; background:#57ddff; clip-path:polygon(0 50%,18% 18%,43% 3%,68% 12%,100% 50%,78% 81%,53% 97%,27% 85%); }
+  .cutout-shard::after { content:''; position:absolute; inset:4%; background:var(--scene-cyan); clip-path:polygon(0 50%,18% 18%,43% 3%,68% 12%,100% 50%,78% 81%,53% 97%,27% 85%); }
   .main-gear { position:absolute; inset:4% 15%; }
   .entry-beam { position:absolute; z-index:3; inset:0; pointer-events:none; background:linear-gradient(90deg,#d9ffff44,#8cf3ff08); clip-path:polygon(0 30%,var(--signal-x,33%) var(--signal-y,70%),0 65%); mix-blend-mode:screen; }
-  .signal-divider { left:calc(var(--signal-x,33%) - 6%); top:0; width:12%; height:100%; transform:rotate(9deg); transform-origin:50% var(--signal-y,70%); }
+  .signal-divider { left:calc(var(--signal-x,33%) - 5%); top:0; width:12%; height:var(--signal-y,70%); transform:rotate(9deg); transform-origin:50% 100%; }
   .signal-divider :global(.reactive-signal) { height:100%; }
   .main-robot-menu :global(.choice) { margin:auto; justify-content:center; }
   .work-folder { position:relative; background:#1656ad; border:0; padding:32px 24px 24px; margin-top:55px; box-shadow:12px 14px 0 #001347; transform:perspective(1400px) rotateY(-3deg) rotateZ(-2deg); }
@@ -266,14 +280,22 @@
     .main-robot-menu { width:78%; margin-left:20%; padding:45px 0 260px; transform:rotate(-3deg); }
     .human-plane { clip-path:polygon(100% 0,100% 100%,55% 100%); opacity:.3; }
     .gear-cutout { width:350px; height:300px; left:-30px; top:66%; opacity:1; }
-    .signal-divider { left:calc(var(--signal-x,33%) - 6%); top:0; width:12%; height:100%; }
+    .signal-divider { left:calc(var(--signal-x,33%) - 5%); top:0; width:12%; height:var(--signal-y,70%); }
     .work-folder { padding:20px 12px 12px; transform:none; box-shadow:5px 7px 0 #001347; }
   }
   .robot-plane::after { display:none; content:''; position:absolute; inset:-20%; background:repeating-linear-gradient(120deg,transparent 0 180px,#c4ffff15 181px 215px,transparent 216px 350px); animation:light-drift 18s linear infinite alternate; }
   @keyframes blue-drift { to { background-position:100% 100%; } }
   @keyframes light-drift { to { transform:translate(70px,35px); } }
   @media(prefers-reduced-motion:reduce) { .robot-plane,.robot-plane::after { animation:none; } }
+  .experiment:not(.subsection) { --scene-cyan:#ffcea9; --scene-paper:#fff8ef; --scene-blue:#244d92; --scene-ink:#061534; }
+  .entry-beam { background:linear-gradient(90deg,#fff0d455,#ffdabd12); }
+  .diffraction { position:absolute; inset:0; width:100%; height:100%; z-index:4; pointer-events:none; }
+  .glass-facets { fill:#ffd7b8; opacity:.17; }
+  .refracted-rays { fill:none; stroke:#ffe6cb; stroke-width:1.3; opacity:.75; }
+  .refracted-rays path:nth-child(2) { stroke:#88d9ff; }
+  .refracted-rays path:nth-child(3) { stroke:#ff8d87; }
 </style>
+
 
 
 

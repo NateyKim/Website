@@ -65,8 +65,8 @@
 <style>
   .reactive-signal { display: block; width: 100%; height: 120px; overflow: visible; pointer-events: none; fill: none; }
   .vertical { height: 100%; }
-  .signal-halo { stroke: #53eeff; stroke-width: 8; filter: blur(2px); }
-  .signal-core { stroke: #edffff; stroke-width: 2; }
-  .reactive-signal:not(.vertical) .signal-core { stroke: #53eeff; stroke-width: 1.5; }
+  .signal-halo { stroke: var(--scene-cyan,#53eeff); stroke-width: 8; filter: blur(2px); }
+  .signal-core { stroke: var(--scene-paper,#edffff); stroke-width: 2; }
+  .reactive-signal:not(.vertical) .signal-core { stroke: var(--scene-cyan,#53eeff); stroke-width: 1.5; }
   .signal-outline { stroke:#00154f; stroke-width:6; opacity:.55; }
 </style>
