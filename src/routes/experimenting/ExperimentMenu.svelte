@@ -7,6 +7,7 @@
   export let onActivity: (index: number) => void = () => {};
   export let initialSelection = -1;
   export let persistent = false;
+  export let expressive = false;
   let menuNode: HTMLDivElement;
   let highlighted = initialSelection;
   let keyboardMode = false;
@@ -18,7 +19,7 @@
 </script>
 
 <svelte:window on:focusin={(event) => { if (!persistent && menuNode && !menuNode.contains(event.target as Node)) highlighted = -1; }} />
-<div class="choice-menu" bind:this={menuNode}>
+<div class="choice-menu" class:expressive bind:this={menuNode}>
   {#each items as item, index}
     <div class="choice-row" class:highlighted={highlighted === index} style:--order={index} on:pointerenter={() => highlight(index, false)} on:pointerleave={() => { if (!persistent && !keyboardMode) highlighted = -1; }} role="group" aria-label={item.name}>
       <button type="button" class="choice" aria-label={item.name} on:focus={() => highlight(index, true)} on:blur={() => { if (!persistent && keyboardMode) highlighted = -1; }} on:click={() => onSelect(index)}>
@@ -50,4 +51,22 @@
   @media(max-width:700px) { .word { font-size:clamp(32px,8.5vw,42px); } .choice { min-height:62px; padding:9px 12px; } .choice-menu { gap:6px; } }
   @media(min-width:701px) and (max-height:720px) { .word { font-size:clamp(32px,4.2vw,60px); } .choice { min-height:56px; } .choice-menu { gap:2px; } }
   @media(prefers-reduced-motion:reduce) { .highlighted .selection-shape { animation:none; } .word { transition:none; } }
+  .expressive { gap:10px; }
+  .expressive .word { font-size:clamp(44px,5.8vw,86px); letter-spacing:-.03em; }
+  .expressive .choice-row { transform:rotate(-3deg); }
+  .expressive .choice-row:nth-child(2) { transform:rotate(3deg) translateX(14px); }
+  .expressive .choice-row:nth-child(3) { transform:rotate(-5deg) translateX(-12px); }
+  .expressive .choice-row:nth-child(4) { transform:rotate(5deg) translateX(18px); }
+  .expressive .choice-row:nth-child(5) { transform:rotate(-2deg); }
+  .expressive .selection-shape { inset:0 -25px -3px -24px; clip-path:polygon(0 88%,97% 0,100% 100%); }
+  .expressive .choice-row:nth-child(even) .selection-shape { clip-path:polygon(0 0,100% 25%,9% 100%); }
+  .expressive .choice-row:nth-child(3) .selection-shape { clip-path:polygon(5% 100%,80% 0,100% 83%); }
+  .expressive .selection-shape::after { inset:0; height:auto; background:#ff9cbe; clip-path:polygon(0 80%,18% 0,29% 69%); transform:none; opacity:.65; }
+  .expressive .choice-row:nth-child(even) .selection-shape::after { clip-path:polygon(71% 3%,100% 70%,83% 100%); }
+  .expressive .highlighted .word { transform:translateX(6px) scale(1.04); }
+  .expressive .choice-row:nth-child(even).highlighted .selection-shape { animation-name:engage-reverse; }
+  @keyframes engage-reverse { from { opacity:0; transform:translateX(20px) skewX(-12deg); } to { opacity:1; transform:none; } }
+  @media(max-width:1000px) { .expressive .word { font-size:clamp(36px,5.4vw,64px); } }
+  @media(max-width:700px) { .expressive .word { font-size:clamp(35px,9vw,46px); } .expressive { gap:9px; } .expressive .choice-row:nth-child(n) { translate:0; } }
+  @media(prefers-reduced-motion:reduce) { .expressive .highlighted .selection-shape { animation:none; } }
 </style>

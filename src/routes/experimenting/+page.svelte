@@ -166,22 +166,22 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V19 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V19 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V20 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V20 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
 <div class="experiment" class:subsection={!!section} bind:this={shell} tabindex="-1">
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="version-number">V19</span>
+    <span class="version-number">V20</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
       <div class="robot-plane" aria-hidden="true"></div><div class="human-plane" aria-hidden="true"></div>
       <DepthScene /><div class="entry-beam" aria-hidden="true"></div>
       <div class="signal-divider" aria-hidden="true"><ReactiveSignal vertical divider {menuImpulse} /></div>
-      <div class="main-robot-menu" aria-label="Main menu"><ExperimentMenu items={mainChoices} onSelect={openMain} onActivity={updateGear} /></div>
+      <div class="main-robot-menu" aria-label="Main menu"><ExperimentMenu items={mainChoices} onSelect={openMain} onActivity={updateGear} expressive /></div>
       <svg class="diffraction" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
         <g class="glass-facets">
           <path d={'M'+eyeX+' '+eyeY+'L0 900L65 1000Z'} />
@@ -263,8 +263,8 @@
   .robot-plane,.human-plane { position:absolute; inset:0; z-index:-1; }
   .robot-plane { background-size:150% 150%; animation:blue-drift 14s ease-in-out infinite alternate; background:linear-gradient(150deg,#119dff,#0754fa 55%,#001347); }
   .human-plane { background:linear-gradient(155deg,#0964ef,#0033ad 65%,#001347); clip-path:polygon(var(--divide-top,38%) 0,100% 0,100% 100%,var(--divide-bottom,28%) 100%); }
-  .main-robot-menu { position:relative; z-index:5; width:62%; padding:17vh 0 14vh; margin-left:36%; text-align:center; transform:perspective(1100px) rotateY(9deg) rotateZ(-6deg); transform-origin:center center; }
-  .gear-cutout { position:absolute; z-index:2; top:40%; left:7%; width:49%; height:59%; transform:perspective(1200px) rotateX(34deg) rotateZ(18deg) rotateY(12deg); transform-style:preserve-3d; }
+  .main-robot-menu { position:relative; z-index:5; width:62%; padding:11vh 0 12vh; margin-left:36%; text-align:center; transform:perspective(1100px) rotateY(9deg) rotateZ(-6deg); transform-origin:center center; }
+  .gear-cutout { position:absolute; z-index:2; top:35%; left:0; width:46%; height:64%; transform:perspective(1500px) rotateZ(12deg) rotateX(54deg) rotateY(-5deg); transform-style:preserve-3d; }
   .gear-cutout::before { content:''; position:absolute; inset:0; background:#001347; clip-path:polygon(0 50%,18% 18%,43% 3%,68% 12%,100% 50%,78% 81%,53% 97%,27% 85%); transform:translate(16px,18px); }
   .cutout-shard { position:absolute; inset:0; background:#f1ffff; clip-path:polygon(0 50%,18% 18%,43% 3%,68% 12%,100% 50%,78% 81%,53% 97%,27% 85%); }
   .cutout-shard::after { content:''; position:absolute; inset:4%; background:var(--scene-cyan); clip-path:polygon(0 50%,18% 18%,43% 3%,68% 12%,100% 50%,78% 81%,53% 97%,27% 85%); }
@@ -295,6 +295,7 @@
   .refracted-rays path:nth-child(2) { stroke:#88d9ff; }
   .refracted-rays path:nth-child(3) { stroke:#ff8d87; }
 </style>
+
 
 
 
