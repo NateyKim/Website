@@ -11,7 +11,7 @@
   export let item = '';
 </script>
 
-<div class="persona-content">
+<div class="persona-content" class:paper-file={section === 'work'}>
   {#if section === 'research'}
     {#if panel === 'projects'}
       <ProjectsPage mode="research" />
@@ -64,4 +64,13 @@
   iframe { width: 100%; height: 78vh; min-height: 550px; border: 1px solid #53eeff; background: white; }
   @media (max-width: 1000px) { .persona-content :global(.project-row), .persona-content :global(.project-row.odd) { flex-direction: column; align-items: stretch; } }
   @media (max-width: 600px) { .persona-content :global(article), .persona-content :global(.project-row), .persona-content :global(.personal-category) { padding: 18px; } }
+
+  .paper-file { position:relative; color:#122746; padding:30px clamp(18px,4vw,48px); background:repeating-linear-gradient(180deg,#fffdf5 0 31px,#d8e0ea 31px 32px); border-left:5px solid #78faff; box-shadow:5px 6px 0 #052c70; animation:unfold 450ms cubic-bezier(.2,.8,.2,1) both; transform-origin:top center; }
+  .paper-file :global(article),.paper-file :global(.project-row) { background:#fffdf5ee; color:#122746; border:0; padding:24px 0; }
+  .paper-file :global(h1),.paper-file :global(h2),.paper-file :global(h3) { color:#001347; }
+  .paper-file :global(p),.paper-file :global(li),.paper-file :global(.role),.paper-file :global(.date-location),.paper-file :global(.description),.paper-file :global(.project-meta),.paper-file :global(.eyebrow),.paper-file :global(figcaption) { color:#263d59; }
+  .paper-file :global(a) { color:#064ca6; }
+  .paper-file :global(.project-link),.paper-file :global(.expand-button) { background:#001347; color:white; }
+  @keyframes unfold { from { opacity:0; transform:perspective(1000px) rotateX(-12deg) translateY(25px); } to { opacity:1; transform:perspective(1000px) rotateX(0) translateY(0); } }
+  @media(prefers-reduced-motion:reduce) { .paper-file { animation:none; } }
 </style>

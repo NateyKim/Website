@@ -145,29 +145,22 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V11 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V11 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V12 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V12 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
 <div class="experiment" class:subsection={!!section} bind:this={shell} tabindex="-1">
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="pause-brand">NATEY KIM</span><span class="version-number">V11</span>
+    <span class="version-number">V12</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main">
       <div class="robot-plane" aria-hidden="true"></div><div class="human-plane" aria-hidden="true"></div>
       <div class="signal-divider" aria-hidden="true"><ReactiveSignal vertical divider {menuImpulse} /></div>
-      <section class="robot-half" aria-label="Robot side">
-        <h1 class="side-title">ROBOT<span>.</span></h1>
-        <div class="main-robot-menu"><ExperimentMenu items={robotChoices} onSelect={openMain} onActivity={updateGear} /></div>
-      </section>
-      <section class="human-half" aria-label="Human side">
-        <h2 class="side-title">HUMAN<span>.</span></h2>
-        <div class="main-gear"><PauseGear rotation={gearAngle} /></div>
-        <div class="main-human-menu"><ExperimentMenu items={humanChoices} onSelect={(index) => openMain(index + robotChoices.length)} onActivity={(index) => updateGear(index + robotChoices.length)} /></div>
-      </section>
+      <div class="main-robot-menu" aria-label="Main menu"><ExperimentMenu items={mainChoices} onSelect={openMain} onActivity={updateGear} /></div>
+      <div class="gear-cutout" aria-hidden="true"><div class="cutout-shard"></div><div class="main-gear"><PauseGear rotation={gearAngle} /></div></div>
     </div>
   {:else}
     <div class="section-stage">
@@ -176,7 +169,7 @@
             {#if isLeaf || petGroup}<button class="back-level" type="button" on:click={() => navigate(sectionKey, selectedPet ? 'pets' : '')}>← {selectedPet ? 'PETS' : section.name}</button>{/if}
       <div class="section-title"><h1 id="screen-title" tabindex="-1">{viewTitle}</h1></div>
       {#if isLeaf}
-        <div class="leaf-content" use:projectLinks>
+        <div class="leaf-content" class:work-folder={sectionKey === 'work'} use:projectLinks>
 
           {#key sectionKey + panel + itemKey}<PersonaContent section={sectionKey} {panel} item={itemKey} />{/key}
         </div>
@@ -202,7 +195,6 @@
   .experiment:focus { outline:none; }
   .version-bar { position:relative; z-index:10; display:flex; align-items:center; gap:24px; min-height:56px; padding:4px 4%; background:var(--scene-ink); }
   .version-number { margin-left:auto; color:var(--scene-cyan); font:600 14px var(--font-ui); letter-spacing:.05em; }
-  .pause-brand { margin-left:auto; font:600 14px var(--font-ui); letter-spacing:.12em; color:var(--scene-paper); }
   .resume,.back-main { display:inline-flex; align-items:center; min-height:44px; gap:12px; padding:0 4px; border:0; color:var(--scene-paper); background:transparent; font:600 15px var(--font-ui); text-decoration:none; cursor:pointer; touch-action:manipulation; }
   .pause-stage { position:relative; isolation:isolate; min-height:calc(100svh - 108px); overflow:hidden; }
   .experiment-footer { position:relative; z-index:10; min-height:52px; display:flex; align-items:center; padding:8px 4%; background:var(--scene-ink); color:var(--scene-paper); font:600 13px var(--font-ui); letter-spacing:.055em; }
@@ -220,7 +212,7 @@
   button:focus-visible,a:focus-visible { outline:2px solid var(--scene-paper); outline-offset:5px; }
   @keyframes menu-enter { from { opacity:0; translate:20px 0; } to { opacity:1; translate:0 0; } }
   @media(max-width:700px) {
-    .version-bar { padding:4px 7%; gap:16px; } .pause-brand { display:none; }
+    .version-bar { padding:4px 7%; gap:16px; }
     .pause-stage { min-height:calc(100svh - 108px); }
     .section-stage { padding:24px 7% 48px; }
     .section-title { margin-bottom:30px; } .section-title h1 { font-size:62px; }
@@ -231,30 +223,26 @@
   .signal-divider { position:absolute; z-index:4; left:49%; top:0; width:9%; height:100%; pointer-events:none; }
   @media(max-width:700px) { .signal-divider { left:91%; top:5%; width:8%; height:92%; opacity:.65; } }
 
-  .split-main { display:grid; grid-template-columns:1fr 1fr; background:#0754fa; }
+  .split-main { background:#0754fa; perspective:1200px; }
   .robot-plane,.human-plane { position:absolute; inset:0; z-index:-1; }
-  .robot-plane { background:linear-gradient(155deg,#0876ff,#0745dc 65%,#002277); }
-  .human-plane { background:#8cf3ff; clip-path:polygon(56% 0,100% 0,100% 100%,46% 100%); }
-  .robot-half,.human-half { position:relative; min-width:0; padding:50px 11% 70px; }
-  .human-half { padding-left:15%; }
-  .side-title { margin:0 0 55px; font:italic 900 clamp(68px,8vw,120px)/.95 var(--font-display); letter-spacing:-.045em; transform:rotate(-5deg); }
-  .side-title span { color:var(--scene-cyan); }
-  .human-half .side-title { color:var(--scene-ink); }
-  .human-half .side-title span { color:var(--scene-blue); }
-  .main-gear { position:absolute; width:95%; height:75%; right:-13%; top:35%; opacity:.9; pointer-events:none; }
-  .main-human-menu { position:relative; z-index:3; margin-top:0; }
-  .main-human-menu :global(.choice) { color:var(--scene-ink); }
-  .main-human-menu :global(.selection-shape) { background:#fff; }
-  .main-robot-menu { position:relative; z-index:3; }
+  .robot-plane { background:linear-gradient(150deg,#119dff,#0754fa 55%,#001347); }
+  .human-plane { background:#8cf3ff; clip-path:polygon(57% 0,100% 0,100% 100%,48% 100%); }
+  .main-robot-menu { position:relative; z-index:5; width:47%; padding:15vh 0 14vh; margin-left:7%; transform:perspective(1100px) rotateY(9deg) rotateZ(-6deg); transform-origin:left center; }
+  .gear-cutout { position:absolute; top:12%; right:-9%; width:57%; height:78%; transform:rotate(-13deg) rotateY(-19deg); transform-style:preserve-3d; }
+  .gear-cutout::before { content:''; position:absolute; inset:0; background:#001347; clip-path:polygon(8% 4%,89% 0,100% 27%,92% 89%,67% 100%,0 79%); transform:translate(16px,18px); }
+  .cutout-shard { position:absolute; inset:0; background:#f1ffff; clip-path:polygon(8% 4%,89% 0,100% 27%,92% 89%,67% 100%,0 79%); }
+  .cutout-shard::after { content:''; position:absolute; inset:4%; background:#57ddff; clip-path:polygon(8% 4%,89% 0,100% 27%,92% 89%,67% 100%,0 79%); }
+  .main-gear { position:absolute; inset:9%; }
   .signal-divider { left:46%; width:12%; }
-  @media(max-width:1000px) { .side-title { font-size:80px; } .robot-half { padding-left:8%; padding-right:7%; } .human-half { padding-left:12%; padding-right:8%; } }
+  .work-folder { position:relative; background:#1656ad; border:0; padding:32px 24px 24px; margin-top:55px; box-shadow:12px 14px 0 #001347; transform:rotate(-1deg); }
+  .work-folder::before { content:''; position:absolute; left:0; top:-28px; width:36%; height:30px; background:#1656ad; clip-path:polygon(0 0,88% 0,100% 100%,0 100%); }
+  @media(max-width:1000px) { .main-robot-menu { width:53%; margin-left:5%; } .gear-cutout { right:-18%; width:62%; } }
   @media(max-width:700px) {
-    .split-main { grid-template-columns:1fr; } .human-plane { display:none; }
-    .robot-half,.human-half { padding:36px 8% 45px; } .human-half { background:#8cf3ff; min-height:420px; }
-    .side-title { font-size:80px; margin-bottom:28px; }
-    .main-gear { width:340px; height:340px; right:-95px; top:120px; opacity:.25; }
-    .main-human-menu { margin-top:0; }
-    .signal-divider { left:91%; top:0; width:8%; height:58%; }
+    .main-robot-menu { width:84%; margin-left:8%; padding:75px 0 100px; transform:rotate(-3deg); }
+    .human-plane { clip-path:polygon(100% 0,100% 100%,55% 100%); opacity:.3; }
+    .gear-cutout { width:330px; height:350px; right:-190px; top:35%; opacity:.3; }
+    .signal-divider { left:91%; top:0; width:8%; height:100%; }
+    .work-folder { padding:20px 12px 12px; transform:none; box-shadow:5px 7px 0 #001347; }
   }
 </style>
 
