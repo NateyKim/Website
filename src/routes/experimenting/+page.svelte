@@ -145,15 +145,15 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V09 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V09 explores human signals and robotic motion through a technical pause interface." />
+  <title>Experimenting / V10 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V10 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
 <div class="experiment" class:subsection={!!section} bind:this={shell} tabindex="-1">
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="pause-brand">NATEY KIM</span><span class="version-number">V09</span>
+    <span class="pause-brand">NATEY KIM</span><span class="version-number">V10</span>
   </header>
   {#if !section}
     <div class="pause-stage">
@@ -200,9 +200,9 @@
   .pause-brand { margin-left:auto; font:600 14px var(--font-ui); letter-spacing:.12em; color:var(--scene-paper); }
   .resume,.back-main { display:inline-flex; align-items:center; min-height:44px; gap:12px; padding:0 4px; border:0; color:var(--scene-paper); background:transparent; font:600 15px var(--font-ui); text-decoration:none; cursor:pointer; touch-action:manipulation; }
   .pause-stage { position:relative; isolation:isolate; min-height:calc(100svh - 108px); overflow:hidden; }
-  .pause-title { position:absolute; z-index:2; top:3%; left:5%; margin:0; font:600 clamp(60px,8vw,115px)/.95 var(--font-display); letter-spacing:-.045em; color:var(--scene-paper); }
-  .hero-gear { position:absolute; left:4%; top:27%; width:43%; height:58%; opacity:.9; }
-  .pause-menu { position:relative; z-index:4; width:39%; margin-left:58%; padding:15vh 0 12vh; animation:menu-enter 280ms var(--ease-menu); }
+  .pause-title { position:absolute; z-index:2; top:3%; left:5%; margin:0; font:italic 900 clamp(100px,13vw,190px)/.85 var(--font-display); letter-spacing:-.045em; color:var(--scene-ink); transform:rotate(-9deg); }
+  .hero-gear { position:absolute; left:1%; top:30%; width:43%; height:58%; opacity:.9; }
+  .pause-menu { position:relative; z-index:4; width:39%; margin-left:58%; padding:15vh 0 12vh; transform:rotate(-7deg); animation:menu-enter 280ms var(--ease-menu); }
   .pause-signal { position:absolute; z-index:3; bottom:5%; left:6%; width:36%; opacity:.75; }
   .pause-signal :global(.reactive-signal) { height:44px; }
   .experiment-footer { position:relative; z-index:10; min-height:52px; display:flex; align-items:center; padding:8px 4%; background:var(--scene-ink); color:var(--scene-paper); font:600 13px var(--font-ui); letter-spacing:.055em; }
@@ -210,7 +210,7 @@
   .experiment-footer kbd:not(:first-child) { margin-left:18px; }
   .section-stage { position:relative; isolation:isolate; min-height:calc(100svh - 108px); padding:32px 6% 64px; overflow:hidden; background:var(--scene-blue); }
   .section-title { margin:12px 0 40px; }
-  .section-title h1 { color:var(--scene-paper); margin:0; font:600 clamp(42px,6vw,82px)/.95 var(--font-display); letter-spacing:-.03em;  }
+  .section-title h1 { color:var(--scene-paper); margin:0; font:italic 900 clamp(54px,7vw,100px)/.95 var(--font-display); letter-spacing:-.03em;  }
   .section-title h1:focus { outline:none; }
   .back-level { display:inline-flex; align-items:center; min-height:44px; margin-bottom:12px; padding:0; background:transparent; color:var(--scene-paper); border:0; font:600 14px var(--font-ui); cursor:pointer; }
   .section-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:7%; align-items:center; }
@@ -223,7 +223,7 @@
   @media(max-width:700px) {
     .version-bar { padding:4px 7%; gap:16px; } .pause-brand { display:none; }
     .pause-stage { min-height:calc(100svh - 108px); }
-    .pause-title { top:32px; left:8%; font-size:72px; }
+    .pause-title { top:32px; left:8%; font-size:100px; }
     .hero-gear { left:-70px; top:230px; width:450px; height:450px; opacity:.12; }
     .pause-menu { width:84%; margin-left:8%; padding:135px 0 105px; transform:none; }
     .pause-signal { left:8%; width:84%; bottom:26px; }
