@@ -12,6 +12,7 @@
       <circle r="76" fill="currentColor"/><circle r="40" fill="var(--scene-blue)"/>
       <path d="M0-302V-274" stroke="var(--scene-cyan)" stroke-width="12"/>
     </g></g>
+    <g class="horn"><path d="M-155-180Q-180-255-105-282" stroke="#001347" stroke-width="22"/><path d="M-155-180Q-180-255-105-282" stroke="#8cf3ff" stroke-width="12"/><path d="M-110-294L-80-330L-12-264L-103-267Z" fill="#f3fdff" stroke="#001347" stroke-width="5"/><path d="M-80-330L-12-264L-24-309Z" fill="#001347"/></g>
     <g class="tonearm"><circle cx="260" cy="-260" r="25" fill="#001347" stroke="#f3fdff" stroke-width="6"/><path d="M260-260L190-105L130-70" stroke="#001347" stroke-width="24"/><path d="M260-260L190-105L130-70" stroke="#f3fdff" stroke-width="12"/><path d="M114-84L146-65L129-34L99-54Z" fill="#f3fdff" stroke="#001347" stroke-width="4"/></g>
     <path d="M-303-118A325 325 0 0 1 303-118M303 118A325 325 0 0 1-303 118" stroke="currentColor" stroke-width="2"/>
   </svg>

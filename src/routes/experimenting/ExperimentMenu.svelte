@@ -35,10 +35,10 @@
   .choice-row { position:relative; }
   .choice { position:relative; isolation:isolate; display:flex; align-items:center; gap:16px; width:max-content; max-width:100%; min-width:160px; min-height:64px; padding:8px 18px; border:0; background:transparent; color:var(--scene-paper,#f3fdff); text-align:left; cursor:pointer; touch-action:manipulation; }
   .word { position:relative; text-shadow:none; font-family:var(--font-display); font-weight:900; font-style:italic; font-size:clamp(34px,4.6vw,68px); line-height:.98; letter-spacing:-.015em; white-space:normal; min-width:0; overflow-wrap:anywhere; }
-  .selection-shape { position:absolute; z-index:-1; inset:2px -16px 0 -12px; opacity:0; background:var(--scene-cyan,#42eeff); clip-path:polygon(4% 9%,100% 0,96% 82%,88% 84%,91% 100%,0 92%); transform:translateX(-16px) scaleX(.94); transform-origin:left; }
+  .selection-shape { position:absolute; z-index:-1; inset:2px -16px 0 -12px; opacity:0; background:#f32949; clip-path:polygon(0 75%,92% 0,100% 100%); transform:translateX(-16px) scaleX(.94); transform-origin:left; }
   .selection-shape::after { content:''; position:absolute; bottom:8px; left:7%; right:13%; height:1px; background:#00154f44; transform:rotate(-2deg); }
   .highlighted .selection-shape { opacity:1; transform:none; animation:engage 210ms var(--ease-menu,ease-out); }
-  .highlighted .choice { color:var(--scene-ink,#00154f); }
+  .highlighted .choice { color:#fff; }
   .highlighted .word { text-shadow:none; transform:translateX(6px); }
   .word { transition:transform 150ms ease-out; }
   .marker { flex-shrink:0; margin-left:auto; font-family:var(--font-ui); font-size:26px; opacity:0; color:var(--scene-ink,#00154f); }
