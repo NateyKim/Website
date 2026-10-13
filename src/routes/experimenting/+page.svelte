@@ -18,7 +18,7 @@
     menuImpulse += 1;
     if (index === gearSelection) return;
     let direction = gearSelection < 0 ? 1 : index - gearSelection;
-    const count = section ? activeChoices.length : 5;
+    const count = section ? activeChoices.length : mainChoices.length;
     if (direction > count / 2) direction -= count;
     if (direction < -count / 2) direction += count;
     gearAngle += (Math.sign(direction) || 1) * 30;
@@ -30,6 +30,7 @@
   let shell: HTMLDivElement;
   let lastMainChoice = 0;
   const sections: Record<string, { name: string; description: string; choices: Choice[] }> = {
+    contact: { name: 'CONTACT ME', description: '', choices: [] },
     research: { name: 'RESEARCH', description: 'Human movement, biosignals, and assistive robotics.', choices: [
       { name: 'GRASP LAB', panel: 'experience', body: 'Research engineering at the University of Pennsylvania.' },
       { name: 'PUBLICATIONS', panel: 'publications', body: 'Research output and collaborative publications.' },
@@ -64,7 +65,7 @@
     { name: 'CV', section: 'cv', body: sections.cv.description }
   ];
   const humanChoices: Choice[] = [{ name: 'BEYOND THE WORK', section: 'beyond', body: sections.beyond.description }];
-  const mainChoices = [...robotChoices, ...humanChoices];
+  const mainChoices = [...robotChoices, ...humanChoices, { name: 'CONTACT ME', section: 'contact', body: '' }];
   const petChoices: Choice[] = [{ name: 'CLEMENTINE', panel: 'clementine', body: 'Clementine’s photos and videos.' }, { name: 'MOOKIE', panel: 'mookie', body: 'Mookie’s photo collection.' }];
   $: sectionKey = $page.url.searchParams.get('section') ?? '';
   $: section = sections[sectionKey];
@@ -166,15 +167,15 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V20 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V20 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V21 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V21 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
 <div class="experiment" class:subsection={!!section} bind:this={shell} tabindex="-1">
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="version-number">V20</span>
+    <span class="version-number">V21</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
@@ -184,14 +185,17 @@
       <div class="main-robot-menu" aria-label="Main menu"><ExperimentMenu items={mainChoices} onSelect={openMain} onActivity={updateGear} expressive /></div>
       <svg class="diffraction" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
         <g class="glass-facets">
-          <path d={'M'+eyeX+' '+eyeY+'L0 900L65 1000Z'} />
-          <path d={'M'+eyeX+' '+eyeY+'L105 1000L150 900Z'} />
-          <path d={'M'+eyeX+' '+eyeY+'L220 1000L260 945Z'} />
+          <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX-72)+' '+(eyeY+83)+'L'+(eyeX-169)+' '+(eyeY+64)+'Z'} />
+          <path d={'M'+(eyeX-72)+' '+(eyeY+83)+'L'+(eyeX-169)+' '+(eyeY+64)+'L'+(eyeX-235)+' '+(eyeY+172)+'Z'} />
+          <path d={'M'+(eyeX-84)+' '+(eyeY+107)+'L'+(eyeX-211)+' '+(eyeY+200)+'L'+(eyeX-124)+' '+(eyeY+221)+'Z'} />
+          <path d={'M'+(eyeX-121)+' '+(eyeY+235)+'L0 970L74 1000Z'} />
+          <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX-15)+' '+(eyeY+154)+'L'+(eyeX-77)+' '+(eyeY+120)+'Z'} />
+          <path d={'M'+(eyeX-30)+' '+(eyeY+165)+'L'+(eyeX-88)+' '+(eyeY+133)+'L'+(eyeX-94)+' 1000Z'} />
         </g>
-        <g class="refracted-rays">
-          <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX-75)+' '+(eyeY+95)+'L18 970'} />
-          <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX-12)+' '+(eyeY+105)+'L120 1000'} />
-          <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX+30)+' '+(eyeY+120)+'L250 1000'} />
+        <g class="glass-cracks">
+          <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX-72)+' '+(eyeY+83)+'L'+(eyeX-235)+' '+(eyeY+172)+'L0 970'} />
+          <path d={'M'+(eyeX-72)+' '+(eyeY+83)+'L'+(eyeX-84)+' '+(eyeY+107)+'L'+(eyeX-124)+' '+(eyeY+221)+'L74 1000'} />
+          <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX-15)+' '+(eyeY+154)+'L'+(eyeX-94)+' 1000'} />
         </g>
       </svg>
       <div class="gear-cutout" aria-hidden="true"><div class="cutout-shard"></div><div class="main-gear"><PauseGear rotation={gearAngle} /></div></div>
@@ -202,7 +206,12 @@
 
             {#if isLeaf || petGroup}<button class="back-level" type="button" on:click={() => navigate(sectionKey, selectedPet ? 'pets' : '')}>← {selectedPet ? 'PETS' : section.name}</button>{/if}
       <div class="section-title"><h1 id="screen-title" tabindex="-1">{viewTitle}</h1></div>
-      {#if sectionKey === 'work'}
+      {#if sectionKey === 'contact'}
+        <div class="contact-card">
+          <a class="contact-link" href="mailto:natey0214@gmail.com"><span>EMAIL</span><span class="contact-detail">natey0214@gmail.com ↗</span></a>
+          <a class="contact-link" href="https://www.linkedin.com/in/nateykim" target="_blank" rel="noreferrer"><span>LINKEDIN</span><span class="contact-detail">Natey Kim ↗</span></a>
+        </div>
+      {:else if sectionKey === 'work'}
         <WorkFolders items={section.choices} {panel} onSelect={openSubmenu} onActivity={updateGear} />
       {:else if isLeaf}
         <div class="leaf-content" class:work-folder={sectionKey === 'work'} use:projectLinks>
@@ -290,10 +299,15 @@
   .experiment:not(.subsection) { --scene-cyan:#ffcea9; --scene-paper:#fff8ef; --scene-blue:#244d92; --scene-ink:#061534; }
   .entry-beam { background:linear-gradient(90deg,#fff0d455,#ffdabd12); }
   .diffraction { position:absolute; inset:0; width:100%; height:100%; z-index:4; pointer-events:none; }
-  .glass-facets { fill:#ffd7b8; opacity:.17; }
-  .refracted-rays { fill:none; stroke:#ffe6cb; stroke-width:1.3; opacity:.75; }
-  .refracted-rays path:nth-child(2) { stroke:#88d9ff; }
-  .refracted-rays path:nth-child(3) { stroke:#ff8d87; }
+  .glass-facets { fill:var(--scene-cyan); stroke:var(--scene-paper); stroke-width:.8; opacity:.24; }
+  .glass-facets path:nth-child(even) { fill:var(--scene-paper); opacity:.6; }
+  .glass-cracks { fill:none; stroke:var(--scene-paper); stroke-width:1.1; opacity:.55; }
+  .contact-card { max-width:900px; margin:60px auto; transform:rotate(-4deg); }
+  .contact-link { display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:space-between; min-height:110px; padding:20px 30px; color:var(--scene-ink); background:var(--scene-paper); margin-bottom:25px; box-shadow:8px 9px 0 var(--scene-ink); text-decoration:none; }
+  .contact-link>span:first-child { font:italic 900 clamp(36px,5vw,66px)/1 var(--font-display); }
+  .contact-detail { font:600 20px var(--font-ui); overflow-wrap:anywhere; }
+  .contact-link:hover { background:var(--scene-cyan); }
+  @media(max-width:700px) { .contact-card { transform:rotate(-2deg); } .contact-link { padding:20px; } }
 </style>
 
 

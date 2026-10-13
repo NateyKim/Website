@@ -24,7 +24,7 @@
     <div class="choice-row" class:highlighted={highlighted === index} style:--order={index} on:pointerenter={() => highlight(index, false)} on:pointerleave={() => { if (!persistent && !keyboardMode) highlighted = -1; }} role="group" aria-label={item.name}>
       <button type="button" class="choice" aria-label={item.name} on:focus={() => highlight(index, true)} on:blur={() => { if (!persistent && keyboardMode) highlighted = -1; }} on:click={() => onSelect(index)}>
         <span class="selection-shape" aria-hidden="true"></span>
-        <span class="word">{item.name}</span>
+        <span class="word" data-word={item.name}>{item.name}</span>
         <span class="marker" aria-hidden="true">◂</span>
       </button>
     </div>
@@ -69,4 +69,11 @@
   @media(max-width:1000px) { .expressive .word { font-size:clamp(36px,5.4vw,64px); } }
   @media(max-width:700px) { .expressive .word { font-size:clamp(35px,9vw,46px); } .expressive { gap:9px; } .expressive .choice-row:nth-child(n) { translate:0; } }
   @media(prefers-reduced-motion:reduce) { .expressive .highlighted .selection-shape { animation:none; } }
+  .expressive .choice-row:nth-child(3n+1) .word { color:var(--menu-a,var(--scene-cyan)); }
+  .expressive .choice-row:nth-child(3n+2) .word { color:var(--menu-b,var(--scene-paper)); opacity:.91; }
+  .expressive .choice-row:nth-child(3n) .word { color:var(--menu-c,var(--scene-paper)); opacity:.96; }
+  .expressive .word::before { content:attr(data-word); position:absolute; z-index:-1; inset:0; transform:translate(-5px,5px); color:var(--scene-cyan); opacity:.2; }
+  .expressive .choice-row:nth-child(even) .word::before { transform:translate(6px,3px); opacity:.14; }
+  .expressive .highlighted .word { color:white; opacity:1; }
+  .expressive .highlighted .word::before { opacity:0; }
 </style>

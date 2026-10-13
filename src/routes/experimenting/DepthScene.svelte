@@ -5,7 +5,25 @@
   import { onMount } from 'svelte';
   let scene: HTMLDivElement;
   let photo = '';
+  let sourceImage: HTMLImageElement | undefined;
   const photos = ['bench.jpg','bluemountain.jpg','Jamaica.jpg','strawsburg.jpg','coloseeum.jpg','IMG_20230730_211429627_HDR.jpg','IMG_20230725_172908282.jpg','kyoto.jpg','philly.jpg','kaiyukan.jpg','poconos.jpg','tokyo-flame.jpg','tokyo-skyline.jpg','wooded-lake.jpg','gateway-arch.jpg'];
+  const focal: Record<string,[number,number]> = {
+    'bench.jpg':[.45,.52], 'bluemountain.jpg':[.55,.38], 'Jamaica.jpg':[.52,.6], 'strawsburg.jpg':[.48,.48],
+    'coloseeum.jpg':[.36,.64], 'IMG_20230730_211429627_HDR.jpg':[.5,.55], 'IMG_20230725_172908282.jpg':[.48,.42],
+    'kyoto.jpg':[.3,.48], 'philly.jpg':[.28,.52], 'kaiyukan.jpg':[.5,.54], 'poconos.jpg':[.4,.65],
+    'tokyo-flame.jpg':[.5,.61], 'tokyo-skyline.jpg':[.52,.63], 'wooded-lake.jpg':[.58,.61], 'gateway-arch.jpg':[.51,.46]
+  };
+  function crop() {
+    if(!sourceImage) return;
+    const {width,height}=scene.getBoundingClientRect();
+    const scale=Math.max(width/sourceImage.naturalWidth,height/sourceImage.naturalHeight)*1.35;
+    const w=sourceImage.naturalWidth*scale,h=sourceImage.naturalHeight*scale;
+    const [fx,fy]=focal[visitPhoto] ?? [.5,.5];
+    const left=Math.max(width-w,Math.min(0,width*.32-fx*w));
+    const top=Math.max(height-h,Math.min(0,height*.3-fy*h));
+    scene.style.setProperty('--photo-size',w+'px '+h+'px');
+    scene.style.setProperty('--photo-position',left+'px '+top+'px');
+  }
   function palette(image: HTMLImageElement) {
     const canvas=document.createElement('canvas'); canvas.width=32; canvas.height=32;
     const ctx=canvas.getContext('2d'); if(!ctx) return;
@@ -24,6 +42,9 @@
     root?.style.setProperty('--scene-cyan',`hsl(${hue} 75% 80%)`);
     root?.style.setProperty('--scene-blue',`hsl(${hue} 62% 32%)`);
     root?.style.setProperty('--scene-ink',`hsl(${hue} 55% 10%)`);
+    root?.style.setProperty('--menu-a',`hsl(${hue} 75% 86%)`);
+    root?.style.setProperty('--menu-b',`hsl(${(hue+25)%360} 70% 82%)`);
+    root?.style.setProperty('--menu-c',`hsl(${(hue+335)%360} 65% 90%)`);
     scene.style.setProperty('--photo-shadow',`hsl(${hue} 55% 12% / .83)`);
     scene.style.setProperty('--photo-accent',`hsl(${hue} 80% 80%)`);
   }
@@ -39,15 +60,16 @@
       try { sessionStorage.setItem('pause-photo',visitPhoto); } catch {}
     }
     photo='/photosilike/'+visitPhoto;
-    const image=new Image(); image.onload=()=>palette(image); image.src=photo;
+    const image=new Image(); image.onload=()=>{ sourceImage=image; palette(image); crop(); }; image.src=photo;
     const motion=matchMedia('(prefers-reduced-motion: reduce)');
     function move(e:PointerEvent) {
       if(motion.matches || e.pointerType==='touch') return;
       scene.style.setProperty('--dx',(e.clientX/innerWidth-.5)*18+'px');
       scene.style.setProperty('--dy',(e.clientY/innerHeight-.5)*12+'px');
     }
+    const resize=new ResizeObserver(crop); resize.observe(scene);
     window.addEventListener('pointermove',move,{passive:true});
-    return()=>{ image.onload=null; window.removeEventListener('pointermove',move); };
+    return()=>{ resize.disconnect(); image.onload=null; window.removeEventListener('pointermove',move); };
   });
 </script>
 <div class="depth-scene" bind:this={scene} aria-hidden="true" data-photo={photo}>
@@ -58,7 +80,7 @@
 </div>
 <style>
   .depth-scene { background:linear-gradient(165deg,var(--scene-blue),var(--scene-ink)); --dx:0px; --dy:0px; position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
-  .architecture { position:absolute; inset:-4%; background-position:center; background-size:cover; filter:contrast(1.06) saturate(1.12); opacity:.28; mask-image:linear-gradient(115deg,transparent 5%,#000 27%,#000 55%,transparent 94%); transform:translate(var(--dx),var(--dy)) scale(1.03); transition:transform 650ms ease-out; }
+  .architecture { position:absolute; inset:-4%; background-position:var(--photo-position,center); background-size:var(--photo-size,cover); background-repeat:no-repeat; filter:contrast(1.06) saturate(1.12); opacity:.28; mask-image:linear-gradient(115deg,transparent 5%,#000 27%,#000 55%,transparent 94%); transform:translate(var(--dx),var(--dy)) scale(1.03); transition:transform 650ms ease-out; }
   .blue-depth { position:absolute; inset:0; background:linear-gradient(180deg,#26396620 0%,#14326b45 32%,#071b5599 68%,var(--photo-shadow,#030c36ee) 100%); }
   .surface { position:absolute; inset:-3% -8% auto; width:116%; height:35%; fill:var(--photo-accent,#ffdabd); filter:blur(1.4px); mix-blend-mode:screen; opacity:.22; transform:perspective(500px) rotateX(24deg); mask-image:linear-gradient(180deg,#000,transparent); }
   .surface g { animation:refraction 13s ease-in-out infinite alternate; }
