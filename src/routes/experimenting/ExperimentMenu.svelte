@@ -31,20 +31,22 @@
 </div>
 
 <style>
-  .choice-menu { display: grid; gap: 10px; }
-  .choice-row { position: relative; animation: arrive 240ms ease-out both; animation-delay: calc(var(--order) * 35ms); }
-  .choice { position: relative; isolation: isolate; border: 0; cursor: pointer; display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 12px; color: white; background: transparent; font-family: 'Arial Black', Impact, Arial, sans-serif; text-align: left; text-shadow: 3px 4px 0 #061735; }
-  .word { position: relative; font-size: clamp(25px, 3.3vw, 49px); font-weight: 900; font-style: italic; line-height: 1.05; letter-spacing: -.065em; white-space: nowrap; }
-  .selection-shape { position: absolute; z-index: -1; inset: 2px -8px 1px -13px; opacity: 0; background: #53eeff; clip-path: polygon(5% 0, 94% 0, 100% 33%, 93% 45%, 97% 94%, 8% 100%, 0 68%, 7% 54%); transform: translateX(-12px); }
-  .selection-shape::after { content: ''; position: absolute; inset: 5px 9px 5px 14px; border: 1px solid #0754fa88; clip-path: polygon(0 0, 95% 0, 100% 100%, 3% 100%); }
-  .highlighted .selection-shape { opacity: 1; transform: none; animation: lock-in 170ms ease-out; }
-  .highlighted .choice { color: #061735; text-shadow: none; }
-  .marker { margin-left: auto; font: 22px Arial, sans-serif; opacity: 0; color: #061735; }
-  .highlighted .marker { opacity: 1; }
-  .choice:focus-visible { outline: 2px solid white; outline-offset: 7px; }
-  @keyframes lock-in { from { opacity: .2; transform: translateX(-12px) skew(-4deg); } to { opacity: 1; transform: none; } }
-  @keyframes arrive { from { opacity: 0; translate: -10px 0; } to { opacity: 1; translate: 0 0; } }
-  @media (max-width: 1000px) { .word { font-size: clamp(25px, 3.5vw, 40px); } }
-  @media (max-width: 700px) { .word { font-size: clamp(24px, 6.4vw, 34px); } .choice { padding: 14px 8px; } }
-  @media (prefers-reduced-motion: reduce) { .choice-row, .highlighted .selection-shape { animation: none; } }
+  .choice-menu { display:grid; gap:7px; }
+  .choice-row { position:relative; }
+  .choice { position:relative; isolation:isolate; display:flex; align-items:center; gap:16px; width:max-content; max-width:100%; min-width:160px; min-height:64px; padding:8px 18px; border:0; background:transparent; color:var(--scene-paper,#f3fdff); text-align:left; cursor:pointer; touch-action:manipulation; }
+  .word { position:relative; text-shadow:1px 2px 0 #00154f44; font-family:var(--font-display); font-weight:900; font-style:italic; font-size:clamp(34px,5.1vw,76px); line-height:.98; letter-spacing:-.025em; white-space:normal; min-width:0; overflow-wrap:anywhere; }
+  .selection-shape { position:absolute; z-index:-1; inset:2px -16px 0 -12px; opacity:0; background:var(--scene-cyan,#42eeff); clip-path:polygon(8% 0,94% 7%,100% 24%,91% 81%,79% 84%,82% 97%,2% 100%,0 58%,7% 48%); transform:translateX(-16px) scaleX(.94); transform-origin:left; }
+  .selection-shape::after { content:''; position:absolute; bottom:8px; left:7%; right:13%; height:1px; background:#00154f44; transform:rotate(-2deg); }
+  .highlighted .selection-shape { opacity:1; transform:none; animation:engage 210ms var(--ease-menu,ease-out); }
+  .highlighted .choice { color:var(--scene-ink,#00154f); }
+  .highlighted .word { text-shadow:none; }
+  .marker { flex-shrink:0; margin-left:auto; font-family:var(--font-ui); font-size:26px; opacity:0; color:var(--scene-ink,#00154f); }
+  .highlighted .marker { opacity:1; }
+  .choice:focus-visible { outline:2px solid var(--scene-paper,#f3fdff); outline-offset:6px; }
+  .choice:active { opacity:.8; }
+  @keyframes engage { from { opacity:.3; transform:translateX(-16px) scaleX(.94); } to { opacity:1; transform:none; } }
+  @media(max-width:1000px) { .word { font-size:clamp(32px,4.8vw,58px); } }
+  @media(max-width:700px) { .word { font-size:clamp(32px,9vw,43px); } .choice { min-height:62px; padding:9px 12px; } .choice-menu { gap:6px; } }
+  @media(min-width:701px) and (max-height:720px) { .word { font-size:clamp(32px,4.2vw,60px); } .choice { min-height:56px; } .choice-menu { gap:2px; } }
+  @media(prefers-reduced-motion:reduce) { .highlighted .selection-shape { animation:none; } }
 </style>

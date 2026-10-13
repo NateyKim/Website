@@ -28,8 +28,8 @@
   .pet-roster { position: relative; z-index: 3; padding-left: 5%; }
   .portrait { position: relative; width: min(100%, 540px); height: 550px; isolation: isolate; transform: rotate(-5deg); }
   .portrait-outline { position: absolute; inset: -12px 16px 12px -14px; z-index: -1; background: #53eeff; clip-path: polygon(8% 0, 100% 3%, 94% 88%, 79% 100%, 0 95%, 0 9%); }
-  img { width: 100%; height: 100%; object-fit: cover; object-position: center 38%; filter: saturate(.45) contrast(1.1); clip-path: polygon(8% 0, 100% 3%, 94% 88%, 79% 100%, 0 95%, 0 9%); animation: portrait-in 180ms ease-out; }
-  .portrait-name { position: absolute; right: 0; bottom: 30px; color: #061735; background: white; padding: 10px 20px; font: italic 900 clamp(25px, 3vw, 44px)/1 'Arial Black', Arial, sans-serif; letter-spacing: -.05em; transform: rotate(5deg) skewX(-10deg); box-shadow: 6px 6px 0 #061735; animation: portrait-in 180ms ease-out; }
+  img { width: 100%; height: 100%; object-fit: cover; object-position: center 38%; filter: saturate(1.05) contrast(1.04); clip-path: polygon(8% 0, 100% 3%, 94% 88%, 79% 100%, 0 95%, 0 9%); animation: portrait-in 180ms ease-out; }
+  .portrait-name { position: absolute; right: 0; bottom: 30px; color: #061735; background: white; padding: 10px 20px; font: italic 900 clamp(36px, 4vw, 60px)/1 var(--font-display); letter-spacing: -.025em; transform: rotate(5deg) skewX(-10deg); box-shadow: 4px 4px 0 #00154f; animation: portrait-in 180ms ease-out; }
   @keyframes portrait-in { from { opacity: .3; translate: 12px 0; } to { opacity: 1; translate: 0 0; } }
   @media (max-width: 700px) { .pet-selection { grid-template-columns: 1fr; gap: 25px; min-height: 0; } .pet-roster { padding-left: 0; } .portrait { height: 430px; width: 90%; margin: 15px auto; } }
   @media (prefers-reduced-motion: reduce) { img, .portrait-name { animation: none; } }

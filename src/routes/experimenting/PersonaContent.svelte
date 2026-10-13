@@ -40,12 +40,12 @@
 </div>
 
 <style>
-  .persona-content { min-width: 0; color: #edf5ff; line-height: 1.65; }
+  .persona-content { min-width: 0; color: #edf5ff; line-height: 1.65; font-family: var(--font-reading); font-size: 16px; }
   .persona-content :global(.experience-page), .persona-content :global(.publications-page), .persona-content :global(.portfolio-wrapper), .persona-content :global(.other-projects-page), .persona-content :global(.personal-header), .persona-content :global(.personal-category) { max-width: none; margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; background: transparent; }
-  .persona-content :global(h1), .persona-content :global(h2), .persona-content :global(h3) { color: white; font-family: 'Arial Black', Impact, Arial, sans-serif; letter-spacing: -.035em; line-height: 1.12; }
+  .persona-content :global(h1), .persona-content :global(h2), .persona-content :global(h3) { color: white; font-family: var(--font-display); font-style: italic; font-weight: 900; letter-spacing: -.02em; line-height: 1.12; }
   .persona-content :global(h1), .persona-content :global(.portfolio-header h2) { font-size: clamp(30px, 4vw, 52px); text-transform: uppercase; }
   .persona-content :global(.project-header) { font-size: clamp(21px, 2.3vw, 30px); }
-  .persona-content :global(article), .persona-content :global(.project-row), .persona-content :global(.personal-category) { padding: 26px; border: 1px solid #53eeff55; border-left: 4px solid #53eeff; background: #041431dd; box-shadow: 6px 6px 0 #00379a88; }
+  .persona-content :global(article), .persona-content :global(.project-row), .persona-content :global(.personal-category) { padding: 26px; border: 1px solid #42eeff44; border-left: 2px solid #42eeff; background: #00154f; box-shadow: none; }
   .persona-content :global(.project-row.odd) { flex-direction: row; }
   .persona-content :global(.eyebrow), .persona-content :global(.role), .persona-content :global(.project-meta), .persona-content :global(.date-location), .persona-content :global(.status), .persona-content :global(.interest-number), .persona-content :global(.authors), .persona-content :global(.equal-note), .persona-content :global(.caption-list), .persona-content :global(figcaption), .persona-content :global(.description), .persona-content :global(.personal-header p), .persona-content :global(h3 span) { color: #bcd7ef; }
   .persona-content :global(.eyebrow) { color: #53eeff; font-family: 'Courier New', monospace; }

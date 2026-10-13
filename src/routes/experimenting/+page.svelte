@@ -1,9 +1,12 @@
 <script lang="ts">
   import { tick } from 'svelte';
+  import './pause-tokens.css';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import PersonaContent from './PersonaContent.svelte';
   import PauseGear from './PauseGear.svelte';
+  import WorkVisual from './WorkVisual.svelte';
+  import PauseBackdrop from './PauseBackdrop.svelte';
   import PetSelector from './PetSelector.svelte';
   import ReactiveSignal from './ReactiveSignal.svelte';
   let menuImpulse = 0;
@@ -143,30 +146,33 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V04 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V04 explores a biosignal-divided menu and Persona-inspired section menus." />
+  <title>Experimenting / V08 — Natey Kim</title>
+  <link rel="preload" href="/experiment/fonts/BarlowCondensed-BlackItalic.ttf" as="font" type="font/ttf" crossorigin="anonymous" />
+  <meta name="description" content="Human intent meets robotic motion. V08 pairs a flowing water-like scene with real assistive-robotics work and Persona-inspired menus." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
 <div class="experiment" class:subsection={!!section} bind:this={shell} tabindex="-1">
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="pause-brand">NATEY KIM</span><h1>V04</h1>
+    <span class="pause-brand">NATEY KIM</span><span class="version-number">V08</span>
   </header>
   {#if !section}
     <div class="pause-stage">
-      <div class="pause-cut" aria-hidden="true"></div><div class="pause-halftone" aria-hidden="true"></div>
-      <h2 class="pause-title">PAUSE</h2>
+      <PauseBackdrop rotation={gearAngle} />
+      <h1 class="pause-title">PAUSE</h1>
+      <div class="signal-divider" aria-hidden="true"><ReactiveSignal vertical divider {menuImpulse} /></div>
       <div class="hero-gear"><PauseGear rotation={gearAngle} /></div>
+      <a class="hero-work" href="/experimenting?section=research&amp;panel=projects#project-exoskeleton" aria-label="View the exoskeleton project"><WorkVisual /></a>
       <div class="pause-menu" aria-label="Pause menu"><ExperimentMenu items={mainChoices} onSelect={openMain} onActivity={updateGear} /></div>
       <div class="pause-signal" aria-hidden="true"><ReactiveSignal {menuImpulse} /></div>
     </div>
   {:else}
     <div class="section-stage">
-      <div class="section-grid" aria-hidden="true"></div>
+      <PauseBackdrop rotation={gearAngle} />
 
             {#if isLeaf || petGroup}<button class="back-level" type="button" on:click={() => navigate(sectionKey, selectedPet ? 'pets' : '')}>← {selectedPet ? 'PETS' : section.name}</button>{/if}
-      <div class="section-title"><h2 id="screen-title" tabindex="-1">{viewTitle}</h2></div>
+      <div class="section-title"><h1 id="screen-title" tabindex="-1">{viewTitle}</h1></div>
       {#if isLeaf}
         <div class="leaf-content" use:projectLinks>
 
@@ -178,7 +184,8 @@
         <div class="section-layout">
           <div class="submenu" aria-label={viewTitle + ' submenu'}><ExperimentMenu items={activeChoices} onSelect={openSubmenu} onActivity={updateGear} /></div>
           <div class="submenu-gear"><PauseGear rotation={gearAngle} /></div>
-        </div>      {/if}
+        </div>
+      {/if}
     </div>
   {/if}
 
@@ -188,50 +195,56 @@
 </div>
 
 <style>
-  .experiment { --blue: #0754fa; --cyan: #53eeff; --ink: #061735; background: var(--blue); color: white; font-family: Arial, Helvetica, sans-serif; }
-  .experiment, .experiment * { box-sizing: border-box; }
-  .experiment:focus { outline: none; }
-  .version-bar { position: relative; z-index: 10; display: flex; align-items: center; gap: 25px; min-height: 72px; padding: 18px 4%; background: #061735; }
-  .version-bar h1 { margin: 0 0 0 auto; font: 700 13px 'Courier New', monospace; color: #53eeff; }
-  .pause-brand { font: 700 10px 'Courier New', monospace; letter-spacing: 2px; margin-left: auto; }
-  .resume, .back-main { border: 0; padding: 0; color: white; background: transparent; text-decoration: none; font: 900 11px Arial, sans-serif; cursor: pointer; }
-  .back-main kbd { margin-left: 10px; }
-  .pause-stage { position: relative; isolation: isolate; min-height: calc(100svh - 126px); overflow: hidden; }
-  .pause-cut { position: absolute; z-index: -2; inset: 0; background: #003293; clip-path: polygon(0 68%, 100% 14%, 100% 100%, 0 100%); }
-  .pause-halftone { position: absolute; z-index: -1; inset: 0; background: radial-gradient(#06173555 1px, transparent 1.5px) 0 0 / 9px 9px; mask-image: linear-gradient(120deg, transparent 15%, black 85%); }
-  .pause-title { position: absolute; z-index: 2; top: 32px; left: 5%; margin: 0; font: italic 900 clamp(60px, 7.8vw, 120px)/1 'Arial Black', Impact, Arial, sans-serif; letter-spacing: -.07em; transform: rotate(-7deg); text-shadow: 6px 7px 0 #061735; }
-  .hero-gear { position: absolute; left: -8%; top: 17%; width: 62%; height: 82%; }
-  .pause-menu { position: relative; z-index: 4; width: 43%; margin-left: 54%; padding: 13vh 0 13vh; transform: rotate(-5deg); }
-  .pause-menu :global(.choice-menu) { gap: 22px; }
-  .pause-signal { position: absolute; z-index: 3; bottom: 6%; left: 6%; width: 38%; opacity: .7; }
-  .pause-signal :global(.reactive-signal) { height: 50px; }
-  .experiment-footer { position: relative; z-index: 10; min-height: 54px; display: flex; align-items: center; padding: 12px 4%; background: #061735; font: 700 9px 'Courier New', monospace; letter-spacing: 1px; color: #cbe6ff; }
-  kbd { background: white; color: #061735; padding: 3px 6px; margin-right: 6px; font: 700 9px 'Courier New', monospace; }
-  .experiment-footer kbd:not(:first-child) { margin-left: 18px; }
-  .section-stage { min-height: calc(100svh - 126px); padding: 38px 6% 65px; background: linear-gradient(115deg, #0754fa 0 66%, #003293 66% 100%); overflow: hidden; }
-  .section-title { margin: 12px 0 48px; }
-  .section-title h2 { margin: 0; font: italic 900 clamp(38px, 6vw, 84px)/1 'Arial Black', Impact, Arial, sans-serif; letter-spacing: -.06em; transform: rotate(-4deg); text-shadow: 4px 5px 0 #061735; }
-  .section-title h2:focus { outline: none; }
-  .back-level { display: inline-block; margin-bottom: 25px; padding: 0; background: transparent; color: #53eeff; border: 0; font: 700 10px 'Courier New', monospace; cursor: pointer; }
-  .section-layout { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 7%; align-items: center; }
-  .submenu { min-width: 0; }
-  .submenu-gear { height: 510px; opacity: .75; }
-  .leaf-content { max-width: 1180px; margin: 0 auto; min-width: 0; padding: 24px; background: #061735ed; border-top: 3px solid #53eeff; }
-  button:focus-visible, a:focus-visible { outline: 2px solid white; outline-offset: 5px; }
-  @media (max-width: 1000px) { .pause-menu { width: 47%; margin-left: 49%; padding: 12vh 0; } .hero-gear { left: -15%; width: 70%; } .submenu-gear { height: 420px; } }
-  @media (max-width: 700px) {
-    .version-bar { padding: 18px 7%; gap: 16px; min-height: 64px; } .pause-brand { display: none; }
-    .pause-stage { min-height: calc(100svh - 118px); }
-    .pause-title { top: 35px; left: 9%; font-size: 68px; }
-    .hero-gear { left: -250px; top: 190px; width: 600px; height: 600px; opacity: .24; }
-    .pause-menu { width: 84%; margin-left: 8%; padding: 145px 0 110px; transform: none; }
-    .pause-menu :global(.choice-menu) { gap: 17px; }
-    .pause-signal { left: 8%; width: 84%; bottom: 35px; }
-    .section-stage { padding: 30px 7% 50px; min-height: calc(100svh - 118px); }
-    .section-title { margin-bottom: 40px; } .section-title h2 { font-size: 42px; }
-    .section-layout { grid-template-columns: 1fr; gap: 20px; } .submenu-gear { height: 280px; width: 80%; margin: 20px auto; opacity: .4; }
-    .leaf-content { padding: 16px; } .back-main { font-size: 10px; }
-    .experiment-footer { padding: 14px 7%; font-size: 8px; line-height: 1.8; }
-    .experiment-footer kbd:not(:first-child) { margin-left: 9px; }
+  .experiment { background:var(--scene-ink); color:var(--scene-paper); font-family:var(--font-reading); }
+  .experiment,.experiment * { box-sizing:border-box; }
+  .experiment:focus { outline:none; }
+  .version-bar { position:relative; z-index:10; display:flex; align-items:center; gap:24px; min-height:56px; padding:4px 4%; background:var(--scene-ink); }
+  .version-number { margin-left:auto; color:var(--scene-cyan); font:600 14px var(--font-ui); letter-spacing:.05em; }
+  .pause-brand { margin-left:auto; font:600 14px var(--font-ui); letter-spacing:.12em; color:var(--scene-paper); }
+  .resume,.back-main { display:inline-flex; align-items:center; min-height:44px; gap:12px; padding:0 4px; border:0; color:var(--scene-paper); background:transparent; font:600 15px var(--font-ui); text-decoration:none; cursor:pointer; touch-action:manipulation; }
+  .pause-stage { position:relative; isolation:isolate; min-height:calc(100svh - 108px); overflow:hidden; }
+  .pause-title { position:absolute; z-index:2; top:3%; left:5%; margin:0; font:italic 900 clamp(100px,13vw,195px)/.83 var(--font-display); letter-spacing:-.045em; transform:rotate(-8deg); color:var(--scene-ink); }
+  .hero-gear { position:absolute; left:8%; top:21%; width:56%; height:75%; opacity:.8; }
+  .hero-work { position:absolute; z-index:3; left:0; top:23%; width:54%; height:72%; transform:perspective(1000px) rotateY(var(--look-x,0deg)) rotateX(var(--look-y,0deg)); transform-origin:60% 50%; transition:transform 90ms ease-out; }
+  .pause-menu { position:relative; z-index:4; width:39%; margin-left:58%; padding:15vh 0 12vh; transform:rotate(-9deg); animation:menu-enter 280ms var(--ease-menu); }
+  .pause-signal { position:absolute; z-index:3; bottom:5%; left:6%; width:36%; opacity:.75; }
+  .pause-signal :global(.reactive-signal) { height:44px; }
+  .experiment-footer { position:relative; z-index:10; min-height:52px; display:flex; align-items:center; padding:8px 4%; background:var(--scene-ink); color:var(--scene-paper); font:600 13px var(--font-ui); letter-spacing:.055em; }
+  kbd { display:inline-block; margin-right:6px; padding:2px 6px; border:1px solid #88c5ed88; background:transparent; color:var(--scene-paper); font:600 12px var(--font-ui); border-radius:2px; }
+  .experiment-footer kbd:not(:first-child) { margin-left:18px; }
+  .section-stage { position:relative; isolation:isolate; min-height:calc(100svh - 108px); padding:32px 6% 64px; overflow:hidden; background:var(--scene-blue); }
+  .section-title { margin:12px 0 40px; }
+  .section-title h1 { color:var(--scene-ink); margin:0; font:italic 900 clamp(54px,7vw,102px)/.95 var(--font-display); letter-spacing:-.03em; transform:rotate(-4deg); }
+  .section-title h1:focus { outline:none; }
+  .back-level { display:inline-flex; align-items:center; min-height:44px; margin-bottom:12px; padding:0; background:transparent; color:var(--scene-ink); border:0; font:600 14px var(--font-ui); cursor:pointer; }
+  .section-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:7%; align-items:center; }
+  .submenu { min-width:0; }
+  .submenu-gear { height:500px; }
+  .leaf-content { max-width:1180px; margin:0 auto; min-width:0; padding:32px; background:var(--scene-ink); border-top:2px solid var(--scene-cyan); }
+  button:focus-visible,a:focus-visible { outline:2px solid var(--scene-paper); outline-offset:5px; }
+  @keyframes menu-enter { from { opacity:0; translate:20px 0; } to { opacity:1; translate:0 0; } }
+  @media(max-width:1000px) { .pause-menu { width:45%; margin-left:52%; padding-top:14vh; } .hero-gear { left:2%; width:62%; } .submenu-gear { height:400px; } }
+  @media(max-width:700px) {
+    .version-bar { padding:4px 7%; gap:16px; } .pause-brand { display:none; }
+    .pause-stage { min-height:calc(100svh - 108px); }
+    .pause-title { top:32px; left:8%; font-size:105px; }
+    .hero-gear { left:-240px; top:210px; width:620px; height:620px; opacity:.16; }
+    .hero-work { left:-150px; top:310px; width:580px; height:400px; opacity:.3; }
+    .pause-menu { width:84%; margin-left:8%; padding:135px 0 105px; transform:none; }
+    .pause-signal { left:8%; width:84%; bottom:26px; }
+    .section-stage { padding:24px 7% 48px; }
+    .section-title { margin-bottom:30px; } .section-title h1 { font-size:62px; }
+    .section-layout { grid-template-columns:1fr; gap:16px; } .submenu-gear { height:280px; width:85%; margin:20px auto; opacity:.65; }
+    .leaf-content { padding:20px; } .experiment-footer { padding:10px 7%; font-size:12px; line-height:1.6; }
+    .experiment-footer kbd:not(:first-child) { margin-left:10px; }
   }
+  @media(min-width:701px) and (max-height:720px) { .pause-menu { padding:8vh 0 5vh; } .pause-title { font-size:clamp(85px,15vh,130px); } .hero-gear { top:10%; height:88%; } }
+  @media(prefers-reduced-motion:reduce) { .pause-menu { animation:none; } }
+  .pause-menu :global(.choice-row:first-child:not(.highlighted) .choice) { color:var(--scene-ink); }
+  @media(max-width:700px) { .pause-menu :global(.choice-row:first-child:not(.highlighted) .choice) { color:var(--scene-paper); } }
+  .hero-work:hover :global(img), .hero-work:focus-visible :global(img) { filter:contrast(1.17) saturate(1.12) drop-shadow(5px 8px 0 #42eeff88); }
+  .hero-work:focus-visible { outline:2px solid var(--scene-paper); outline-offset:-16px; }
+  @media(prefers-reduced-motion:reduce) { .hero-work { transform:none; transition:none; } }
+  .signal-divider { position:absolute; z-index:4; left:49%; top:0; width:9%; height:100%; pointer-events:none; }
+  @media(max-width:700px) { .signal-divider { left:91%; top:5%; width:8%; height:92%; opacity:.65; } }
 </style>

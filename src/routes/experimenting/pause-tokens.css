@@ -1,0 +1,24 @@
+@font-face {
+  font-family: 'Pause Display';
+  src: url('/experiment/fonts/BarlowCondensed-BlackItalic.ttf') format('truetype');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Pause UI';
+  src: url('/experiment/fonts/BarlowCondensed-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+.experiment {
+  --scene-blue: #1745ff;
+  --scene-cyan: #42eeff;
+  --scene-ink: #00154f;
+  --scene-paper: #f3fdff;
+  --font-display: 'Pause Display', 'Arial Narrow', Arial, sans-serif;
+  --font-ui: 'Pause UI', 'Arial Narrow', Arial, sans-serif;
+  --font-reading: 'Segoe UI', Arial, sans-serif;
+  --ease-menu: cubic-bezier(.17,.86,.23,1);
+}

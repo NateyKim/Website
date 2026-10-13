@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   export let menuImpulse = 0;
   export let vertical = false;
+  export let divider = false;
   let path = '';
   let strength = 0;
   let reduced = false;
@@ -11,14 +12,15 @@
     path = samples.map((value, i) => {
       if (vertical) {
         const y = i / (samples.length - 1) * 1000;
-        return (i ? 'L' : 'M') + (108 - y * .096 + value * 48).toFixed(2) + ',' + y.toFixed(2);
+        return (i ? 'L' : 'M') + (62 - y * .012 + value * 48).toFixed(2) + ',' + y.toFixed(2);
       }
       return (i ? 'L' : 'M') + (i / (samples.length - 1) * 720).toFixed(2) + ',' + (60 + value * 50).toFixed(2);
     }).join(' ');
   }
   draw();
   onMount(() => {
-    reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    reduced = motion.matches;
     let frame = 0, previous = performance.now(), lastDraw = 0, seen = menuImpulse;
     let lastX = 0, lastY = 0, lastMove = 0, mouseEnergy = 0, menuEnergy = 0;
     function movement(event: PointerEvent) {
@@ -39,15 +41,23 @@
         samples.unshift(carrier * strength * (reduced ? .2 : 1)); samples.pop();
         draw();
       }
-      frame = requestAnimationFrame(animate);
+      if (!reduced) frame = requestAnimationFrame(animate);
     }
     window.addEventListener('pointermove', movement, { passive: true });
-    frame = requestAnimationFrame(animate);
-    return () => { cancelAnimationFrame(frame); window.removeEventListener('pointermove', movement); };
+    function changeMotion() {
+      reduced = motion.matches;
+      cancelAnimationFrame(frame);
+      if (reduced) { samples.fill(0); strength = 0; draw(); }
+      else { previous = performance.now(); frame = requestAnimationFrame(animate); }
+    }
+    motion.addEventListener('change', changeMotion);
+    if (!reduced) frame = requestAnimationFrame(animate);
+    return () => { cancelAnimationFrame(frame); motion.removeEventListener('change', changeMotion); window.removeEventListener('pointermove', movement); };
   });
 </script>
 
 <svg class="reactive-signal" class:vertical viewBox={vertical ? '0 0 120 1000' : '0 0 720 120'} preserveAspectRatio="none" aria-hidden="true" data-strength={strength.toFixed(3)}>
+  {#if divider}<path class="signal-outline" d={path} />{/if}
   <path class="signal-halo" d={path} style:opacity={.2 + strength * .6} />
   <path class="signal-core" d={path} />
 </svg>
@@ -58,4 +68,5 @@
   .signal-halo { stroke: #53eeff; stroke-width: 8; filter: blur(2px); }
   .signal-core { stroke: #edffff; stroke-width: 2; }
   .reactive-signal:not(.vertical) .signal-core { stroke: #53eeff; stroke-width: 1.5; }
+  .signal-outline { stroke:#00154f; stroke-width:6; opacity:.55; }
 </style>
