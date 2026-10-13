@@ -13,11 +13,11 @@
   font-display: swap;
 }
 .experiment {
-  --scene-blue: #1745ff;
-  --scene-cyan: #42eeff;
-  --scene-ink: #00154f;
+  --scene-blue: #123c69;
+  --scene-cyan: #73e1e8;
+  --scene-ink: #071828;
   --scene-paper: #f3fdff;
-  --font-display: 'Pause Display', 'Arial Narrow', Arial, sans-serif;
+  --font-display: 'Pause UI', 'Arial Narrow', Arial, sans-serif;
   --font-ui: 'Pause UI', 'Arial Narrow', Arial, sans-serif;
   --font-reading: 'Segoe UI', Arial, sans-serif;
   --ease-menu: cubic-bezier(.17,.86,.23,1);

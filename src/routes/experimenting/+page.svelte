@@ -4,8 +4,7 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import PersonaContent from './PersonaContent.svelte';
-  import PauseGear from './PauseGear.svelte';
-  import WorkVisual from './WorkVisual.svelte';
+  import TechnicalField from './TechnicalField.svelte';
   import PauseBackdrop from './PauseBackdrop.svelte';
   import PetSelector from './PetSelector.svelte';
   import ReactiveSignal from './ReactiveSignal.svelte';
@@ -146,24 +145,22 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V08 — Natey Kim</title>
-  <link rel="preload" href="/experiment/fonts/BarlowCondensed-BlackItalic.ttf" as="font" type="font/ttf" crossorigin="anonymous" />
-  <meta name="description" content="Human intent meets robotic motion. V08 pairs a flowing water-like scene with real assistive-robotics work and Persona-inspired menus." />
+  <title>Experimenting / V09 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V09 explores human signals and robotic motion through a technical pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
 <div class="experiment" class:subsection={!!section} bind:this={shell} tabindex="-1">
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="pause-brand">NATEY KIM</span><span class="version-number">V08</span>
+    <span class="pause-brand">NATEY KIM</span><span class="version-number">V09</span>
   </header>
   {#if !section}
     <div class="pause-stage">
       <PauseBackdrop rotation={gearAngle} />
       <h1 class="pause-title">PAUSE</h1>
       <div class="signal-divider" aria-hidden="true"><ReactiveSignal vertical divider {menuImpulse} /></div>
-      <div class="hero-gear"><PauseGear rotation={gearAngle} /></div>
-      <a class="hero-work" href="/experimenting?section=research&amp;panel=projects#project-exoskeleton" aria-label="View the exoskeleton project"><WorkVisual /></a>
+      <div class="hero-gear"><TechnicalField selection={gearSelection} /></div>
       <div class="pause-menu" aria-label="Pause menu"><ExperimentMenu items={mainChoices} onSelect={openMain} onActivity={updateGear} /></div>
       <div class="pause-signal" aria-hidden="true"><ReactiveSignal {menuImpulse} /></div>
     </div>
@@ -183,7 +180,7 @@
       {:else}
         <div class="section-layout">
           <div class="submenu" aria-label={viewTitle + ' submenu'}><ExperimentMenu items={activeChoices} onSelect={openSubmenu} onActivity={updateGear} /></div>
-          <div class="submenu-gear"><PauseGear rotation={gearAngle} /></div>
+          <div class="submenu-gear"><TechnicalField selection={gearSelection} /></div>
         </div>
       {/if}
     </div>
@@ -203,10 +200,9 @@
   .pause-brand { margin-left:auto; font:600 14px var(--font-ui); letter-spacing:.12em; color:var(--scene-paper); }
   .resume,.back-main { display:inline-flex; align-items:center; min-height:44px; gap:12px; padding:0 4px; border:0; color:var(--scene-paper); background:transparent; font:600 15px var(--font-ui); text-decoration:none; cursor:pointer; touch-action:manipulation; }
   .pause-stage { position:relative; isolation:isolate; min-height:calc(100svh - 108px); overflow:hidden; }
-  .pause-title { position:absolute; z-index:2; top:3%; left:5%; margin:0; font:italic 900 clamp(100px,13vw,195px)/.83 var(--font-display); letter-spacing:-.045em; transform:rotate(-8deg); color:var(--scene-ink); }
-  .hero-gear { position:absolute; left:8%; top:21%; width:56%; height:75%; opacity:.8; }
-  .hero-work { position:absolute; z-index:3; left:0; top:23%; width:54%; height:72%; transform:perspective(1000px) rotateY(var(--look-x,0deg)) rotateX(var(--look-y,0deg)); transform-origin:60% 50%; transition:transform 90ms ease-out; }
-  .pause-menu { position:relative; z-index:4; width:39%; margin-left:58%; padding:15vh 0 12vh; transform:rotate(-9deg); animation:menu-enter 280ms var(--ease-menu); }
+  .pause-title { position:absolute; z-index:2; top:3%; left:5%; margin:0; font:600 clamp(60px,8vw,115px)/.95 var(--font-display); letter-spacing:-.045em; color:var(--scene-paper); }
+  .hero-gear { position:absolute; left:4%; top:27%; width:43%; height:58%; opacity:.9; }
+  .pause-menu { position:relative; z-index:4; width:39%; margin-left:58%; padding:15vh 0 12vh; animation:menu-enter 280ms var(--ease-menu); }
   .pause-signal { position:absolute; z-index:3; bottom:5%; left:6%; width:36%; opacity:.75; }
   .pause-signal :global(.reactive-signal) { height:44px; }
   .experiment-footer { position:relative; z-index:10; min-height:52px; display:flex; align-items:center; padding:8px 4%; background:var(--scene-ink); color:var(--scene-paper); font:600 13px var(--font-ui); letter-spacing:.055em; }
@@ -214,9 +210,9 @@
   .experiment-footer kbd:not(:first-child) { margin-left:18px; }
   .section-stage { position:relative; isolation:isolate; min-height:calc(100svh - 108px); padding:32px 6% 64px; overflow:hidden; background:var(--scene-blue); }
   .section-title { margin:12px 0 40px; }
-  .section-title h1 { color:var(--scene-ink); margin:0; font:italic 900 clamp(54px,7vw,102px)/.95 var(--font-display); letter-spacing:-.03em; transform:rotate(-4deg); }
+  .section-title h1 { color:var(--scene-paper); margin:0; font:600 clamp(42px,6vw,82px)/.95 var(--font-display); letter-spacing:-.03em;  }
   .section-title h1:focus { outline:none; }
-  .back-level { display:inline-flex; align-items:center; min-height:44px; margin-bottom:12px; padding:0; background:transparent; color:var(--scene-ink); border:0; font:600 14px var(--font-ui); cursor:pointer; }
+  .back-level { display:inline-flex; align-items:center; min-height:44px; margin-bottom:12px; padding:0; background:transparent; color:var(--scene-paper); border:0; font:600 14px var(--font-ui); cursor:pointer; }
   .section-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:7%; align-items:center; }
   .submenu { min-width:0; }
   .submenu-gear { height:500px; }
@@ -227,9 +223,8 @@
   @media(max-width:700px) {
     .version-bar { padding:4px 7%; gap:16px; } .pause-brand { display:none; }
     .pause-stage { min-height:calc(100svh - 108px); }
-    .pause-title { top:32px; left:8%; font-size:105px; }
-    .hero-gear { left:-240px; top:210px; width:620px; height:620px; opacity:.16; }
-    .hero-work { left:-150px; top:310px; width:580px; height:400px; opacity:.3; }
+    .pause-title { top:32px; left:8%; font-size:72px; }
+    .hero-gear { left:-70px; top:230px; width:450px; height:450px; opacity:.12; }
     .pause-menu { width:84%; margin-left:8%; padding:135px 0 105px; transform:none; }
     .pause-signal { left:8%; width:84%; bottom:26px; }
     .section-stage { padding:24px 7% 48px; }
@@ -240,11 +235,8 @@
   }
   @media(min-width:701px) and (max-height:720px) { .pause-menu { padding:8vh 0 5vh; } .pause-title { font-size:clamp(85px,15vh,130px); } .hero-gear { top:10%; height:88%; } }
   @media(prefers-reduced-motion:reduce) { .pause-menu { animation:none; } }
-  .pause-menu :global(.choice-row:first-child:not(.highlighted) .choice) { color:var(--scene-ink); }
+  .pause-menu :global(.choice-row:first-child:not(.highlighted) .choice) { color:var(--scene-paper); }
   @media(max-width:700px) { .pause-menu :global(.choice-row:first-child:not(.highlighted) .choice) { color:var(--scene-paper); } }
-  .hero-work:hover :global(img), .hero-work:focus-visible :global(img) { filter:contrast(1.17) saturate(1.12) drop-shadow(5px 8px 0 #42eeff88); }
-  .hero-work:focus-visible { outline:2px solid var(--scene-paper); outline-offset:-16px; }
-  @media(prefers-reduced-motion:reduce) { .hero-work { transform:none; transition:none; } }
   .signal-divider { position:absolute; z-index:4; left:49%; top:0; width:9%; height:100%; pointer-events:none; }
   @media(max-width:700px) { .signal-divider { left:91%; top:5%; width:8%; height:92%; opacity:.65; } }
 </style>
