@@ -4,13 +4,15 @@
 </script>
 <div class="pause-gear" data-angle={rotation} aria-hidden="true">
   <svg viewBox="-340 -340 680 680" fill="none">
-    <g class="indexing-gear" style:transform={'rotate('+rotation+'deg)'}>
+    <g class="record-spin"><g class="indexing-gear" style:transform={'rotate('+rotation+'deg)'}>
       <polygon points={teeth} fill="currentColor"/>
-      <circle r="191" fill="var(--scene-blue)"/>
-      {#each [0,120,240] as angle}<path transform={'rotate('+angle+')'} d="M-22-205L-42-85H42L22-205Z" fill="currentColor"/>{/each}
+      <circle r="236" fill="#002461"/>
+      {#each Array(13) as _,i}<circle r={95+i*10} stroke="#70ddff" stroke-width="1" opacity=".4"/>{/each}
+
       <circle r="76" fill="currentColor"/><circle r="40" fill="var(--scene-blue)"/>
       <path d="M0-302V-274" stroke="var(--scene-cyan)" stroke-width="12"/>
-    </g>
+    </g></g>
+    <g class="tonearm"><circle cx="260" cy="-260" r="25" fill="#001347" stroke="#f3fdff" stroke-width="6"/><path d="M260-260L190-105L130-70" stroke="#001347" stroke-width="24"/><path d="M260-260L190-105L130-70" stroke="#f3fdff" stroke-width="12"/><path d="M114-84L146-65L129-34L99-54Z" fill="#f3fdff" stroke="#001347" stroke-width="4"/></g>
     <path d="M-303-118A325 325 0 0 1 303-118M303 118A325 325 0 0 1-303 118" stroke="currentColor" stroke-width="2"/>
   </svg>
 </div>
@@ -18,5 +20,7 @@
   .pause-gear { width:100%; height:100%; color:var(--scene-ink); }
   svg { display:block; width:100%; height:100%; overflow:visible; }
   .indexing-gear { transform-origin:0 0; transition:transform 250ms cubic-bezier(.17,.86,.23,1); }
-  @media(prefers-reduced-motion:reduce) { .indexing-gear { transition:none; } }
+  .record-spin { transform-origin:0 0; animation:record-spin 100s linear infinite; }
+  @keyframes record-spin { to { transform:rotate(360deg); } }
+  @media(prefers-reduced-motion:reduce) { .indexing-gear { transition:none; } .record-spin { animation:none; } }
 </style>

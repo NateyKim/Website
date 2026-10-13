@@ -5,6 +5,7 @@
   import { page } from '$app/stores';
   import PersonaContent from './PersonaContent.svelte';
   import PauseGear from './PauseGear.svelte';
+  import WorkFolders from './WorkFolders.svelte';
   import PauseBackdrop from './PauseBackdrop.svelte';
   import PetSelector from './PetSelector.svelte';
   import ReactiveSignal from './ReactiveSignal.svelte';
@@ -145,15 +146,15 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V12 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V12 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V13 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V13 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
 <div class="experiment" class:subsection={!!section} bind:this={shell} tabindex="-1">
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="version-number">V12</span>
+    <span class="version-number">V13</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main">
@@ -175,6 +176,8 @@
         </div>
       {:else if petGroup}
         <PetSelector items={activeChoices} onSelect={openSubmenu} onActivity={updateGear} />
+      {:else if sectionKey === 'work'}
+        <WorkFolders items={activeChoices} onSelect={openSubmenu} onActivity={updateGear} />
       {:else}
         <div class="section-layout">
           <div class="submenu" aria-label={viewTitle + ' submenu'}><ExperimentMenu items={activeChoices} onSelect={openSubmenu} onActivity={updateGear} /></div>
@@ -228,13 +231,13 @@
   .robot-plane { background:linear-gradient(150deg,#119dff,#0754fa 55%,#001347); }
   .human-plane { background:#8cf3ff; clip-path:polygon(57% 0,100% 0,100% 100%,48% 100%); }
   .main-robot-menu { position:relative; z-index:5; width:47%; padding:15vh 0 14vh; margin-left:7%; transform:perspective(1100px) rotateY(9deg) rotateZ(-6deg); transform-origin:left center; }
-  .gear-cutout { position:absolute; top:12%; right:-9%; width:57%; height:78%; transform:rotate(-13deg) rotateY(-19deg); transform-style:preserve-3d; }
-  .gear-cutout::before { content:''; position:absolute; inset:0; background:#001347; clip-path:polygon(8% 4%,89% 0,100% 27%,92% 89%,67% 100%,0 79%); transform:translate(16px,18px); }
-  .cutout-shard { position:absolute; inset:0; background:#f1ffff; clip-path:polygon(8% 4%,89% 0,100% 27%,92% 89%,67% 100%,0 79%); }
-  .cutout-shard::after { content:''; position:absolute; inset:4%; background:#57ddff; clip-path:polygon(8% 4%,89% 0,100% 27%,92% 89%,67% 100%,0 79%); }
+  .gear-cutout { position:absolute; top:8%; right:-6%; width:57%; height:85%; transform:perspective(1000px) rotateX(38deg) rotateZ(-18deg) rotateY(-12deg); transform-style:preserve-3d; }
+  .gear-cutout::before { content:''; position:absolute; inset:0; background:#001347; clip-path:polygon(4% 12%,72% 0,69% 8%,94% 4%,100% 29%,93% 33%,100% 71%,82% 100%,56% 91%,51% 100%,0 79%,7% 49%,0 43%); transform:translate(16px,18px); }
+  .cutout-shard { position:absolute; inset:0; background:#f1ffff; clip-path:polygon(4% 12%,72% 0,69% 8%,94% 4%,100% 29%,93% 33%,100% 71%,82% 100%,56% 91%,51% 100%,0 79%,7% 49%,0 43%); }
+  .cutout-shard::after { content:''; position:absolute; inset:4%; background:#57ddff; clip-path:polygon(4% 12%,72% 0,69% 8%,94% 4%,100% 29%,93% 33%,100% 71%,82% 100%,56% 91%,51% 100%,0 79%,7% 49%,0 43%); }
   .main-gear { position:absolute; inset:9%; }
   .signal-divider { left:46%; width:12%; }
-  .work-folder { position:relative; background:#1656ad; border:0; padding:32px 24px 24px; margin-top:55px; box-shadow:12px 14px 0 #001347; transform:rotate(-1deg); }
+  .work-folder { position:relative; background:#1656ad; border:0; padding:32px 24px 24px; margin-top:55px; box-shadow:12px 14px 0 #001347; transform:perspective(1400px) rotateY(-3deg) rotateZ(-2deg); }
   .work-folder::before { content:''; position:absolute; left:0; top:-28px; width:36%; height:30px; background:#1656ad; clip-path:polygon(0 0,88% 0,100% 100%,0 100%); }
   @media(max-width:1000px) { .main-robot-menu { width:53%; margin-left:5%; } .gear-cutout { right:-18%; width:62%; } }
   @media(max-width:700px) {
