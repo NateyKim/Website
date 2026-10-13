@@ -4,7 +4,7 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import PersonaContent from './PersonaContent.svelte';
-  import TechnicalField from './TechnicalField.svelte';
+  import PauseGear from './PauseGear.svelte';
   import PauseBackdrop from './PauseBackdrop.svelte';
   import PetSelector from './PetSelector.svelte';
   import ReactiveSignal from './ReactiveSignal.svelte';
@@ -145,24 +145,29 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V10 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V10 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V11 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V11 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
 <div class="experiment" class:subsection={!!section} bind:this={shell} tabindex="-1">
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="pause-brand">NATEY KIM</span><span class="version-number">V10</span>
+    <span class="pause-brand">NATEY KIM</span><span class="version-number">V11</span>
   </header>
   {#if !section}
-    <div class="pause-stage">
-      <PauseBackdrop rotation={gearAngle} />
-      <h1 class="pause-title">PAUSE</h1>
+    <div class="pause-stage split-main">
+      <div class="robot-plane" aria-hidden="true"></div><div class="human-plane" aria-hidden="true"></div>
       <div class="signal-divider" aria-hidden="true"><ReactiveSignal vertical divider {menuImpulse} /></div>
-      <div class="hero-gear"><TechnicalField selection={gearSelection} /></div>
-      <div class="pause-menu" aria-label="Pause menu"><ExperimentMenu items={mainChoices} onSelect={openMain} onActivity={updateGear} /></div>
-      <div class="pause-signal" aria-hidden="true"><ReactiveSignal {menuImpulse} /></div>
+      <section class="robot-half" aria-label="Robot side">
+        <h1 class="side-title">ROBOT<span>.</span></h1>
+        <div class="main-robot-menu"><ExperimentMenu items={robotChoices} onSelect={openMain} onActivity={updateGear} /></div>
+      </section>
+      <section class="human-half" aria-label="Human side">
+        <h2 class="side-title">HUMAN<span>.</span></h2>
+        <div class="main-gear"><PauseGear rotation={gearAngle} /></div>
+        <div class="main-human-menu"><ExperimentMenu items={humanChoices} onSelect={(index) => openMain(index + robotChoices.length)} onActivity={(index) => updateGear(index + robotChoices.length)} /></div>
+      </section>
     </div>
   {:else}
     <div class="section-stage">
@@ -180,7 +185,7 @@
       {:else}
         <div class="section-layout">
           <div class="submenu" aria-label={viewTitle + ' submenu'}><ExperimentMenu items={activeChoices} onSelect={openSubmenu} onActivity={updateGear} /></div>
-          <div class="submenu-gear"><TechnicalField selection={gearSelection} /></div>
+          <div class="submenu-gear"><PauseGear rotation={gearAngle} /></div>
         </div>
       {/if}
     </div>
@@ -200,11 +205,6 @@
   .pause-brand { margin-left:auto; font:600 14px var(--font-ui); letter-spacing:.12em; color:var(--scene-paper); }
   .resume,.back-main { display:inline-flex; align-items:center; min-height:44px; gap:12px; padding:0 4px; border:0; color:var(--scene-paper); background:transparent; font:600 15px var(--font-ui); text-decoration:none; cursor:pointer; touch-action:manipulation; }
   .pause-stage { position:relative; isolation:isolate; min-height:calc(100svh - 108px); overflow:hidden; }
-  .pause-title { position:absolute; z-index:2; top:3%; left:5%; margin:0; font:italic 900 clamp(100px,13vw,190px)/.85 var(--font-display); letter-spacing:-.045em; color:var(--scene-ink); transform:rotate(-9deg); }
-  .hero-gear { position:absolute; left:1%; top:30%; width:43%; height:58%; opacity:.9; }
-  .pause-menu { position:relative; z-index:4; width:39%; margin-left:58%; padding:15vh 0 12vh; transform:rotate(-7deg); animation:menu-enter 280ms var(--ease-menu); }
-  .pause-signal { position:absolute; z-index:3; bottom:5%; left:6%; width:36%; opacity:.75; }
-  .pause-signal :global(.reactive-signal) { height:44px; }
   .experiment-footer { position:relative; z-index:10; min-height:52px; display:flex; align-items:center; padding:8px 4%; background:var(--scene-ink); color:var(--scene-paper); font:600 13px var(--font-ui); letter-spacing:.055em; }
   kbd { display:inline-block; margin-right:6px; padding:2px 6px; border:1px solid #88c5ed88; background:transparent; color:var(--scene-paper); font:600 12px var(--font-ui); border-radius:2px; }
   .experiment-footer kbd:not(:first-child) { margin-left:18px; }
@@ -219,24 +219,42 @@
   .leaf-content { max-width:1180px; margin:0 auto; min-width:0; padding:32px; background:var(--scene-ink); border-top:2px solid var(--scene-cyan); }
   button:focus-visible,a:focus-visible { outline:2px solid var(--scene-paper); outline-offset:5px; }
   @keyframes menu-enter { from { opacity:0; translate:20px 0; } to { opacity:1; translate:0 0; } }
-  @media(max-width:1000px) { .pause-menu { width:45%; margin-left:52%; padding-top:14vh; } .hero-gear { left:2%; width:62%; } .submenu-gear { height:400px; } }
   @media(max-width:700px) {
     .version-bar { padding:4px 7%; gap:16px; } .pause-brand { display:none; }
     .pause-stage { min-height:calc(100svh - 108px); }
-    .pause-title { top:32px; left:8%; font-size:100px; }
-    .hero-gear { left:-70px; top:230px; width:450px; height:450px; opacity:.12; }
-    .pause-menu { width:84%; margin-left:8%; padding:135px 0 105px; transform:none; }
-    .pause-signal { left:8%; width:84%; bottom:26px; }
     .section-stage { padding:24px 7% 48px; }
     .section-title { margin-bottom:30px; } .section-title h1 { font-size:62px; }
     .section-layout { grid-template-columns:1fr; gap:16px; } .submenu-gear { height:280px; width:85%; margin:20px auto; opacity:.65; }
     .leaf-content { padding:20px; } .experiment-footer { padding:10px 7%; font-size:12px; line-height:1.6; }
     .experiment-footer kbd:not(:first-child) { margin-left:10px; }
   }
-  @media(min-width:701px) and (max-height:720px) { .pause-menu { padding:8vh 0 5vh; } .pause-title { font-size:clamp(85px,15vh,130px); } .hero-gear { top:10%; height:88%; } }
-  @media(prefers-reduced-motion:reduce) { .pause-menu { animation:none; } }
-  .pause-menu :global(.choice-row:first-child:not(.highlighted) .choice) { color:var(--scene-paper); }
-  @media(max-width:700px) { .pause-menu :global(.choice-row:first-child:not(.highlighted) .choice) { color:var(--scene-paper); } }
   .signal-divider { position:absolute; z-index:4; left:49%; top:0; width:9%; height:100%; pointer-events:none; }
   @media(max-width:700px) { .signal-divider { left:91%; top:5%; width:8%; height:92%; opacity:.65; } }
+
+  .split-main { display:grid; grid-template-columns:1fr 1fr; background:#0754fa; }
+  .robot-plane,.human-plane { position:absolute; inset:0; z-index:-1; }
+  .robot-plane { background:linear-gradient(155deg,#0876ff,#0745dc 65%,#002277); }
+  .human-plane { background:#8cf3ff; clip-path:polygon(56% 0,100% 0,100% 100%,46% 100%); }
+  .robot-half,.human-half { position:relative; min-width:0; padding:50px 11% 70px; }
+  .human-half { padding-left:15%; }
+  .side-title { margin:0 0 55px; font:italic 900 clamp(68px,8vw,120px)/.95 var(--font-display); letter-spacing:-.045em; transform:rotate(-5deg); }
+  .side-title span { color:var(--scene-cyan); }
+  .human-half .side-title { color:var(--scene-ink); }
+  .human-half .side-title span { color:var(--scene-blue); }
+  .main-gear { position:absolute; width:95%; height:75%; right:-13%; top:35%; opacity:.9; pointer-events:none; }
+  .main-human-menu { position:relative; z-index:3; margin-top:0; }
+  .main-human-menu :global(.choice) { color:var(--scene-ink); }
+  .main-human-menu :global(.selection-shape) { background:#fff; }
+  .main-robot-menu { position:relative; z-index:3; }
+  .signal-divider { left:46%; width:12%; }
+  @media(max-width:1000px) { .side-title { font-size:80px; } .robot-half { padding-left:8%; padding-right:7%; } .human-half { padding-left:12%; padding-right:8%; } }
+  @media(max-width:700px) {
+    .split-main { grid-template-columns:1fr; } .human-plane { display:none; }
+    .robot-half,.human-half { padding:36px 8% 45px; } .human-half { background:#8cf3ff; min-height:420px; }
+    .side-title { font-size:80px; margin-bottom:28px; }
+    .main-gear { width:340px; height:340px; right:-95px; top:120px; opacity:.25; }
+    .main-human-menu { margin-top:0; }
+    .signal-divider { left:91%; top:0; width:8%; height:58%; }
+  }
 </style>
+
