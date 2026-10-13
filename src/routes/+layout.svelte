@@ -8,8 +8,10 @@
   import ProjectsPage from './projects/+page.svelte';
   import AboutMePage from './about-me/+page.svelte';
   import CVPage from './cv/+page.svelte';
+  import ExperimentingPage from './experimenting/+page.svelte';
 
   let activeSection = 'home';
+  $: if (['/about-me', '/experimenting'].includes($page.url.pathname)) activeSection = $page.url.pathname.slice(1);
 
   const sections = [
     { label: 'Home', id: 'home' },
@@ -20,7 +22,8 @@
     { label: 'Work Projects', id: 'work-projects' },
     { label: 'Other Projects', id: 'other-projects' },
     { label: 'CV', id: 'cv' },
-    { label: 'Beyond the Work', id: 'about-me' }
+    { label: 'Beyond the Work', id: 'about-me' },
+    { label: 'Experimenting', id: 'experimenting' }
   ];
 
   function isActive(sectionIds: string[]) {
@@ -28,7 +31,7 @@
   }
 
   async function scrollToSection(sectionId: string) {
-    if ($page.url.pathname === '/about-me') {
+    if (['/about-me', '/experimenting'].includes($page.url.pathname)) {
       window.location.href = `/home#${sectionId}`;
       return;
     }
@@ -46,8 +49,8 @@
   }
 
   function updateActiveSection() {
-    if ($page.url.pathname === '/about-me') {
-      activeSection = 'about-me';
+    if (['/about-me', '/experimenting'].includes($page.url.pathname)) {
+      activeSection = $page.url.pathname.slice(1);
       return;
     }
 
@@ -135,6 +138,8 @@
     Beyond the Work
   </a>
 
+  <a class="nav-link" class:active={$page.url.pathname === '/experimenting'} href="/experimenting">Experimenting</a>
+
   <a
     class="nav-link linkedin-nav"
     href="https://www.linkedin.com/in/nateykim"
@@ -154,6 +159,8 @@
     <section id="about-me">
       <AboutMePage />
     </section>
+  {:else if $page.url.pathname === '/experimenting'}
+    <section id="experimenting"><ExperimentingPage /></section>
   {:else}
     <section id="home" class="mobile-subject" class:mobile-active={activeSection === 'home'}>
       <HomePage />
