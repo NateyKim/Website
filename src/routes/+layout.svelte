@@ -86,6 +86,7 @@
   });
 </script>
 
+{#if !($page.url.pathname === '/experimenting' && ['research', 'work', 'other', 'cv', 'beyond'].includes($page.url.searchParams.get('section') ?? ''))}
 <nav>
   <button class="nav-link" class:active={activeSection === 'home'} on:click={() => scrollToSection('home')}>
     Home
@@ -153,8 +154,9 @@
     </svg>
   </a>
 </nav>
+{/if}
 
-<main>
+<main class:experiment-section={$page.url.pathname === '/experimenting' && ['research', 'work', 'other', 'cv', 'beyond'].includes($page.url.searchParams.get('section') ?? '')}>
   {#if $page.url.pathname === '/about-me'}
     <section id="about-me">
       <AboutMePage />
@@ -446,4 +448,5 @@
       display: none;
     }
   }
+  main.experiment-section { margin-top: 0; }
 </style>

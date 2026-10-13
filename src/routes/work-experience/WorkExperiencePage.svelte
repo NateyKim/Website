@@ -1,5 +1,6 @@
 <script lang="ts">
   export let kind: 'research' | 'work' = 'work';
+  export let organization = '';
 
   const allExperiences = [
     {
@@ -39,7 +40,7 @@
     }
   ];
 
-  $: experiences = allExperiences.filter((experience) => experience.kind === kind);
+  $: experiences = allExperiences.filter((experience) => experience.kind === kind && (!organization || experience.organization.includes(organization)));
 </script>
 
 <div class="experience-page">

@@ -3,6 +3,7 @@
   import OtherProjectsPage from '../other-projects/OtherProjectsPage.svelte';
 
   export let mode: 'research' | 'work' | 'other' = 'other';
+  export let focusTitle = '';
 
   // Load all images from /static/ADAPT folder once
   const adaptImages = Object.keys(import.meta.glob('/static/ADAPT/*.{jpg,jpeg,png}', { eager: true }))
@@ -184,7 +185,7 @@ Created front-end GUI to monitor the spread of airborne diseases in monitored sp
       : mode === 'work'
         ? workProjectTitles
         : otherProjectTitles
-    ).has(project.title)
+    ).has(project.title) && (!focusTitle || project.title === focusTitle)
   );
 
   $: sectionTitle = mode === 'research' ? 'Research Projects' : mode === 'work' ? 'Work Projects' : 'Other Projects';

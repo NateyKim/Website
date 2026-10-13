@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  export let focusCategory = '';
   import { autoplayWhenVisible } from '$lib/autoplayWhenVisible';
 
   type CarouselType = 'mookie' | 'clementine' | 'photosilike';
@@ -214,30 +215,33 @@
     const mookieSetup = setupCarousel(mookieBaseImages);
     mookieImages = mookieSetup.images;
     mookieScroll = mookieSetup.start;
-    mookieCarousel.style.transform = `translateX(-${mookieScroll}px)`;
+    if (mookieCarousel) mookieCarousel.style.transform = `translateX(-${mookieScroll}px)`;
 
     const clementineSetup = setupCarousel(clementineBaseImages);
     clementineImages = clementineSetup.images;
     clementineScroll = clementineSetup.start;
-    clementineCarousel.style.transform =
+    if (clementineCarousel) clementineCarousel.style.transform =
       `translateX(-${clementineScroll}px)`;
 
     const photosSetup = setupCarousel(photosilikeBaseImages);
     photosilikeImages = photosSetup.images;
     photosilikeScroll = photosSetup.start;
-    photosilikeCarousel.style.transform =
+    if (photosilikeCarousel) photosilikeCarousel.style.transform =
       `translateX(-${photosilikeScroll}px)`;
 
     return () => clearInterval(ageUpdateInterval);
   });
 </script>
 
+{#if !focusCategory}
 <header class="personal-header">
   <p class="eyebrow">A little less formal</p>
   <h1>Beyond the Work</h1>
   <p>The pets, music, games, food, and places that fill the space outside engineering.</p>
 </header>
+{/if}
 
+{#if !focusCategory || focusCategory === 'pets'}
 <section class="personal-category pets-category">
 <h2>Pets</h2>
 
@@ -282,7 +286,9 @@
   </div>
 </div>
 </section>
+{/if}
 
+{#if !focusCategory || focusCategory === 'music'}
 <section class="personal-category personal-media-section">
   <div class="media-heading">
     <div>
@@ -295,7 +301,9 @@
     <div class="future-card">Music videos coming soon</div>
   </div>
 </section>
+{/if}
 
+{#if !focusCategory || focusCategory === 'games'}
 <section class="personal-category personal-media-section">
   <div class="media-heading">
     <div>
@@ -308,7 +316,9 @@
     <div class="future-card">Game photos and videos coming soon</div>
   </div>
 </section>
+{/if}
 
+{#if !focusCategory || focusCategory === 'food'}
 <section class="personal-category personal-media-section">
   <div class="media-heading">
     <div>
@@ -321,7 +331,9 @@
     <div class="future-card">Food photos coming soon</div>
   </div>
 </section>
+{/if}
 
+{#if !focusCategory || focusCategory === 'photos'}
 <section class="personal-category">
 <h2>Camera Roll Top Picks</h2>
 
@@ -343,6 +355,7 @@
   </div>
 </div>
 </section>
+{/if}
 
 <style>
   .personal-header,

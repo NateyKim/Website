@@ -3,6 +3,8 @@
   import PublicationsPage from '../publications/PublicationsPage.svelte';
   import ProjectsPage from '../projects/+page.svelte';
   import AboutMePage from '../about-me/+page.svelte';
+  import OtherProjectsPage from '../other-projects/OtherProjectsPage.svelte';
+  const projectTitles: Record<string, string> = { verdigris: 'Verdigris: Assistive Ultrasound Guidance for Lumbar Puncture', driving: 'Rehabilitative Driving Simulator', dinobot: 'Social DinoBot' };
 
   export let section: string;
   export let panel: string;
@@ -18,18 +20,21 @@
       <WorkExperiencePage kind="research" />
     {/if}
   {:else if section === 'work'}
-    {#if panel === 'projects'}
-      <ProjectsPage mode="work" />
-    {:else}
-      <WorkExperiencePage kind="work" />
+    <WorkExperiencePage kind="work" organization={panel === 'maingen' ? 'Maingen' : 'Tadashi'} />
+    {#if panel === 'tadashi'}
+      <ProjectsPage mode="work" focusTitle="Ember Social Robotics Platform" />
     {/if}
   {:else if section === 'other'}
-    <ProjectsPage mode="other" />
+    {#if panel === 'additional'}
+      <OtherProjectsPage />
+    {:else}
+      <ProjectsPage mode="other" focusTitle={projectTitles[panel] ?? ''} />
+    {/if}
   {:else if section === 'cv'}
     <div class="cv-actions"><span>THE RECORD / NATHANIEL KIM</span><a href="/CV.pdf" target="_blank" rel="noreferrer">Open PDF ↗</a><a href="/CV.pdf" download>Download CV ↓</a></div>
     <iframe src="/CV.pdf" title="Nathaniel Kim's CV"></iframe>
   {:else if section === 'beyond'}
-    <AboutMePage />
+    <AboutMePage focusCategory={panel} />
   {/if}
 </div>
 
