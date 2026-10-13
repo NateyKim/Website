@@ -166,15 +166,15 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V18 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V18 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V19 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V19 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
 <div class="experiment" class:subsection={!!section} bind:this={shell} tabindex="-1">
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="version-number">V18</span>
+    <span class="version-number">V19</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
