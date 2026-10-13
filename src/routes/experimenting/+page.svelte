@@ -146,20 +146,20 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V14 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V14 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V15 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V15 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
 <div class="experiment" class:subsection={!!section} bind:this={shell} tabindex="-1">
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="version-number">V14</span>
+    <span class="version-number">V15</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main">
       <div class="robot-plane" aria-hidden="true"></div><div class="human-plane" aria-hidden="true"></div>
-      <div class="signal-divider" aria-hidden="true"><ReactiveSignal divider {menuImpulse} /></div>
+      <div class="signal-divider" aria-hidden="true"><ReactiveSignal vertical divider {menuImpulse} /></div>
       <div class="main-robot-menu" aria-label="Main menu"><ExperimentMenu items={mainChoices} onSelect={openMain} onActivity={updateGear} /></div>
       <div class="gear-cutout" aria-hidden="true"><div class="cutout-shard"></div><div class="main-gear"><PauseGear rotation={gearAngle} /></div></div>
     </div>
@@ -229,24 +229,24 @@
   .split-main { background:#0754fa; perspective:1200px; }
   .robot-plane,.human-plane { position:absolute; inset:0; z-index:-1; }
   .robot-plane { background-size:150% 150%; animation:blue-drift 14s ease-in-out infinite alternate; background:linear-gradient(150deg,#119dff,#0754fa 55%,#001347); }
-  .human-plane { background:#8cf3ff; clip-path:polygon(0 85%,0 100%,100% 100%,100% 45%); }
-  .main-robot-menu { position:relative; z-index:5; width:64%; padding:9vh 0 30vh; margin-left:18%; text-align:center; transform:perspective(1100px) rotateY(9deg) rotateZ(-6deg); transform-origin:center center; }
-  .gear-cutout { position:absolute; top:53%; right:57%; width:34%; height:46%; transform:perspective(1000px) rotateX(38deg) rotateZ(-18deg) rotateY(-12deg); transform-style:preserve-3d; }
+  .human-plane { background:linear-gradient(155deg,#0964ef,#0033ad 65%,#001347); clip-path:polygon(38% 0,100% 0,100% 100%,28% 100%); }
+  .main-robot-menu { position:relative; z-index:5; width:62%; padding:17vh 0 14vh; margin-left:36%; text-align:center; transform:perspective(1100px) rotateY(9deg) rotateZ(-6deg); transform-origin:center center; }
+  .gear-cutout { position:absolute; top:43%; right:68%; width:33%; height:52%; transform:perspective(1000px) rotateX(38deg) rotateZ(-18deg) rotateY(-12deg); transform-style:preserve-3d; }
   .gear-cutout::before { content:''; position:absolute; inset:0; background:#001347; clip-path:polygon(4% 12%,72% 0,69% 8%,94% 4%,100% 29%,93% 33%,100% 71%,82% 100%,56% 91%,51% 100%,0 79%,7% 49%,0 43%); transform:translate(16px,18px); }
   .cutout-shard { position:absolute; inset:0; background:#f1ffff; clip-path:polygon(4% 12%,72% 0,69% 8%,94% 4%,100% 29%,93% 33%,100% 71%,82% 100%,56% 91%,51% 100%,0 79%,7% 49%,0 43%); }
   .cutout-shard::after { content:''; position:absolute; inset:4%; background:#57ddff; clip-path:polygon(4% 12%,72% 0,69% 8%,94% 4%,100% 29%,93% 33%,100% 71%,82% 100%,56% 91%,51% 100%,0 79%,7% 49%,0 43%); }
   .main-gear { position:absolute; inset:9%; }
-  .signal-divider { left:0; top:64%; width:100%; height:100px; transform:rotate(-14deg); }
-  .signal-divider :global(.reactive-signal) { height:100px; }
+  .signal-divider { left:27%; top:-5%; width:12%; height:110%; transform:rotate(9deg); }
+  .signal-divider :global(.reactive-signal) { height:100%; }
   .main-robot-menu :global(.choice) { margin:auto; justify-content:center; }
   .work-folder { position:relative; background:#1656ad; border:0; padding:32px 24px 24px; margin-top:55px; box-shadow:12px 14px 0 #001347; transform:perspective(1400px) rotateY(-3deg) rotateZ(-2deg); }
   .work-folder::before { content:''; position:absolute; left:0; top:-28px; width:36%; height:30px; background:#1656ad; clip-path:polygon(0 0,88% 0,100% 100%,0 100%); }
-  @media(max-width:1000px) { .main-robot-menu { width:76%; margin-left:12%; } .gear-cutout { right:55%; width:40%; } }
+  @media(max-width:1000px) { .main-robot-menu { width:65%; margin-left:33%; } .gear-cutout { right:68%; width:35%; } }
   @media(max-width:700px) {
-    .main-robot-menu { width:84%; margin-left:8%; padding:45px 0 260px; transform:rotate(-3deg); }
+    .main-robot-menu { width:78%; margin-left:20%; padding:45px 0 260px; transform:rotate(-3deg); }
     .human-plane { clip-path:polygon(100% 0,100% 100%,55% 100%); opacity:.3; }
-    .gear-cutout { width:270px; height:270px; right:40%; top:68%; opacity:1; }
-    .signal-divider { left:0; top:70%; width:100%; height:100px; }
+    .gear-cutout { width:270px; height:270px; right:48%; top:68%; opacity:1; }
+    .signal-divider { left:18%; top:0; width:10%; height:100%; }
     .work-folder { padding:20px 12px 12px; transform:none; box-shadow:5px 7px 0 #001347; }
   }
   .robot-plane::after { content:''; position:absolute; inset:-20%; background:repeating-linear-gradient(120deg,transparent 0 180px,#c4ffff15 181px 215px,transparent 216px 350px); animation:light-drift 18s linear infinite alternate; }
@@ -254,5 +254,6 @@
   @keyframes light-drift { to { transform:translate(70px,35px); } }
   @media(prefers-reduced-motion:reduce) { .robot-plane,.robot-plane::after { animation:none; } }
 </style>
+
 
 
