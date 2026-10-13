@@ -39,5 +39,11 @@
   @keyframes flip { to { transform:perspective(1000px) rotateY(-75deg); opacity:.25; } }
   @media(max-width:700px) { .folder-menu { margin:30px 48px 35px 4px; padding:14px 8px 14px 14px; transform:rotate(-1deg); box-shadow:5px 7px 0 #001347; } .folder-tabs { width:48px; gap:15px; } .tab { width:48px; font-size:19px; min-height:155px; padding:12px 8px; } }
   @media(prefers-reduced-motion:reduce) { .flipping { animation:none; } }
+  @media(orientation:landscape) and (max-height:700px) {
+    .folder-menu { margin:25px 80px 35px 12px; padding:18px 16px 18px 25px; transform:perspective(1600px) rotateY(-3deg) rotateZ(-1.5deg); }
+    .folder-tabs { width:58px; top:20px; gap:15px; }
+    .tab { width:58px; min-height:145px; font-size:21px; padding:12px 8px; }
+    .folder-sheet { min-height:360px; }
+  }
 </style>
 

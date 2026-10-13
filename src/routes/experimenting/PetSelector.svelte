@@ -33,4 +33,10 @@
   @keyframes portrait-in { from { opacity: .3; translate: 12px 0; } to { opacity: 1; translate: 0 0; } }
   @media (max-width: 700px) { .pet-selection { grid-template-columns: 1fr; gap: 25px; min-height: 0; } .pet-roster { padding-left: 0; } .portrait { height: 430px; width: 90%; margin: 15px auto; } }
   @media (prefers-reduced-motion: reduce) { img, .portrait-name { animation: none; } }
+  @media(orientation:landscape) and (max-height:700px) {
+    .pet-selection { grid-template-columns:minmax(0,1fr) minmax(0,1.1fr); min-height:0; gap:5%; }
+    .portrait { height:clamp(210px,55svh,400px); width:90%; margin:10px auto; }
+    .portrait-name { font-size:clamp(26px,5svh,42px); bottom:15px; padding:8px 14px; }
+    .pet-roster { padding-left:0; }
+  }
 </style>

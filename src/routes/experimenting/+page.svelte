@@ -167,15 +167,15 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V21 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V21 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V22 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V22 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
 <div class="experiment" class:subsection={!!section} bind:this={shell} tabindex="-1">
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="version-number">V21</span>
+    <span class="version-number">V22</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
@@ -308,6 +308,32 @@
   .contact-detail { font:600 20px var(--font-ui); overflow-wrap:anywhere; }
   .contact-link:hover { background:var(--scene-cyan); }
   @media(max-width:700px) { .contact-card { transform:rotate(-2deg); } .contact-link { padding:20px; } }
+  @media(orientation:landscape) and (min-width:701px) {
+    .main-robot-menu { width:64%; margin-left:34%; padding:clamp(18px,4svh,40px) 0; transform:perspective(1100px) rotateY(7deg) rotateZ(-3deg); }
+    .main-robot-menu :global(.expressive) { gap:3px; }
+    .main-robot-menu :global(.expressive .word) { font-size:clamp(32px,7.5svh,76px); }
+    .main-robot-menu :global(.choice) { min-height:46px; padding:5px 16px; }
+    .gear-cutout { left:0; top:24%; width:36%; height:72%; }
+    .section-layout { gap:4%; }
+    .submenu-gear { height:clamp(220px,55svh,460px); }
+  }
+  @media(orientation:landscape) and (max-height:520px) {
+    .version-bar { min-height:44px; padding:0 4%; }
+    .experiment-footer { min-height:36px; padding:4px 4%; font-size:11px; }
+    .pause-stage { min-height:calc(100svh - 80px); }
+    .main-robot-menu { width:65%; margin-left:34%; padding:10px 0; transform:rotate(-2deg); }
+    .main-robot-menu :global(.expressive) { gap:0; }
+    .main-robot-menu :global(.expressive .word) { font-size:clamp(26px,7.8svh,40px); }
+    .main-robot-menu :global(.choice) { min-height:44px; padding:3px 10px; }
+    .main-robot-menu :global(.expressive .choice-row:nth-child(n)) { transform:rotate(-2deg); }
+    .main-robot-menu :global(.expressive .choice-row:nth-child(even)) { transform:rotate(2deg); }
+    .gear-cutout { width:36%; height:82%; top:13%; left:0; }
+    .section-stage { padding:16px 5% 35px; min-height:calc(100svh - 80px); }
+    .section-title { margin:6px 0 25px; }
+    .section-title h1 { font-size:44px; }
+    .contact-card { margin:35px auto; }
+    .contact-link { min-height:80px; padding:15px 22px; }
+  }
 </style>
 
 
