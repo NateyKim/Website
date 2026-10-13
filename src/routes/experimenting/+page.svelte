@@ -3,6 +3,9 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import PersonaContent from './PersonaContent.svelte';
+  import ReactiveSignal from './ReactiveSignal.svelte';
+  let menuImpulse = 0;
+  function pulseMenu() { menuImpulse += 1; }
   import ExperimentMenu from './ExperimentMenu.svelte';
   import type { Choice } from './ExperimentMenu.svelte';
 
@@ -42,17 +45,25 @@
     { name: 'OTHER PROJECTS', section: 'other', body: sections.other.description },
     { name: 'CV', section: 'cv', body: sections.cv.description }
   ];
-  const humanChoices = sections.beyond.choices.map(item => ({ ...item, section: 'beyond' }));
+  const humanChoices: Choice[] = [{ name: 'BEYOND THE WORK', section: 'beyond', body: sections.beyond.description }];
+  const petChoices: Choice[] = [{ name: 'CLEMENTINE', panel: 'clementine', body: 'Clementine’s photos and videos.' }, { name: 'MOOKIE', panel: 'mookie', body: 'Mookie’s photo collection.' }];
   $: sectionKey = $page.url.searchParams.get('section') ?? '';
   $: section = sections[sectionKey];
   $: panel = $page.url.searchParams.get('panel') ?? '';
   $: selectedChoice = section?.choices.find(choice => choice.panel === panel);
-  $: isLeaf = !!selectedChoice && panel !== 'download';
+  $: itemKey = $page.url.searchParams.get('item') ?? '';
+  $: selectedPet = panel === 'pets' ? petChoices.find(choice => choice.panel === itemKey) : undefined;
+  $: isLeaf = !!selectedChoice && panel !== 'download' && (panel !== 'pets' || !!selectedPet);
+  $: petGroup = sectionKey === 'beyond' && panel === 'pets';
+  $: activeChoices = petGroup ? petChoices : section?.choices ?? [];
+  $: viewTitle = selectedPet?.name ?? selectedChoice?.name ?? section?.name;
+  $: viewDescription = selectedPet?.body ?? selectedChoice?.body ?? section?.description;
 
-  async function navigate(nextSection = '', nextPanel = '') {
+  async function navigate(nextSection = '', nextPanel = '', nextItem = '') {
     const query = new URLSearchParams();
     if (nextSection) query.set('section', nextSection);
     if (nextPanel) query.set('panel', nextPanel);
+    if (nextItem) query.set('item', nextItem);
     await goto('/experimenting' + (query.size ? '?' + query : ''), { noScroll: true, keepFocus: true });
     await tick();
     shell?.querySelector<HTMLElement>('#screen-title')?.focus({ preventScroll: true });
@@ -64,7 +75,7 @@
     await navigate(item.section, item.panel);
   }
   async function openSubmenu(index: number) {
-    const item = section.choices[index];
+    const item = activeChoices[index];
     if (item.panel === 'download') {
       const download = document.createElement('a');
       download.href = '/CV.pdf';
@@ -72,7 +83,8 @@
       download.click();
       return;
     }
-    await navigate(sectionKey, item.panel);
+    if (petGroup) await navigate('beyond', 'pets', item.panel);
+    else await navigate(sectionKey, item.panel);
   }
   async function backToMain() {
     await navigate();
@@ -122,33 +134,25 @@
       return Math.cos(angle) * r + ',' + Math.sin(angle) * r;
     }).join(' ');
   }
-  const signal = Array.from({ length: 241 }, (_, i) => {
-    const burst = Math.exp(-Math.pow((i - 54) / 15, 2)) + .8 * Math.exp(-Math.pow((i - 151) / 22, 2));
-    return (i ? 'L' : 'M') + i * 3 + ',' + (60 + (Math.sin(i * 2.7) + .6 * Math.sin(i * 1.3)) * (3 + burst * 25)).toFixed(2);
-  }).join(' ');
 </script>
 
 <svelte:head>
-  <title>Experimenting / V02 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V02 explores a biosignal-divided menu and Persona-inspired section menus." />
+  <title>Experimenting / V03 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V03 explores a biosignal-divided menu and Persona-inspired section menus." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
 <div class="experiment" class:subsection={!!section} bind:this={shell} tabindex="-1">
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← BACK TO MAIN MENU <kbd>ESC</kbd></button>{/if}
-    <h1>V02</h1><span class="version-caption">EXPERIMENTING / NATEY KIM</span><span class="status">HUMAN ↔ ROBOT</span>
+    <h1>V03</h1><span class="version-caption">EXPERIMENTING / NATEY KIM</span><span class="status">HUMAN ↔ ROBOT</span>
   </header>
 
   {#if !section}
     <div class="split-stage">
       <div class="robot-background" aria-hidden="true"></div><div class="human-background" aria-hidden="true"></div>
       <div class="blueprint" aria-hidden="true"></div>
-      <svg class="signal-divider" viewBox="0 0 120 1000" preserveAspectRatio="none" aria-hidden="true">
-        <path class="divider-glow" d="M107 0L65 340L57 411L39 443L80 414L39 485L64 466L34 528L8 1000"/>
-        <path d="M107 0L65 340L57 411L39 443L80 414L39 485L64 466L34 528L8 1000"/>
-        <circle cx="57" cy="411" r="5"/><circle cx="34" cy="528" r="5"/>
-      </svg>
+      <div class="signal-divider" aria-hidden="true"><ReactiveSignal vertical {menuImpulse} /></div>
       <section class="robot-half" aria-label="Robot side">
         <div class="half-label">01 / ROBOT SIDE</div>
         <h2>ROBOT<span>.</span></h2>
@@ -162,11 +166,12 @@
           <path class="robot-base" d="M62 343H132L151 366H44Z"/>
           <path class="traces" d="M0 74H81L122 115H161M319 269H376V329M12 299H66M327 285H357V344"/>
         </svg>
-        <div class="half-menu robot-menu"><ExperimentMenu items={robotChoices} onSelect={openMain} /></div>
+        <div class="half-menu robot-menu"><ExperimentMenu items={robotChoices} onSelect={openMain} onActivity={pulseMenu} /></div>
         <div class="half-footnote">CIRCUITS / CONTROL / MECHANICS</div>
       </section>
+      <div class="mobile-signal" aria-hidden="true"><ReactiveSignal {menuImpulse} /></div>
       <section class="human-half" aria-label="Human side">
-        <button class="half-label beyond-label" type="button" on:click={() => navigate('beyond')}>02 / BEYOND THE WORK ↗</button>
+        <div class="half-label">02 / HUMAN SIDE</div>
         <h2>HUMAN<span>.</span></h2>
         <p class="half-intro">Follow the signal.<br />And everything that makes us human.</p>
         <svg class="anatomy-study" viewBox="0 0 400 420" fill="none" aria-hidden="true">
@@ -183,7 +188,7 @@
           <path class="neural-trace" d="M143 114H76L53 92H14M161 145H67L42 170H14M239 262H348L371 239H395"/>
           <text x="10" y="80">EMG / INTENT</text><text x="283" y="373">UPPER LIMB</text>
         </svg>
-        <div class="half-menu human-menu"><ExperimentMenu items={humanChoices} onSelect={(index) => openMain(index + robotChoices.length)} compact /></div>
+        <div class="half-menu human-menu"><ExperimentMenu items={humanChoices} onSelect={(index) => openMain(index + robotChoices.length)} onActivity={pulseMenu} human /></div>
         <div class="half-footnote">BIOSIGNALS / MOVEMENT / LIFE</div>
       </section>
       <span class="divider-label" aria-hidden="true">THE SIGNAL CONNECTS US</span>
@@ -191,27 +196,28 @@
   {:else}
     <div class="section-stage">
       <div class="section-grid" aria-hidden="true"></div>
-      <div class="section-topline"><span>HUMAN ↔ ROBOT / {sectionKey.toUpperCase()}</span><span>SELECT A FOCUS ↓</span></div>
-      <div class="section-title"><button id="screen-title" type="button" on:click={() => navigate(sectionKey)}>{section.name}</button><p>{section.description}</p></div>
-      <div class="section-layout" class:has-content={isLeaf}>
-        <div class="submenu" aria-label={section.name + ' submenu'}>
-          <ExperimentMenu items={section.choices} onSelect={openSubmenu} selectedPanel={isLeaf ? panel : ''} compact={isLeaf} />
+      <div class="section-topline"><span>HUMAN ↔ ROBOT / {sectionKey.toUpperCase()}</span><span>{isLeaf ? 'FOCUS / ' + viewTitle : 'SELECT A FOCUS ↓'}</span></div>
+            {#if isLeaf || petGroup}<button class="back-level" type="button" on:click={() => navigate(sectionKey, selectedPet ? 'pets' : '')}>← {selectedPet ? 'PETS' : section.name}</button>{/if}
+      <div class="section-title"><h2 id="screen-title" tabindex="-1">{viewTitle}</h2><p>{viewDescription}</p></div>
+      {#if isLeaf}
+        <div class="leaf-content" use:projectLinks>
+          <div class="leaf-label">FOCUS / {viewTitle}</div>
+          {#key sectionKey + panel + itemKey}<PersonaContent section={sectionKey} {panel} item={itemKey} />{/key}
         </div>
-        {#if isLeaf}
-          <div class="leaf-content" use:projectLinks>
-            <div class="leaf-label">FOCUS / {selectedChoice?.name}</div>
-            {#key sectionKey + panel}<PersonaContent section={sectionKey} {panel} />{/key}
+      {:else}
+        <div class="section-layout">
+          <div class="submenu" aria-label={viewTitle + ' submenu'}>
+            <ExperimentMenu items={activeChoices} onSelect={openSubmenu} onActivity={pulseMenu} />
           </div>
-        {:else}
-          <div class="waiting-signal" aria-hidden="true"><span>CHOOSE A<br /><strong>FOCUS.</strong></span><svg viewBox="0 0 720 120"><path d={signal}/></svg><p>INTENT → SIGNAL → ACTION</p></div>
-        {/if}
-      </div>
+          <div class="waiting-signal" aria-hidden="true"><span>CHOOSE A<br /><strong>FOCUS.</strong></span><ReactiveSignal {menuImpulse} /><p>INTENT → SIGNAL → ACTION</p></div>
+        </div>
+      {/if}
     </div>
   {/if}
 
   <footer class="experiment-footer">
-    <span><kbd>↑ ↓</kbd> SELECT <kbd>ENTER</kbd> OPEN {#if section}<kbd>ESC</kbd> MAIN MENU{:else}<kbd>← →</kbd> SWITCH SIDES{/if}</span>
-    <span>V02 / HUMAN INTENT × ROBOTIC MOTION</span>
+    <span>{#if !isLeaf}<kbd>↑ ↓</kbd> SELECT <kbd>ENTER</kbd> OPEN {/if}{#if section}<kbd>ESC</kbd> MAIN MENU{:else}<kbd>← →</kbd> SWITCH SIDES{/if}</span>
+    <span>V03 / HUMAN INTENT × ROBOTIC MOTION</span>
   </footer>
 </div>
 
@@ -231,13 +237,14 @@
   .robot-half, .human-half { position: relative; min-width: 0; padding: 42px 12% 58px; }
   .human-half { padding-left: 15%; padding-right: 10%; color: var(--ink); }
   .half-label { display: block; position: relative; z-index: 3; color: var(--cyan); margin-bottom: 17px; }
-  .beyond-label { border: none; background: var(--ink); color: var(--cyan); padding: 10px 14px; cursor: pointer; transform: rotate(2deg); font-size: 9px; text-align: left; }
+  .human-half .half-label { color: #0754fa; }
+
   h2 { position: relative; z-index: 2; margin: 0; font-family: 'Arial Black', Impact, Arial, sans-serif; font-style: italic; font-size: clamp(52px, 7vw, 110px); letter-spacing: -.08em; line-height: 1; transform: rotate(-4deg); }
   h2 span { color: var(--cyan); }
   .human-half h2 span { color: var(--blue); }
   .half-intro { position: relative; z-index: 2; font-size: 14px; line-height: 1.6; margin: 25px 0 60px; }
   .half-menu { position: relative; z-index: 5; margin-top: 30px; }
-  .human-menu { margin-top: 25px; }
+  .human-menu { margin-top: 30px; }
   .half-footnote { position: absolute; bottom: 30px; font-size: 9px; color: #cefaff; }
   .human-half .half-footnote { color: #0754fa; }
   .robot-study, .anatomy-study { position: absolute; width: 88%; top: 135px; right: -13%; height: 590px; pointer-events: none; opacity: .2; }
@@ -258,8 +265,8 @@
   .neural-trace { stroke: #0754fa; stroke-width: 2; }
   .anatomy-study text { fill: #061735; font: 9px 'Courier New', monospace; letter-spacing: 1px; }
   .signal-divider { position: absolute; z-index: 4; left: 46%; top: 0; width: 12%; height: 100%; overflow: visible; pointer-events: none; fill: none; stroke: white; stroke-width: 2; }
-  .signal-divider .divider-glow { stroke: #53eeff; stroke-width: 10; opacity: .6; }
-  .signal-divider circle { fill: #061735; stroke: #53eeff; stroke-width: 2; }
+
+
   .divider-label { position: absolute; bottom: 75px; left: 49%; writing-mode: vertical-rl; color: var(--ink); font-size: 8px; }
   .experiment-footer { padding: 22px 5%; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 18px; color: #bcd7ef; font-size: 9px; }
   kbd { display: inline-block; background: white; color: var(--ink); padding: 3px 6px; margin: 0 5px; font: 700 9px 'Courier New', monospace; transform: skew(-8deg); }
@@ -273,28 +280,39 @@
   .section-grid { position: absolute; inset: 0; z-index: -1; opacity: .15; background-image: linear-gradient(#8cf3ff 1px, transparent 1px), linear-gradient(90deg, #8cf3ff 1px, transparent 1px); background-size: 40px 40px; }
   .section-topline { display: flex; justify-content: space-between; gap: 20px; color: var(--cyan); font-size: 9px; }
   .section-title { margin: 40px 0 55px; }
-  .section-title > button { border: 0; padding: 0; color: white; background: transparent; font: italic 900 clamp(40px, 7vw, 94px)/.95 'Arial Black', Impact, Arial, sans-serif; letter-spacing: -.055em; cursor: pointer; text-align: left; transform: rotate(-3deg); }
+  .section-title > h2 { border: 0; padding: 0; color: white; background: transparent; font: italic 900 clamp(40px, 7vw, 94px)/.95 'Arial Black', Impact, Arial, sans-serif; letter-spacing: -.055em; cursor: pointer; text-align: left; transform: rotate(-3deg); }
   .section-title p { color: #def6ff; margin-top: 22px; font-size: 14px; line-height: 1.6; }
   .section-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8%; align-items: start; }
   .submenu { padding-top: 15px; min-width: 0; }
-  .has-content { grid-template-columns: minmax(240px, .72fr) minmax(0, 1.6fr); gap: 5%; }
-  .has-content .submenu { position: sticky; top: 35px; }
+
+
   .leaf-content { min-width: 0; padding: 24px; border-top: 3px solid var(--cyan); background: #061735ed; box-shadow: 8px 8px 0 #53eeff33; animation: content-in 220ms ease-out; }
   .leaf-label { color: var(--cyan); font-size: 10px; margin-bottom: 20px; }
   .waiting-signal { padding-top: 20px; color: #ffffff44; }
   .waiting-signal > span { font: italic 900 clamp(35px, 5vw, 80px)/.95 'Arial Black', Arial, sans-serif; letter-spacing: -.06em; }
   .waiting-signal strong { color: #53eeff88; }
-  .waiting-signal svg { display: block; width: 100%; height: 110px; margin: 30px 0; stroke: var(--cyan); fill: none; stroke-width: 2; }
+
   .waiting-signal p { font: 10px 'Courier New', monospace; letter-spacing: 2px; color: var(--cyan); }
   @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes content-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  @media (max-width: 1050px) { .robot-half { padding-left: 9%; padding-right: 10%; } .human-half { padding-left: 13%; padding-right: 9%; } .has-content { grid-template-columns: 1fr; gap: 45px; } .has-content .submenu { position: static; max-width: 600px; } }
+  @media (max-width: 1050px) { .robot-half { padding-left: 9%; padding-right: 10%; } .human-half { padding-left: 13%; padding-right: 9%; }   }
   @media (max-width: 700px) {
     .version-bar { gap: 16px; padding: 20px 6%; } .version-caption { font-size: 8px; max-width: 135px; line-height: 1.6; } .status { display: none; }
     .split-stage { grid-template-columns: 1fr; } .robot-half, .human-half { padding: 40px 8% 70px; min-height: 600px; } .human-half { background: #8cf3ff; } .human-background { display: none; } .signal-divider { left: 0; top: 595px; height: 55px; width: 100%; transform: rotate(90deg); display: none; } .human-half::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: var(--ink); }
     h2 { font-size: 75px; } .half-intro { margin-bottom: 45px; } .half-menu { margin-top: 0; } .half-footnote { bottom: 25px; font-size: 8px; } .divider-label { display: none; } .robot-study, .anatomy-study { top: 130px; height: 400px; }
-    .section-stage { padding: 30px 7% 60px; } .section-layout { grid-template-columns: 1fr; gap: 40px; } .section-title { margin: 30px 0 45px; } .section-title > button { font-size: 46px; } .section-topline { font-size: 8px; } .section-topline span:last-child { display: none; }
+    .section-stage { padding: 30px 7% 60px; } .section-layout { grid-template-columns: 1fr; gap: 40px; } .section-title { margin: 30px 0 45px; } .section-title > h2 { font-size: 46px; } .section-topline { font-size: 8px; } .section-topline span:last-child { display: none; }
     .waiting-signal { padding-top: 20px; } .waiting-signal > span { font-size: 52px; } .leaf-content { padding: 18px; } .back-main { font-size: 9px; padding: 10px; gap: 3px; } .back-main kbd { font-size: 8px; } .subsection .version-bar h1 { font-size: 26px; } .experiment-footer { font-size: 8px; line-height: 1.8; }
   }
   @media (prefers-reduced-motion: reduce) { .gear, .leaf-content { animation: none; } }
+  .back-level { display: inline-block; margin-top: 30px; padding: 5px 0; color: var(--cyan); background: transparent; border: 0; border-bottom: 1px solid #53eeff66; cursor: pointer; font: 700 11px 'Courier New', monospace; letter-spacing: 1px; }
+  .section-title h2 { cursor: default; }
+  .section-title h2:focus { outline: none; }
+  .leaf-content { max-width: 1180px; margin: 0 auto; }
+  .waiting-signal :global(.reactive-signal) { margin: 30px 0; }
+  @media (max-width: 700px) {
+    .signal-divider { display: none; position: absolute; top: 595px; left: 0; width: 100%; height: 55px; transform: none; z-index: 8; overflow: hidden; }
+    .signal-divider :global(.reactive-signal) { width: 100%; height: 55px; transform: rotate(90deg); }
+  }
+.mobile-signal { display: none; }
+@media (max-width: 700px) { .mobile-signal { display: block; height: 70px; background: linear-gradient(#0754fa, #0876d0); padding: 0 6%; } .mobile-signal :global(.reactive-signal) { height: 70px; } }
 </style>

@@ -8,6 +8,7 @@
 
   export let section: string;
   export let panel: string;
+  export let item = '';
 </script>
 
 <div class="persona-content">
@@ -34,7 +35,7 @@
     <div class="cv-actions"><span>THE RECORD / NATHANIEL KIM</span><a href="/CV.pdf" target="_blank" rel="noreferrer">Open PDF ↗</a><a href="/CV.pdf" download>Download CV ↓</a></div>
     <iframe src="/CV.pdf" title="Nathaniel Kim's CV"></iframe>
   {:else if section === 'beyond'}
-    <AboutMePage focusCategory={panel} />
+    <AboutMePage focusCategory={panel} focusPet={item} />
   {/if}
 </div>
 

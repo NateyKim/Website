@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   export let focusCategory = '';
+  export let focusPet = '';
   import { autoplayWhenVisible } from '$lib/autoplayWhenVisible';
 
   type CarouselType = 'mookie' | 'clementine' | 'photosilike';
@@ -243,8 +244,9 @@
 
 {#if !focusCategory || focusCategory === 'pets'}
 <section class="personal-category pets-category">
-<h2>Pets</h2>
+{#if !focusPet}<h2>Pets</h2>{/if}
 
+{#if !focusPet || focusPet === 'mookie'}
 <h3>Mookie <span>(age: {mookieAge})</span></h3>
 
 <div
@@ -262,6 +264,8 @@
   </div>
 </div>
 
+{/if}
+{#if !focusPet || focusPet === 'clementine'}
 <h3>Clementine <span>(age: {clementineAge})</span></h3>
 
 <div
@@ -285,6 +289,7 @@
     {/each}
   </div>
 </div>
+{/if}
 </section>
 {/if}
 
