@@ -5,6 +5,7 @@
   import { page } from '$app/stores';
   import PersonaContent from './PersonaContent.svelte';
   import PauseGear from './PauseGear.svelte';
+  import RobotEyelids from './RobotEyelids.svelte';
   import DepthScene from './DepthScene.svelte';
   import WorkFolders from './WorkFolders.svelte';
   import PauseBackdrop from './PauseBackdrop.svelte';
@@ -12,6 +13,7 @@
   import ReactiveSignal from './ReactiveSignal.svelte';
   let menuImpulse = 0;
   let switching = false;
+  let lidPhase: 'closing' | 'opening' = 'closing';
   let eyeX = 330, eyeY = 700;
   let scenePhoto = '';
   let photoFrame = { x:0, y:0, w:1000, h:1000 };
@@ -100,16 +102,22 @@
     if (nextSection) query.set('section', nextSection);
     if (nextPanel) query.set('panel', nextPanel);
     if (nextItem) query.set('item', nextItem);
-    if (nextSection !== sectionKey && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      switching = true;
-      menuImpulse += 1;
-      await new Promise(resolve => setTimeout(resolve,180));
+    const animate = nextSection !== sectionKey && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (animate) {
+      lidPhase = 'closing'; switching = true; menuImpulse += 1;
+      await tick();
+      await new Promise(resolve => setTimeout(resolve,280));
     }
-    await goto('/experimenting' + (query.size ? '?' + query : ''), { noScroll: true, keepFocus: true });
-    switching = false;
-    await tick();
-    shell?.querySelector<HTMLElement>('#screen-title')?.focus({ preventScroll: true });
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    try {
+      await goto('/experimenting' + (query.size ? '?' + query : ''), { noScroll: true, keepFocus: true });
+      await tick();
+      shell?.querySelector<HTMLElement>('#screen-title')?.focus({ preventScroll: true });
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      if (animate) {
+        lidPhase = 'opening';
+        await new Promise(resolve => setTimeout(resolve,340));
+      }
+    } finally { switching = false; }
   }
   async function openMain(index: number) {
     lastMainChoice = index;
@@ -134,6 +142,7 @@
     shell?.querySelectorAll<HTMLButtonElement>('.choice')[lastMainChoice]?.focus({ preventScroll: true });
   }
   function handleKeys(event: KeyboardEvent) {
+    if (switching) { if (['Escape','Enter','ArrowDown','ArrowUp','ArrowLeft','ArrowRight','Tab','Home','End'].includes(event.key)) event.preventDefault(); return; }
     const target = event.target as HTMLElement | null;
     if (event.altKey || event.ctrlKey || event.metaKey || target?.closest('input,textarea,select,[contenteditable="true"]')) return;
     if (event.key === 'Escape' && section) { event.preventDefault(); void backToMain(); return; }
@@ -189,16 +198,16 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V31 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V31 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V32 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V32 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
 <div class="experiment" class:switching class:subsection={!!section} bind:this={shell} tabindex="-1">
-  {#if switching}<div class="scene-wash" aria-hidden="true"></div>{/if}
+  {#if switching}<RobotEyelids phase={lidPhase} />{/if}
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="version-number">V31</span>
+    <span class="version-number">V32</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
@@ -426,12 +435,10 @@
     .main-robot-menu :global(.poster .choice-row:nth-child(6)) { margin-top:0; }
     .main-robot-menu :global(.poster .word) { font-size:clamp(26px,7.5svh,38px); }
   }
-  .scene-wash { position:fixed; inset:0; z-index:40; pointer-events:none; background:var(--scene-blue); mix-blend-mode:multiply; animation:scene-wash 180ms ease-in forwards; }
   .switching .main-robot-menu { filter:contrast(1.1); }
-  @keyframes scene-wash { from { opacity:0; } to { opacity:.92; } }
   .section-stage { animation:section-arrive 230ms cubic-bezier(.16,.85,.25,1); }
   @keyframes section-arrive { from { opacity:.3; translate:12px 0; } to { opacity:1; translate:0 0; } }
-  @media(prefers-reduced-motion:reduce) { .scene-wash { display:none; } .section-stage { animation:none; } }
+  @media(prefers-reduced-motion:reduce) { .section-stage { animation:none; } }
   .submenu-gear :global(.pause-gear) { color:var(--scene-cyan); }
 </style>
 
