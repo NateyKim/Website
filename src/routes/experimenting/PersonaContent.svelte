@@ -73,6 +73,5 @@
   .paper-file :global(.project-link),.paper-file :global(.expand-button) { background:#001347; color:white; }
   @keyframes unfold { from { opacity:0; transform:perspective(1000px) rotateX(-12deg) translateY(25px); } to { opacity:1; transform:perspective(1000px) rotateX(0) translateY(0); } }
   @media(prefers-reduced-motion:reduce) { .paper-file { animation:none; } }
-  .paper-file { background:repeating-linear-gradient(180deg,#fffdf5 0 31px,#d8e0ea 31px 32px); border-left:4px solid var(--scene-cyan); box-shadow:5px 6px 0 #052c70,9px 10px 0 #fffdf5; }
-  .paper-file::after { content:''; position:absolute; right:0; top:0; width:30px; height:30px; background:linear-gradient(45deg,#c9dce8 49%,#fffdf5 50%); clip-path:polygon(0 0,100% 100%,0 100%); pointer-events:none; }
+  .paper-file { background:repeating-linear-gradient(180deg,#fffdf5 0 31px,#d8e0ea 31px 32px); border-left:4px solid var(--scene-cyan); box-shadow:5px 6px 0 var(--scene-ink); }
 </style>

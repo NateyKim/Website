@@ -5,6 +5,7 @@
   import { page } from '$app/stores';
   import PersonaContent from './PersonaContent.svelte';
   import PauseGear from './PauseGear.svelte';
+  import RecordHardware from './RecordHardware.svelte';
   import RobotEyelids from './RobotEyelids.svelte';
   import DepthScene from './DepthScene.svelte';
   import WorkFolders from './WorkFolders.svelte';
@@ -17,18 +18,21 @@
   let eyeX = 330, eyeY = 700;
   let scenePhoto = '';
   let photoFrame = { x:0, y:0, w:1000, h:1000 };
-  $: glassPanels = [
-'M'+eyeX+' '+eyeY+'L'+(eyeX-72)+' '+(eyeY+83)+'L'+(eyeX-169)+' '+(eyeY+64)+'Z',
-'M'+(eyeX-72)+' '+(eyeY+83)+'L'+(eyeX-169)+' '+(eyeY+64)+'L'+(eyeX-235)+' '+(eyeY+172)+'Z',
-'M'+(eyeX-84)+' '+(eyeY+107)+'L'+(eyeX-211)+' '+(eyeY+200)+'L'+(eyeX-124)+' '+(eyeY+221)+'Z',
-'M'+(eyeX-121)+' '+(eyeY+235)+'L0 970L74 1000Z',
-'M'+eyeX+' '+eyeY+'L'+(eyeX-15)+' '+(eyeY+154)+'L'+(eyeX-77)+' '+(eyeY+120)+'Z',
-'M'+(eyeX-30)+' '+(eyeY+165)+'L'+(eyeX-88)+' '+(eyeY+133)+'L'+(eyeX-94)+' 1000Z',
-'M'+(eyeX-20)+' '+(eyeY+50)+'L'+(eyeX-115)+' '+(eyeY+58)+'L'+(eyeX-56)+' '+(eyeY+101)+'Z',
-'M'+(eyeX-135)+' '+(eyeY+112)+'L'+(eyeX-265)+' '+(eyeY+134)+'L'+(eyeX-180)+' '+(eyeY+208)+'Z',
-'M'+(eyeX-43)+' '+(eyeY+195)+'L'+(eyeX-80)+' '+(eyeY+270)+'L'+(eyeX-6)+' '+(eyeY+246)+'Z',
-'M'+(eyeX-200)+' '+(eyeY+230)+'L'+(eyeX-280)+' '+(eyeY+285)+'L'+(eyeX-145)+' '+(eyeY+301)+'Z'
+  const paneVertices = [
+    [[0,0],[-20,48],[-70,40],[-52,12]],
+    [[-52,12],[-70,40],[-123,54],[-135,16],[-105,-6]],
+    [[-135,16],[-123,54],[-177,96],[-215,62],[-202,20]],
+    [[-20,48],[8,87],[-38,128],[-80,94],[-70,40]],
+    [[-70,40],[-80,94],[-122,134],[-158,100],[-123,54]],
+    [[-177,96],[-158,100],[-122,134],[-160,181],[-225,166],[-249,112],[-215,62]],
+    [[-38,128],[-12,178],[-53,217],[-108,188],[-122,134],[-80,94]],
+    [[-122,134],[-108,188],[-135,242],[-195,231],[-225,166],[-160,181]],
+    [[-53,217],[-26,284],[-79,321],[-127,291],[-135,242],[-108,188]],
+    [[-135,242],[-127,291],[-181,347],[-240,316],[-255,260],[-195,231]],
+    [[-249,112],[-225,166],[-260,218],[-305,197],[-319,146]],
+    [[-79,321],[-45,393],[-113,429],[-178,394],[-181,347],[-127,291]]
   ];
+  $: glassPanels = paneVertices.map(points => points.map(([x,y],index)=>(index?'L':'M')+(eyeX+x)+' '+(eyeY+y)).join('')+'Z');
   let gearAngle = 0;
   let gearSelection = -1;
   function updateGear(index: number) {
@@ -198,8 +202,8 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V32 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V32 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V33 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V33 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
@@ -207,12 +211,12 @@
   {#if switching}<RobotEyelids phase={lidPhase} />{/if}
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="version-number">V32</span>
+    <span class="version-number">V33</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
       <div class="robot-plane" aria-hidden="true"></div><div class="human-plane" aria-hidden="true"></div>
-      <DepthScene onScene={(photo,frame) => { scenePhoto=photo; photoFrame=frame; }} /><div class="paper-edge" aria-hidden="true"></div>
+      <DepthScene onScene={(photo,frame) => { scenePhoto=photo; photoFrame=frame; }} />
       <div class="signal-divider" aria-hidden="true"><ReactiveSignal vertical divider {menuImpulse} /></div>
       <div class="main-robot-menu" aria-label="Main menu"><ExperimentMenu items={mainChoices} onSelect={openMain} onActivity={updateGear} expressive poster /></div>
       <svg class="diffraction" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
@@ -227,13 +231,10 @@
           </g>{/each}
         </g>
         <g class="glass-facets">{#each glassPanels as d}<path {d}/>{/each}</g>
-        <g class="glass-cracks">
-          <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX-72)+' '+(eyeY+83)+'L'+(eyeX-235)+' '+(eyeY+172)+'L0 970'} />
-          <path d={'M'+(eyeX-72)+' '+(eyeY+83)+'L'+(eyeX-84)+' '+(eyeY+107)+'L'+(eyeX-124)+' '+(eyeY+221)+'L74 1000'} />
-          <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX-15)+' '+(eyeY+154)+'L'+(eyeX-94)+' 1000'} />
-        </g>
+        <g class="glass-cracks">{#each glassPanels as d}<path {d}/>{/each}</g>
       </svg>
-      <div class="gear-cutout" aria-hidden="true"><div class="cutout-shard"></div><div class="main-gear"><PauseGear rotation={gearAngle} /></div></div>
+      <div class="gear-cutout" aria-hidden="true"><div class="cutout-shard"></div><div class="main-gear"><PauseGear rotation={gearAngle} hardware={false} /></div></div>
+      <div class="record-hardware" aria-hidden="true"><RecordHardware /></div>
     </div>
   {:else}
     <div class="section-stage">
@@ -334,7 +335,7 @@
   .diffraction { position:absolute; inset:0; width:100%; height:100%; z-index:4; pointer-events:none; }
   .glass-facets { fill:transparent; stroke:var(--scene-paper); stroke-width:1.5; opacity:.78; filter:drop-shadow(2px 3px 0 #001347); }
   .glass-facets path:nth-child(even) { fill:#ffffff08; opacity:.85; }
-  .glass-cracks { fill:none; stroke:var(--scene-paper); stroke-width:2.1; opacity:.9; filter:drop-shadow(1px 1px 0 #001347); }
+  .glass-cracks { fill:none; stroke:var(--scene-paper); stroke-width:.75; opacity:.8; transform:translate(1px,1px); }
   .contact-card { max-width:900px; margin:60px auto; transform:rotate(-4deg); }
   .contact-link { display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:space-between; min-height:110px; padding:20px 30px; color:var(--scene-ink); background:var(--scene-paper); margin-bottom:25px; box-shadow:8px 9px 0 var(--scene-ink); text-decoration:none; }
   .contact-link>span:first-child { font:italic 900 clamp(36px,5vw,66px)/1 var(--font-display); }
@@ -367,16 +368,11 @@
     .contact-card { margin:35px auto; }
     .contact-link { min-height:80px; padding:15px 22px; }
   }
-  .paper-edge { position:absolute; z-index:1; pointer-events:none; left:-5%; top:-7%; width:16%; height:69%; background:#fff8ef; clip-path:polygon(0 0,88% 0,81% 9%,89% 13%,77% 23%,82% 25%,67% 36%,71% 39%,57% 53%,62% 57%,39% 72%,44% 77%,8% 100%,0 100%); transform:rotate(-8deg); filter:drop-shadow(7px 9px 0 #001347); }
-  .paper-edge::after { content:''; position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent 0 3px,#06153409 3px 4px); }
-  .cutout-shard { background:#fff8ef; }
-  .cutout-shard::after { background:linear-gradient(135deg,#fff8ef22,transparent 50%),var(--scene-cyan); }
+  .cutout-shard { background:var(--scene-paper); }
+  .cutout-shard::after { background:var(--scene-cyan); }
   .gear-cutout::before { transform:translate(12px,17px); background:var(--scene-ink); }
-  .gear-cutout::after { content:''; position:absolute; inset:-2% 1% 2% -1%; z-index:-1; background:var(--menu-b,#a7d9ff); clip-path:polygon(0 50%,21% 15%,45% 0,70% 13%,100% 51%,76% 84%,52% 100%,24% 84%); transform:rotate(-4deg) translate(-5px,-5px); }
   .contact-link { position:relative; isolation:isolate; border-bottom:3px solid #06153422; clip-path:polygon(0 3%,96% 0,100% 12%,99% 95%,4% 100%,0 89%); transition:translate 160ms ease-out; }
-  .contact-link::after { content:''; position:absolute; right:0; top:0; width:25px; height:25px; background:var(--scene-cyan); clip-path:polygon(0 0,100% 100%,0 100%); }
   .contact-link:hover { translate:0 -4px; }
-  @media(max-width:700px) { .paper-edge { width:22%; height:50%; opacity:.8; } }
   @media(prefers-reduced-motion:reduce) { .contact-link { transition:none; } }
   .submenu { transform:rotate(-4deg); padding:20px 0; }
   .submenu :global(.expressive .word) { font-size:clamp(32px,4.5vw,66px); }
@@ -440,6 +436,7 @@
   @keyframes section-arrive { from { opacity:.3; translate:12px 0; } to { opacity:1; translate:0 0; } }
   @media(prefers-reduced-motion:reduce) { .section-stage { animation:none; } }
   .submenu-gear :global(.pause-gear) { color:var(--scene-cyan); }
+  .record-hardware { position:absolute; z-index:3; pointer-events:none; left:calc(var(--signal-x,24%) - var(--eye-size) * .2067); top:calc(var(--signal-y,50%) - var(--eye-size) * .3617); width:calc(var(--eye-size) * .62); aspect-ratio:1.2; }
 </style>
 
 

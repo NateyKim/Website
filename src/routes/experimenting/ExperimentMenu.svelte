@@ -138,5 +138,6 @@
   @media(max-width:700px) { .poster .choice-row.highlighted .word { animation-name:persona-focus-small; } }
   @keyframes persona-focus-small { from { transform:skewX(-5deg) scale(1); } to { transform:skewX(-6deg) scale(1.07); } }
   @media(prefers-reduced-motion:reduce) { .poster .choice-row.highlighted .word { animation:none; transform:skewX(-6deg) scale(1.04); } }
+  .expressive .word::before { display:none; }
 </style>
 

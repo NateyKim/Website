@@ -44,6 +44,9 @@
     root?.style.setProperty('--scene-cyan',`hsl(${hue} 75% 80%)`);
     root?.style.setProperty('--scene-blue',`hsl(${hue} 62% 32%)`);
     root?.style.setProperty('--scene-ink',`hsl(${hue} 55% 10%)`);
+    root?.style.setProperty('--gear-body',`hsl(${hue} 72% 53%)`);
+    root?.style.setProperty('--gear-vinyl',`hsl(${hue} 60% 13%)`);
+    root?.style.setProperty('--gear-label',`hsl(${(hue+25)%360} 80% 78%)`);
     root?.style.setProperty('--menu-a',`hsl(${hue} 75% 86%)`);
     root?.style.setProperty('--menu-b',`hsl(${(hue+25)%360} 70% 82%)`);
     root?.style.setProperty('--menu-c',`hsl(${(hue+335)%360} 65% 90%)`);
