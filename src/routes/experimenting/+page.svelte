@@ -243,8 +243,8 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V35 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V35 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V36 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V36 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} on:pointerdown|capture={unlockSound} />
 
@@ -252,7 +252,7 @@
   {#if switching}<RobotEyelids phase={lidPhase} />{/if}
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <button class="sound-toggle" type="button" aria-pressed={soundEnabled} aria-label={soundEnabled ? 'Mute menu sound' : 'Enable menu sound'} on:click={toggleSound}>SOUND {soundEnabled ? 'ON' : 'OFF'}</button><span class="version-number">V35</span>
+    <button class="sound-toggle" type="button" aria-pressed={soundEnabled} aria-label={soundEnabled ? 'Mute menu sound' : 'Enable menu sound'} on:click={toggleSound}>SOUND {soundEnabled ? 'ON' : 'OFF'}</button><span class="version-number">V36</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
