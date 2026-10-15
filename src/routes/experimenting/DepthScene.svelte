@@ -95,8 +95,7 @@
   @keyframes illumination { to { transform:translate(4%,2%); opacity:.5; } }
   @keyframes fragment-drift { to { translate:0 -15px; } }
   @media(prefers-reduced-motion:reduce) { .surface g,.shafts,.fragments { animation:none; } .architecture,.fragments { transform:none; transition:none; } }
-  .color-mask { position:absolute; inset:0; background:linear-gradient(110deg,transparent 12%,var(--scene-blue) 50%,var(--scene-ink) 100%); opacity:.88; clip-path:polygon(43% 0,100% 0,100% 100%,25% 100%,35% 68%,28% 61%); }
-  .color-mask::after { content:''; position:absolute; inset:0; background:var(--scene-ink); opacity:.6; clip-path:polygon(77% 0,100% 0,100% 100%,55% 100%); }
+  .color-mask { position:absolute; inset:0; background:linear-gradient(110deg,transparent 12%,var(--scene-blue) 50%,var(--scene-ink) 100%); opacity:.88; clip-path:polygon(var(--divide-top,35%) 0,100% 0,100% 100%,var(--divide-bottom,20%) 100%); }
   .print-tone { position:absolute; inset:0; background:radial-gradient(var(--scene-ink) 1.6px,transparent 1.9px) 0 0/7px 7px; opacity:.38; mask-image:linear-gradient(140deg,black,transparent 40%,transparent 62%,black); }
   .print-tone::after { content:''; position:absolute; right:-10%; top:-10%; width:48%; height:75%; background:radial-gradient(var(--scene-paper) 1px,transparent 1.5px) 0 0/6px 6px; transform:rotate(-12deg); mask-image:linear-gradient(90deg,transparent,black); opacity:.4; }
 </style>

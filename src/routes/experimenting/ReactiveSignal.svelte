@@ -12,7 +12,7 @@
     path = samples.map((value, i) => {
       if (vertical) {
         const y = i / (samples.length - 1) * 1000;
-        return (i ? 'L' : 'M') + (62 - y * .012 + value * 48).toFixed(2) + ',' + y.toFixed(2);
+        return (i ? 'L' : 'M') + (60 + value * 48).toFixed(2) + ',' + y.toFixed(2);
       }
       return (i ? 'L' : 'M') + (i / (samples.length - 1) * 720).toFixed(2) + ',' + (60 + value * 50).toFixed(2);
     }).join(' ');

@@ -33,21 +33,35 @@
   let eyeX = 330, eyeY = 700;
   let scenePhoto = '';
   let photoFrame = { x:0, y:0, w:1000, h:1000 };
-  const paneVertices = [
-    [[0,0],[-20,48],[-70,40],[-52,12]],
-    [[-52,12],[-70,40],[-123,54],[-135,16],[-105,-6]],
-    [[-135,16],[-123,54],[-177,96],[-215,62],[-202,20]],
-    [[-20,48],[8,87],[-38,128],[-80,94],[-70,40]],
-    [[-70,40],[-80,94],[-122,134],[-158,100],[-123,54]],
-    [[-177,96],[-158,100],[-122,134],[-160,181],[-225,166],[-249,112],[-215,62]],
-    [[-38,128],[-12,178],[-53,217],[-108,188],[-122,134],[-80,94]],
-    [[-122,134],[-108,188],[-135,242],[-195,231],[-225,166],[-160,181]],
-    [[-53,217],[-26,284],[-79,321],[-127,291],[-135,242],[-108,188]],
-    [[-135,242],[-127,291],[-181,347],[-240,316],[-255,260],[-195,231]],
-    [[-249,112],[-225,166],[-260,218],[-305,197],[-319,146]],
-    [[-79,321],[-45,393],[-113,429],[-178,394],[-181,347],[-127,291]]
+  let glassScaleX = .1, glassScaleY = .18;
+  const impactPieces = [
+    [[-10,-7],[-68,-26],[-60,11],[-29,26],[-17,15]],
+    [[-80,-29],[-215,-65],[-175,-14],[-117,4],[-92,-7]],
+    [[-48,-38],[-91,-132],[-141,-104],[-109,-56]],
+    [[-34,43],[-84,155],[-127,133],[-106,85],[-61,49]],
+    [[-148,29],[-177,59],[-146,70],[-131,44]],
+    [[-212,75],[-382,119],[-331,202],[-252,167],[-222,109]],
+    [[-154,-87],[-273,-158],[-250,-102],[-181,-64],[-169,-61]],
+    [[-132,161],[-226,329],[-155,284],[-111,213]],
+    [[-237,-31],[-349,-51],[-309,1],[-272,13],[-248,1]],
+    [[-262,190],[-430,320],[-341,308],[-292,270]],
+    [[-55,172],[-79,282],[-44,258],[-30,214]],
+    [[-320,-177],[-424,-241],[-405,-177],[-351,-130]],
+    [[-410,102],[-558,129],[-501,197],[-441,166],[-425,140]],
+    [[-235,352],[-328,501],[-251,452],[-202,395]],
+    [[-465,-48],[-552,-60],[-518,-15],[-482,1]],
+    [[-381,361],[-552,457],[-443,439],[-388,413]],
+    [[-108,-175],[-135,-230],[-159,-193],[-133,-157]],
+    [[-193,16],[-218,38],[-194,49],[-180,27]],
+    [[-340,51],[-359,79],[-325,85],[-317,66]],
+    [[-199,214],[-218,240],[-185,247],[-178,225]],
+    [[-370,-77],[-400,-95],[-389,-57],[-364,-49]],
+    [[-307,283],[-336,301],[-302,321],[-287,305]],
+    [[-22,82],[-35,110],[-8,124],[4,97]],
+    [[-476,273],[-517,286],[-484,316],[-456,294]]
   ];
-  $: glassPanels = paneVertices.map(points => points.map(([x,y],index)=>(index?'L':'M')+(eyeX+x)+' '+(eyeY+y)).join('')+'Z');
+  $: glassPanels = impactPieces.map(points => points.map(([x,y],index)=>(index?'L':'M')+(eyeX+x*glassScaleX)+' '+(eyeY+y*glassScaleY)).join('')+'Z');
+  $: impactMark = [[-20,-8],[-11,-21],[5,-17],[15,-4],[9,12],[-6,18],[-18,4]].map(([x,y],i)=>(i?'L':'M')+(eyeX+x*glassScaleX)+' '+(eyeY+y*glassScaleY)).join('');
   let gearAngle = 0;
   let gearSelection = -1;
   function updateGear(index: number) {
@@ -202,6 +216,9 @@
       node.style.setProperty('--signal-y', ((gear.top + gear.height / 2 - stage.top) / stage.height * 100) + '%');
       const x = gear.left + gear.width / 2 - stage.left, y = gear.top + gear.height / 2 - stage.top;
       eyeX = x / stage.width * 1000; eyeY = y / stage.height * 1000;
+      const size = node.querySelector<HTMLElement>('.gear-cutout')?.offsetWidth ?? 700;
+      glassScaleX = size / 700 / stage.width * 1000;
+      glassScaleY = size / 700 / stage.height * 1000;
       node.style.setProperty('--divide-top', ((x + y * Math.tan(Math.PI / 20)) / stage.width * 100) + '%');
       node.style.setProperty('--divide-bottom', ((x - (stage.height-y) * Math.tan(Math.PI / 20)) / stage.width * 100) + '%');
     }
@@ -226,8 +243,8 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V34 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V34 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V35 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V35 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} on:pointerdown|capture={unlockSound} />
 
@@ -235,7 +252,7 @@
   {#if switching}<RobotEyelids phase={lidPhase} />{/if}
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <button class="sound-toggle" type="button" aria-pressed={soundEnabled} aria-label={soundEnabled ? 'Mute menu sound' : 'Enable menu sound'} on:click={toggleSound}>SOUND {soundEnabled ? 'ON' : 'OFF'}</button><span class="version-number">V34</span>
+    <button class="sound-toggle" type="button" aria-pressed={soundEnabled} aria-label={soundEnabled ? 'Mute menu sound' : 'Enable menu sound'} on:click={toggleSound}>SOUND {soundEnabled ? 'ON' : 'OFF'}</button><span class="version-number">V35</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
@@ -254,6 +271,7 @@
             <path {d} fill="url(#glass-glaze)"/>
           </g>{/each}
         </g>
+        <path class="impact-mark" d={impactMark} />
         <g class="glass-facets">{#each glassPanels as d}<path {d}/>{/each}</g>
         <g class="glass-cracks">{#each glassPanels as d}<path {d}/>{/each}</g>
       </svg>
@@ -334,9 +352,9 @@
   .human-plane { background:linear-gradient(155deg,#0964ef,#0033ad 65%,#001347); clip-path:polygon(var(--divide-top,38%) 0,100% 0,100% 100%,var(--divide-bottom,28%) 100%); }
   .main-robot-menu { position:relative; z-index:5; width:62%; padding:11vh 0 12vh; margin-left:36%; text-align:center; transform:perspective(1100px) rotateY(9deg) rotateZ(-6deg); transform-origin:center center; }
   .gear-cutout { position:absolute; z-index:2; top:35%; left:0; width:46%; height:64%; transform:perspective(1500px) rotateZ(12deg) rotateX(54deg) rotateY(-5deg); transform-style:preserve-3d; }
-  .gear-cutout::before { content:''; position:absolute; inset:0; background:#001347; clip-path:polygon(0 50%,18% 18%,43% 3%,68% 12%,100% 50%,78% 81%,53% 97%,27% 85%); transform:translate(16px,18px); }
-  .cutout-shard { position:absolute; inset:0; background:#f1ffff; clip-path:polygon(0 50%,18% 18%,43% 3%,68% 12%,100% 50%,78% 81%,53% 97%,27% 85%); }
-  .cutout-shard::after { content:''; position:absolute; inset:4%; background:var(--scene-cyan); clip-path:polygon(0 50%,18% 18%,43% 3%,68% 12%,100% 50%,78% 81%,53% 97%,27% 85%); }
+  .gear-cutout::before { content:''; position:absolute; inset:0; background:#001347; clip-path:polygon(0 50%,18% 18%,43% 3%,68% 12%,88% 50%,78% 81%,53% 97%,27% 85%); transform:translate(16px,18px); }
+  .cutout-shard { position:absolute; inset:0; background:#f1ffff; clip-path:polygon(0 50%,18% 18%,43% 3%,68% 12%,88% 50%,78% 81%,53% 97%,27% 85%); }
+  .cutout-shard::after { content:''; position:absolute; inset:4%; background:var(--scene-cyan); clip-path:polygon(0 50%,18% 18%,43% 3%,68% 12%,88% 50%,78% 81%,53% 97%,27% 85%); }
   .main-gear { position:absolute; inset:4% 15%; }
   .signal-divider { left:calc(var(--signal-x,33%) - 5%); top:0; width:12%; height:var(--signal-y,70%); transform:rotate(9deg); transform-origin:50% 100%; }
   .signal-divider :global(.reactive-signal) { height:100%; }
@@ -466,6 +484,39 @@
   .sound-toggle[aria-pressed="false"] { opacity:.75; border-bottom-color:transparent; }
   .sound-toggle:focus-visible { outline:2px solid var(--scene-cyan); outline-offset:3px; }
   @media(max-width:700px) { .sound-toggle { min-width:72px; font-size:12px; } .version-number { margin-left:0; } }
+
+  /* One viewport composition: large left figure, compact central command stack. */
+  .split-main { display:block; height:calc(100svh - 108px); min-height:560px; --eye-size:clamp(340px,min(46vw,95svh),960px); }
+  .main-robot-menu { position:absolute; left:37%; top:50%; width:31%; margin:0; padding:0; transform:translateY(-50%) rotate(-5deg); }
+  .gear-cutout { left:calc(24% - var(--eye-size) / 2); top:50%; bottom:auto; }
+  .main-robot-menu :global(.poster .word) { font-size:clamp(34px,6.7svh,84px); }
+  .main-robot-menu :global(.poster .choice) { min-height:44px; padding:2px 10px; }
+  .main-robot-menu :global(.poster) { gap:6px; }
+  .main-robot-menu :global(.poster .choice-row:nth-child(n)) { margin-top:0; }
+  .signal-divider { left:calc(var(--signal-x,24%) - 6%); top:calc(var(--signal-y,50%) - var(--signal-y,50%) / .98768834); width:12%; height:calc(var(--signal-y,50%) / .98768834); transform:rotate(9deg); transform-origin:50% 100%; }
+  @media(min-aspect-ratio:21/9) {
+    .split-main { --eye-size:min(42vw,95svh,1100px); }
+    .main-robot-menu { left:38%; width:29%; }
+    .gear-cutout { left:calc(25% - var(--eye-size) / 2); }
+  }
+  @media(orientation:portrait) {
+    .split-main { height:calc(100svh - 108px); min-height:650px; --eye-size:clamp(170px,40vw,430px); }
+    .main-robot-menu { left:31%; width:64%; }
+    .gear-cutout { left:calc(17% - var(--eye-size) / 2); }
+    .main-robot-menu :global(.poster .word) { font-size:clamp(29px,7.5vw,62px); }
+    .main-robot-menu :global(.poster) { gap:10px; }
+  }
+  @media(orientation:landscape) and (max-height:520px) {
+    .split-main { height:calc(100svh - 80px); min-height:290px; --eye-size:min(47vw,100svh); }
+    .main-robot-menu { left:40%; width:48%; }
+    .main-robot-menu :global(.poster .word) { font-size:clamp(26px,7.1svh,38px); }
+    .main-robot-menu :global(.poster) { gap:1px; }
+    .main-robot-menu :global(.poster .choice) { padding:1px 8px; }
+  }
+  .split-main { perspective:none; }
+  .gear-cutout { transform:translateY(-50%) perspective(calc(var(--eye-size) * 4)) rotateZ(12deg) rotateX(48deg) rotateY(-5deg); }
+  @media(orientation:landscape) and (min-height:521px) { .main-robot-menu :global(.poster) { gap:10px; } }
+  .impact-mark { fill:none; stroke:var(--scene-paper); stroke-width:1.3; opacity:.8; }
 </style>
 
 
