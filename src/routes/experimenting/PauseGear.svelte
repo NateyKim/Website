@@ -24,4 +24,7 @@
   .record-spin { transform-origin:0 0; animation:record-spin 100s linear infinite; }
   @keyframes record-spin { to { transform:rotate(360deg); } }
   @media(prefers-reduced-motion:reduce) { .indexing-gear { transition:none; } .record-spin { animation:none; } }
+  .tonearm { transform-origin:260px -260px; animation:stylus-life 9s ease-in-out infinite alternate; }
+  @keyframes stylus-life { from { transform:rotate(-.35deg); } to { transform:rotate(.35deg); } }
+  @media(prefers-reduced-motion:reduce) { .tonearm { animation:none; } }
 </style>

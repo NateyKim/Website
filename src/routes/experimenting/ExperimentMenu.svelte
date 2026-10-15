@@ -124,5 +124,11 @@
   .poster .choice-row.highlighted .selection-shape { inset:28% -30px 8% -26px; clip-path:polygon(0 98%,100% 0,91% 84%); background:#fa173b; }
   .poster .choice-row.highlighted .selection-shape::after { display:none; }
   @media(max-width:700px) { .poster .choice-row:nth-child(n) { translate:0; } .poster .choice { padding:3px 8px; } }
+  .expressive .word { animation:letter-life 5.6s ease-in-out infinite alternate; animation-delay:calc(var(--order) * -.73s); }
+  .expressive .choice-row.highlighted .word { animation:type-snap 220ms cubic-bezier(.2,.9,.25,1.2); }
+  .highlighted .selection-backing { animation:paper-snap 200ms cubic-bezier(.2,.9,.25,1.2),paper-life 3.8s ease-in-out 200ms infinite alternate; }
+  @keyframes letter-life { from { translate:0 -.7px; rotate:-.18deg; } to { translate:0 .7px; rotate:.18deg; } }
+  @keyframes paper-life { from { transform:translate(-.8px,-.4px) rotate(-2.3deg); } to { transform:translate(.8px,.4px) rotate(-1.7deg); } }
+  @media(prefers-reduced-motion:reduce) { .expressive .word,.expressive .choice-row.highlighted .word,.highlighted .selection-backing { animation:none; } }
 </style>
 

@@ -167,15 +167,15 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V25 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V25 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V26 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V26 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
 <div class="experiment" class:subsection={!!section} bind:this={shell} tabindex="-1">
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="version-number">V25</span>
+    <span class="version-number">V26</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
@@ -376,6 +376,11 @@
     .main-robot-menu :global(.poster .choice-row:nth-child(even)) { transform:rotate(5deg); }
     .main-robot-menu :global(.poster .word) { font-size:clamp(30px,8.6vw,43px); }
   }
+  .glass-facets path { animation:glass-light 7s ease-in-out infinite alternate; }
+  .glass-facets path:nth-child(2n) { animation-delay:-2.5s; }
+  .glass-facets path:nth-child(3n) { animation-delay:-4.5s; }
+  @keyframes glass-light { from { fill-opacity:.5; } to { fill-opacity:.95; } }
+  @media(prefers-reduced-motion:reduce) { .glass-facets path { animation:none; } }
 </style>
 
 
