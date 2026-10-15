@@ -8,6 +8,7 @@
   export let initialSelection = -1;
   export let persistent = false;
   export let expressive = false;
+  export let poster = false;
   let menuNode: HTMLDivElement;
   let highlighted = initialSelection;
   let keyboardMode = false;
@@ -19,7 +20,7 @@
 </script>
 
 <svelte:window on:focusin={(event) => { if (!persistent && menuNode && !menuNode.contains(event.target as Node)) highlighted = -1; }} />
-<div class="choice-menu" class:expressive bind:this={menuNode}>
+<div class="choice-menu" class:expressive class:poster bind:this={menuNode}>
   {#each items as item, index}
     <div class="choice-row" class:highlighted={highlighted === index} style:--order={index} on:pointerenter={() => highlight(index, false)} on:pointerleave={() => { if (!persistent && !keyboardMode) highlighted = -1; }} role="group" aria-label={item.name}>
       <button type="button" class="choice" aria-label={item.name} on:focus={() => highlight(index, true)} on:blur={() => { if (!persistent && keyboardMode) highlighted = -1; }} on:click={() => onSelect(index)}>
@@ -103,5 +104,25 @@
   @keyframes paper-snap { from { opacity:0; transform:translateX(-30px) rotate(7deg) scaleX(.8); } 65% { opacity:1; transform:translateX(3px) rotate(-3deg); } to { transform:rotate(-2deg); } }
   @keyframes type-snap { from { transform:translateX(-9px) skewX(-12deg); } 65% { transform:translateX(8px) skewX(-3deg); } to { transform:translateX(5px) skewX(-6deg); } }
   @media(prefers-reduced-motion:reduce) { .highlighted .selection-backing,.highlighted .word,.expressive .highlighted .word { animation:none; } }
+  .poster { gap:0; }
+  .poster .choice { min-height:44px; padding:0 12px; }
+  .poster .word { line-height:.86; letter-spacing:-.055em; }
+  .poster .choice-row { z-index:1; margin-top:-2px; }
+  .poster .choice-row:nth-child(1) { transform:translateX(-8%) rotate(-13deg); }
+  .poster .choice-row:nth-child(2) { transform:translateX(-2%) rotate(-8deg); }
+  .poster .choice-row:nth-child(3) { transform:translateX(3%) rotate(-11deg); }
+  .poster .choice-row:nth-child(4) { transform:translateX(-3%) rotate(7deg); }
+  .poster .choice-row:nth-child(5) { transform:translateX(1%) rotate(-5deg); }
+  .poster .choice-row:nth-child(6) { transform:translateX(4%) rotate(9deg); }
+  .poster .choice-row.highlighted { z-index:5; }
+  .poster .word::before { display:none; }
+  .poster .choice-row:nth-child(3n+1) .word { color:var(--scene-cyan); }
+  .poster .choice-row:nth-child(3n+2) .word { color:var(--menu-b,#64dfff); }
+  .poster .choice-row:nth-child(3n) .word { color:var(--menu-a,#affaff); }
+  .poster .choice-row.highlighted .word { color:#061534; }
+  .poster .highlighted .selection-backing { inset:-6px -18px -3px -12px; clip-path:polygon(0 25%,100% 0,93% 100%,2% 90%); }
+  .poster .choice-row.highlighted .selection-shape { inset:28% -30px 8% -26px; clip-path:polygon(0 98%,100% 0,91% 84%); background:#fa173b; }
+  .poster .choice-row.highlighted .selection-shape::after { display:none; }
+  @media(max-width:700px) { .poster .choice-row:nth-child(n) { translate:0; } .poster .choice { padding:3px 8px; } }
 </style>
 
