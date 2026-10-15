@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { tick } from 'svelte';
+  import { tick, onMount } from 'svelte';
+  import { createMenuAudio } from './menu-audio';
   import './pause-tokens.css';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
@@ -12,6 +13,20 @@
   import PauseBackdrop from './PauseBackdrop.svelte';
   import PetSelector from './PetSelector.svelte';
   import ReactiveSignal from './ReactiveSignal.svelte';
+  let soundEnabled = true;
+  let audio: ReturnType<typeof createMenuAudio> | undefined;
+  onMount(() => {
+    try { soundEnabled = localStorage.getItem('persona-menu-sound') !== 'off'; } catch {}
+    audio = createMenuAudio(soundEnabled);
+    return () => audio?.destroy();
+  });
+  function unlockSound() { audio?.unlock(); }
+  function toggleSound() {
+    soundEnabled = !soundEnabled;
+    audio?.setEnabled(soundEnabled);
+    try { localStorage.setItem('persona-menu-sound',soundEnabled?'on':'off'); } catch {}
+    if(soundEnabled) audio?.play('confirm');
+  }
   let menuImpulse = 0;
   let switching = false;
   let lidPhase: 'closing' | 'opening' = 'closing';
@@ -36,6 +51,7 @@
   let gearAngle = 0;
   let gearSelection = -1;
   function updateGear(index: number) {
+    if (!switching) audio?.play('select');
     menuImpulse += 1;
     if (index === gearSelection) return;
     let direction = gearSelection < 0 ? 1 : index - gearSelection;
@@ -102,6 +118,7 @@
 
   async function navigate(nextSection = '', nextPanel = '', nextItem = '') {
     if (switching) return;
+    if (!nextSection || (nextSection === sectionKey && !nextPanel)) audio?.play('back');
     const query = new URLSearchParams();
     if (nextSection) query.set('section', nextSection);
     if (nextPanel) query.set('panel', nextPanel);
@@ -109,6 +126,7 @@
     const animate = nextSection !== sectionKey && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (animate) {
       lidPhase = 'closing'; switching = true; menuImpulse += 1;
+      audio?.play('close');
       await tick();
       await new Promise(resolve => setTimeout(resolve,280));
     }
@@ -119,16 +137,21 @@
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
       if (animate) {
         lidPhase = 'opening';
+        audio?.play('open');
         await new Promise(resolve => setTimeout(resolve,340));
       }
     } finally { switching = false; }
   }
   async function openMain(index: number) {
+    if (switching) return;
+    audio?.play('confirm');
     lastMainChoice = index;
     const item = mainChoices[index];
     await navigate(item.section, item.panel);
   }
   async function openSubmenu(index: number) {
+    if (switching) return;
+    audio?.play('confirm');
     const item = activeChoices[index];
     if (item.panel === 'download') {
       const download = document.createElement('a');
@@ -146,6 +169,7 @@
     shell?.querySelectorAll<HTMLButtonElement>('.choice')[lastMainChoice]?.focus({ preventScroll: true });
   }
   function handleKeys(event: KeyboardEvent) {
+    unlockSound();
     if (switching) { if (['Escape','Enter','ArrowDown','ArrowUp','ArrowLeft','ArrowRight','Tab','Home','End'].includes(event.key)) event.preventDefault(); return; }
     const target = event.target as HTMLElement | null;
     if (event.altKey || event.ctrlKey || event.metaKey || target?.closest('input,textarea,select,[contenteditable="true"]')) return;
@@ -202,16 +226,16 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V33 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V33 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V34 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V34 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
-<svelte:window on:keydown={handleKeys} />
+<svelte:window on:keydown={handleKeys} on:pointerdown|capture={unlockSound} />
 
 <div class="experiment" class:switching class:subsection={!!section} bind:this={shell} tabindex="-1">
   {#if switching}<RobotEyelids phase={lidPhase} />{/if}
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="version-number">V33</span>
+    <button class="sound-toggle" type="button" aria-pressed={soundEnabled} aria-label={soundEnabled ? 'Mute menu sound' : 'Enable menu sound'} on:click={toggleSound}>SOUND {soundEnabled ? 'ON' : 'OFF'}</button><span class="version-number">V34</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
@@ -437,6 +461,11 @@
   @media(prefers-reduced-motion:reduce) { .section-stage { animation:none; } }
   .submenu-gear :global(.pause-gear) { color:var(--scene-cyan); }
   .record-hardware { position:absolute; z-index:3; pointer-events:none; left:calc(var(--signal-x,24%) - var(--eye-size) * .2067); top:calc(var(--signal-y,50%) - var(--eye-size) * .3617); width:calc(var(--eye-size) * .62); aspect-ratio:1.2; }
+  .sound-toggle { margin-left:auto; display:inline-flex; align-items:center; justify-content:center; min-width:90px; min-height:44px; border:0; border-bottom:2px solid var(--scene-cyan); background:transparent; color:var(--scene-paper); font:600 13px var(--font-ui); cursor:pointer; }
+  .version-number { margin-left:16px; }
+  .sound-toggle[aria-pressed="false"] { opacity:.75; border-bottom-color:transparent; }
+  .sound-toggle:focus-visible { outline:2px solid var(--scene-cyan); outline-offset:3px; }
+  @media(max-width:700px) { .sound-toggle { min-width:72px; font-size:12px; } .version-number { margin-left:0; } }
 </style>
 
 
