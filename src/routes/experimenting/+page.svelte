@@ -167,15 +167,15 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V23 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V23 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V24 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V24 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
 <div class="experiment" class:subsection={!!section} bind:this={shell} tabindex="-1">
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="version-number">V23</span>
+    <span class="version-number">V24</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
@@ -222,7 +222,7 @@
         <PetSelector items={activeChoices} onSelect={openSubmenu} onActivity={updateGear} />
       {:else}
         <div class="section-layout">
-          <div class="submenu" aria-label={viewTitle + ' submenu'}><ExperimentMenu items={activeChoices} onSelect={openSubmenu} onActivity={updateGear} /></div>
+          <div class="submenu" aria-label={viewTitle + ' submenu'}><ExperimentMenu items={activeChoices} onSelect={openSubmenu} onActivity={updateGear} expressive /></div>
           <div class="submenu-gear"><PauseGear rotation={gearAngle} /></div>
         </div>
       {/if}
@@ -245,7 +245,7 @@
   .experiment-footer { position:relative; z-index:10; min-height:52px; display:flex; align-items:center; padding:8px 4%; background:var(--scene-ink); color:var(--scene-paper); font:600 13px var(--font-ui); letter-spacing:.055em; }
   kbd { display:inline-block; margin-right:6px; padding:2px 6px; border:1px solid #88c5ed88; background:transparent; color:var(--scene-paper); font:600 12px var(--font-ui); border-radius:2px; }
   .experiment-footer kbd:not(:first-child) { margin-left:18px; }
-  .section-stage { position:relative; isolation:isolate; min-height:calc(100svh - 108px); padding:32px 6% 64px; overflow:hidden; background:var(--scene-blue); }
+  .section-stage { --scene-blue:#0754fa; --scene-cyan:#8cf3ff; --scene-ink:#001347; --menu-a:#b4faff; --menu-b:#70deff; --menu-c:#c6fdff; position:relative; isolation:isolate; min-height:calc(100svh - 108px); padding:32px 6% 64px; overflow:hidden; background:var(--scene-blue); }
   .section-title { margin:12px 0 40px; }
   .section-title h1 { color:var(--scene-paper); margin:0; font:italic 900 clamp(54px,7vw,100px)/.95 var(--font-display); letter-spacing:-.03em;  }
   .section-title h1:focus { outline:none; }
@@ -299,9 +299,9 @@
   .experiment:not(.subsection) { --scene-cyan:#ffcea9; --scene-paper:#fff8ef; --scene-blue:#244d92; --scene-ink:#061534; }
   .entry-beam { background:linear-gradient(90deg,#fff0d455,#ffdabd12); }
   .diffraction { position:absolute; inset:0; width:100%; height:100%; z-index:4; pointer-events:none; }
-  .glass-facets { fill:var(--scene-cyan); stroke:var(--scene-paper); stroke-width:.8; opacity:.24; }
-  .glass-facets path:nth-child(even) { fill:var(--scene-paper); opacity:.6; }
-  .glass-cracks { fill:none; stroke:var(--scene-paper); stroke-width:1.1; opacity:.55; }
+  .glass-facets { fill:var(--scene-cyan); stroke:var(--scene-paper); stroke-width:1.8; opacity:.48; filter:drop-shadow(2px 3px 0 #001347); }
+  .glass-facets path:nth-child(even) { fill:var(--scene-paper); opacity:.85; }
+  .glass-cracks { fill:none; stroke:var(--scene-paper); stroke-width:2.1; opacity:.9; filter:drop-shadow(1px 1px 0 #001347); }
   .contact-card { max-width:900px; margin:60px auto; transform:rotate(-4deg); }
   .contact-link { display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:space-between; min-height:110px; padding:20px 30px; color:var(--scene-ink); background:var(--scene-paper); margin-bottom:25px; box-shadow:8px 9px 0 var(--scene-ink); text-decoration:none; }
   .contact-link>span:first-child { font:italic 900 clamp(36px,5vw,66px)/1 var(--font-display); }
@@ -345,7 +345,14 @@
   .contact-link:hover { translate:0 -4px; }
   @media(max-width:700px) { .paper-edge { width:22%; height:50%; opacity:.8; } }
   @media(prefers-reduced-motion:reduce) { .contact-link { transition:none; } }
+  .submenu { transform:rotate(-4deg); padding:20px 0; }
+  .submenu :global(.expressive .word) { font-size:clamp(32px,4.5vw,66px); }
+  .section-title h1 { display:inline-block; transform:rotate(-4deg) skewX(-5deg); text-shadow:4px 5px 0 #001347; }
+  .section-stage::after { content:''; position:absolute; z-index:-1; inset:0; pointer-events:none; background:radial-gradient(#001347 1.5px,transparent 1.8px) 0 0/7px 7px; opacity:.24; mask-image:linear-gradient(120deg,black,transparent 50%,black); }
+  @media(max-width:700px) { .submenu :global(.expressive .word) { font-size:clamp(32px,8.5vw,44px); } }
+  @media(orientation:landscape) and (max-height:520px) { .submenu { padding:0; } .submenu :global(.expressive .word) { font-size:clamp(30px,8svh,42px); } }
 </style>
+
 
 
 

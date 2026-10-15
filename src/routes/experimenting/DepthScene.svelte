@@ -75,8 +75,7 @@
 <div class="depth-scene" bind:this={scene} aria-hidden="true" data-photo={photo}>
   <div class="architecture" style:background-image={photo ? `url("${photo}")` : 'none'}></div><div class="blue-depth"></div>
   <svg class="surface" viewBox="0 0 1400 350" preserveAspectRatio="none"><g>{#each patches as points,i}<polygon {points} opacity={.15+(i%4)*.09}/>{/each}</g></svg>
-  <div class="photo-paper" style:--photo-url={photo ? `url("${photo}")` : 'none'} style:--focal-x={(focal[visitPhoto]?.[0] ?? .5)*100+'%'} style:--focal-y={(focal[visitPhoto]?.[1] ?? .5)*100+'%'}><div></div></div>
-  <div class="color-mask"></div><div class="shafts"></div>
+  <div class="print-tone"></div><div class="color-mask"></div><div class="shafts"></div>
   <svg class="fragments" viewBox="0 0 1400 900" preserveAspectRatio="none"><path d="M136 88L181 62L160 130Z M326 362L342 316L370 350Z M1010 120L1058 140L1027 174Z M1223 673L1248 645L1274 708Z" fill="#ffdbba"/><path d="M185 652L216 621L229 650Z M560 72L581 45L594 91Z M1132 421L1160 398L1166 440Z" fill="#ff865d"/></svg>
 </div>
 <style>
@@ -93,9 +92,7 @@
   @media(prefers-reduced-motion:reduce) { .surface g,.shafts,.fragments { animation:none; } .architecture,.fragments { transform:none; transition:none; } }
   .color-mask { position:absolute; inset:0; background:linear-gradient(110deg,transparent 12%,var(--scene-blue) 50%,var(--scene-ink) 100%); opacity:.88; clip-path:polygon(43% 0,100% 0,100% 100%,25% 100%,35% 68%,28% 61%); }
   .color-mask::after { content:''; position:absolute; inset:0; background:var(--scene-ink); opacity:.6; clip-path:polygon(77% 0,100% 0,100% 100%,55% 100%); }
-  .photo-paper { position:absolute; left:8%; top:9%; width:24%; height:27%; padding:9px 9px 19px; background:#fff8ef; transform:rotate(-9deg); clip-path:polygon(2% 0,99% 3%,98% 85%,94% 88%,97% 92%,88% 95%,86% 100%,1% 96%,0 13%); box-shadow:8px 10px 0 var(--scene-ink); opacity:.78; }
-  .photo-paper>div { width:100%; height:100%; background-image:var(--photo-url); background-size:cover; background-position:var(--focal-x) var(--focal-y); filter:saturate(.7) contrast(1.1); }
-  @media(orientation:portrait) { .photo-paper { left:-7%; top:9%; width:28%; height:24%; opacity:.45; } }
-  @media(orientation:landscape) and (max-height:520px) { .photo-paper { left:7%; top:3%; width:21%; height:28%; } }
+  .print-tone { position:absolute; inset:0; background:radial-gradient(var(--scene-ink) 1.6px,transparent 1.9px) 0 0/7px 7px; opacity:.38; mask-image:linear-gradient(140deg,black,transparent 40%,transparent 62%,black); }
+  .print-tone::after { content:''; position:absolute; right:-10%; top:-10%; width:48%; height:75%; background:radial-gradient(var(--scene-paper) 1px,transparent 1.5px) 0 0/6px 6px; transform:rotate(-12deg); mask-image:linear-gradient(90deg,transparent,black); opacity:.4; }
 </style>
 

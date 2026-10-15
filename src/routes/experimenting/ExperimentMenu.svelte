@@ -23,6 +23,7 @@
   {#each items as item, index}
     <div class="choice-row" class:highlighted={highlighted === index} style:--order={index} on:pointerenter={() => highlight(index, false)} on:pointerleave={() => { if (!persistent && !keyboardMode) highlighted = -1; }} role="group" aria-label={item.name}>
       <button type="button" class="choice" aria-label={item.name} on:focus={() => highlight(index, true)} on:blur={() => { if (!persistent && keyboardMode) highlighted = -1; }} on:click={() => onSelect(index)}>
+        <span class="selection-backing" aria-hidden="true"></span>
         <span class="selection-shape" aria-hidden="true"></span>
         <span class="word" data-word={item.name}>{item.name}</span>
         <span class="marker" aria-hidden="true">◂</span>
@@ -86,4 +87,21 @@
   .expressive .choice-row:nth-child(even) .selection-shape::after { clip-path:polygon(0 0,17% 15%,9% 100%); }
   .expressive .highlighted .word::before { opacity:.35; }
   @media(prefers-reduced-motion:reduce) { .choice { transition:none; } .highlighted .choice { translate:none; } }
+  .selection-backing { position:absolute; z-index:-2; inset:1px -12px -1px -10px; background:#fff9f0; clip-path:polygon(2% 12%,97% 0,100% 85%,0 100%); opacity:0; transform:translateX(-18px) rotate(3deg); }
+  .highlighted .selection-backing { opacity:1; transform:rotate(-2deg); animation:paper-snap 200ms cubic-bezier(.2,.9,.25,1.2); }
+  .highlighted .selection-shape { inset:20% -28px 3% -24px; clip-path:polygon(0 90%,100% 0,90% 92%); background:radial-gradient(#00134733 1px,transparent 1.4px) 0 0/5px 5px,#f32949; }
+  .highlighted .word,.expressive .choice-row.highlighted .word { color:#061534; text-shadow:none; transform:translateX(5px) skewX(-6deg); animation:type-snap 220ms cubic-bezier(.2,.9,.25,1.2); }
+  .expressive .word { font-style:italic; letter-spacing:-.045em; transform:skewX(-5deg); }
+  .expressive .word::before { opacity:.18; transform:translate(2px,3px); }
+  .expressive .choice-row:nth-child(even) .word::before { opacity:.18; }
+  .expressive .choice-row:nth-child(3n+2) .word { opacity:1; }
+  .expressive .choice-row:nth-child(3n) .word { opacity:1; }
+  .expressive .highlighted .word::before { opacity:0; }
+  .expressive .choice-row:nth-child(even) .selection-backing { clip-path:polygon(0 0,100% 11%,96% 100%,3% 89%); }
+  .expressive .choice-row:nth-child(even).highlighted .selection-shape { clip-path:polygon(0 0,100% 65%,2% 100%); }
+  .marker { display:none; }
+  @keyframes paper-snap { from { opacity:0; transform:translateX(-30px) rotate(7deg) scaleX(.8); } 65% { opacity:1; transform:translateX(3px) rotate(-3deg); } to { transform:rotate(-2deg); } }
+  @keyframes type-snap { from { transform:translateX(-9px) skewX(-12deg); } 65% { transform:translateX(8px) skewX(-3deg); } to { transform:translateX(5px) skewX(-6deg); } }
+  @media(prefers-reduced-motion:reduce) { .highlighted .selection-backing,.highlighted .word,.expressive .highlighted .word { animation:none; } }
 </style>
+

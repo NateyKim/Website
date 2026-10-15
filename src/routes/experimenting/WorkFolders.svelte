@@ -45,5 +45,10 @@
     .tab { width:58px; min-height:145px; font-size:21px; padding:12px 8px; }
     .folder-sheet { min-height:360px; }
   }
+  .folder-spine { background:radial-gradient(#5eeaff 1px,transparent 1.5px) 0 0/6px 6px,#032877; }
+  .tab { background:radial-gradient(#00134744 1px,transparent 1.5px) 0 0/6px 6px,#2285ed; }
+  .tab.active { background:#fffdf5; color:#001347; }
+  .tab.active::after { content:''; position:absolute; left:0; top:0; width:22px; height:30px; background:#f32949; clip-path:polygon(0 0,100% 0,0 100%); }
+  .tab { position:relative; }
 </style>
 

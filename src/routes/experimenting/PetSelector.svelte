@@ -13,7 +13,7 @@
 </script>
 
 <div class="pet-selection">
-  <div class="pet-roster"><ExperimentMenu {items} {onSelect} onActivity={preview} initialSelection={0} persistent /></div>
+  <div class="pet-roster"><ExperimentMenu {items} {onSelect} onActivity={preview} initialSelection={0} persistent expressive /></div>
   <div class="portrait" data-pet={portraits[selected].key} aria-live="polite">
     <div class="portrait-outline" aria-hidden="true"></div>
     {#key selected}
@@ -39,4 +39,7 @@
     .portrait-name { font-size:clamp(26px,5svh,42px); bottom:15px; padding:8px 14px; }
     .pet-roster { padding-left:0; }
   }
+  .pet-roster :global(.expressive .word) { font-size:clamp(32px,4.3vw,60px); }
+  .portrait-outline { background:radial-gradient(#001347 1px,transparent 1.4px) 0 0/5px 5px,#53eeff; }
+  @media(max-width:700px) { .pet-roster :global(.expressive .word) { font-size:clamp(32px,8.5vw,42px); } }
 </style>
