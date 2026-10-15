@@ -134,9 +134,9 @@
   .poster .choice-row.highlighted .word { animation:persona-focus 200ms cubic-bezier(.18,.9,.25,1.15) forwards; transform-origin:center; }
   .poster .choice-row.highlighted .selection-backing { scale:1.1 1.06; }
   .poster .choice-row.highlighted .selection-shape { scale:1.1 1.06; }
-  @keyframes persona-focus { from { transform:translateX(0) skewX(-5deg) scale(1); } 70% { transform:translateX(3px) skewX(-6deg) scale(1.18); } to { transform:translateX(3px) skewX(-6deg) scale(1.14); } }
+  @keyframes persona-focus { from { transform:translateX(0) skewX(-5deg) scale(1); } 70% { transform:translateX(3px) skewX(-6deg) scale(1.28); } to { transform:translateX(3px) skewX(-6deg) scale(1.24); } }
   @media(max-width:700px) { .poster .choice-row.highlighted .word { animation-name:persona-focus-small; } }
-  @keyframes persona-focus-small { from { transform:skewX(-5deg) scale(1); } to { transform:skewX(-6deg) scale(1.07); } }
+  @keyframes persona-focus-small { from { transform:skewX(-5deg) scale(1); } to { transform:skewX(-6deg) scale(1.13); } }
   @media(prefers-reduced-motion:reduce) { .poster .choice-row.highlighted .word { animation:none; transform:skewX(-6deg) scale(1.04); } }
   .expressive .word::before { display:none; }
   .expressive:not(.poster) { gap:28px; }
@@ -155,5 +155,10 @@
   .expressive .choice-row.highlighted .selection-backing { inset:-10px -13% -9px -10%; }
   .expressive .choice-row.highlighted .selection-shape { inset:-2px -8% -3px -6%; clip-path:polygon(0 18%,100% 0,98% 98%,1% 100%); }
   .expressive .choice-row:nth-child(even).highlighted .selection-shape { clip-path:polygon(0 0,100% 12%,98% 100%,2% 88%); }
+  .expressive .choice-row:nth-child(n).highlighted .selection-backing { inset:-18px -17% -10px -16%; clip-path:polygon(0 100%,100% 0,93% 100%); scale:1.1 1.08; }
+  .expressive .choice-row:nth-child(n).highlighted .selection-shape { inset:-12px -17% -6px -10%; clip-path:polygon(0 100%,100% 0,92% 94%); scale:1; }
+  .expressive:not(.poster) .choice-row.highlighted .word { scale:1.12; transform-origin:left center; }
+  .expressive .choice-row.highlighted .word { -webkit-text-stroke:.4px #ffffff66; }
+  @media(prefers-reduced-motion:reduce) { .poster .choice-row.highlighted .word { transform:skewX(-6deg) scale(1.13); } }
 </style>
 

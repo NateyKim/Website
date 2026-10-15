@@ -11,6 +11,7 @@
   let reflectionColor = [.4,1,1];
   let sourceImage: HTMLImageElement | undefined;
   const photos = ['bench.jpg','bluemountain.jpg','Jamaica.jpg','strawsburg.jpg','coloseeum.jpg','IMG_20230730_211429627_HDR.jpg','IMG_20230725_172908282.jpg','kyoto.jpg','philly.jpg','kaiyukan.jpg','poconos.jpg','tokyo-flame.jpg','tokyo-skyline.jpg','wooded-lake.jpg','gateway-arch.jpg'];
+  const dimensions: Record<string,[number,number]> = {"bench.jpg": [1702, 1276], "bluemountain.jpg": [2560, 1152], "coloseeum.jpg": [1970, 1003], "gateway-arch.jpg": [687, 2254], "IMG_20230725_172908282.jpg": [671, 1247], "IMG_20230730_211429627_HDR.jpg": [4000, 2250], "Jamaica.jpg": [1782, 1276], "kaiyukan.jpg": [1350, 1793], "kyoto.jpg": [1350, 1016], "philly.jpg": [1350, 759], "poconos.jpg": [1350, 759], "strawsburg.jpg": [718, 1276], "tokyo-flame.jpg": [1350, 916], "tokyo-skyline.jpg": [1350, 1016], "wooded-lake.jpg": [1350, 759]};
   const focal: Record<string,[number,number]> = {
     'bench.jpg':[.45,.52], 'bluemountain.jpg':[.55,.38], 'Jamaica.jpg':[.52,.6], 'strawsburg.jpg':[.48,.48],
     'coloseeum.jpg':[.36,.64], 'IMG_20230730_211429627_HDR.jpg':[.5,.55], 'IMG_20230725_172908282.jpg':[.48,.42],
@@ -20,7 +21,7 @@
   function crop() {
     if(!sourceImage) return;
     const {width,height}=scene.getBoundingClientRect();
-    const scale=Math.max(width/sourceImage.naturalWidth,height/sourceImage.naturalHeight)*1.35;
+    const scale=Math.max(width/sourceImage.naturalWidth,height/sourceImage.naturalHeight);
     const w=sourceImage.naturalWidth*scale,h=sourceImage.naturalHeight*scale;
     const [fx,fy]=focal[visitPhoto] ?? [.5,.5];
     const left=Math.max(width-w,Math.min(0,width*.32-fx*w));
@@ -67,7 +68,13 @@
   onMount(()=>{
     if(!visitPhoto) {
       let previous=''; try { previous=sessionStorage.getItem('pause-photo') ?? ''; } catch {}
-      const pool=photos.filter(name=>name!==previous);
+      const ratio=scene.clientWidth/scene.clientHeight;
+      const fitted=photos.filter(name=>{
+        const [w,h]=dimensions[name];
+        return ratio>1.2 ? w/h>=1.15 : ratio<.85 ? w/h<=1.05 : true;
+      });
+      const pool=fitted.filter(name=>name!==previous);
+
       visitPhoto=pool[Math.floor(Math.random()*pool.length)];
       try { sessionStorage.setItem('pause-photo',visitPhoto); } catch {}
     }
@@ -102,7 +109,7 @@
   <svg class="water-ceiling" viewBox="0 0 1000 240" preserveAspectRatio="none"><rect x="-30" y="-20" width="1060" height="280" filter="url(#water-ceiling)"/></svg>
   <div class="white-field"></div>
   <div class="white-scene" style:background-image={photo ? `url("${photo}")` : 'none'}></div>
-  <div class="name-cutout"><span class="nameplate">NATEY</span></div>
+  <div class="name-cutout"><span class="nameplate">NATEY KIM</span></div>
   <svg class="red-refractions" viewBox="0 0 1000 1000" preserveAspectRatio="none">
     <path d="M122 196L145 177L139 240L123 252Z"/><path d="M132 211L146 201L139 233Z" class="inset"/>
     <path d="M83 410L106 424L98 462L77 438Z"/><path d="M87 417L99 429L94 447Z" class="inset"/>
@@ -140,6 +147,6 @@
   @keyframes water-drift { to { transform:translate(1.5%,1%) scale(1.04,.92); opacity:.65; } }
   @media(prefers-reduced-motion:reduce) { .water-ceiling { animation:none; } }
   .name-cutout { position:absolute; inset:0; overflow:hidden; clip-path:polygon(0 0,var(--divide-top,35%) 0,var(--divide-bottom,20%) 100%,0 100%); }
-  .nameplate { position:absolute; left:7%; top:35%; color:#000; font:italic 900 clamp(160px,25svh,360px)/.8 var(--font-display); letter-spacing:-.045em; white-space:nowrap; transform:translate(-50%,-50%) rotate(90deg) scaleY(1.4); }
-  @media(orientation:portrait) { .nameplate { left:6%; top:29%; font-size:clamp(120px,22svh,200px); } }
+  .nameplate { position:absolute; left:7%; top:30%; color:#000; font:italic 900 clamp(130px,19svh,280px)/.8 var(--font-display); letter-spacing:-.045em; white-space:nowrap; transform:translate(-50%,-50%) rotate(90deg) scaleY(1.4) scaleX(.66); }
+  @media(orientation:portrait) { .nameplate { left:6%; top:30%; font-size:clamp(90px,15svh,150px); } }
 </style>

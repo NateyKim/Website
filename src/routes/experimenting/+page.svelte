@@ -47,8 +47,14 @@
     [[-55,407],[-93,521],[-43,551],[-12,474],[-22,429]]
   ];
   $: glassPanels = impactPieces.map(points => points.map(([across,along],index) => {
-    const x = (across * .98768834 - along * .15643447) * .55;
-    const y = (across * .15643447 + along * .98768834) * .55;
+    // Add ten degrees to each side of the cone without changing its axis.
+    const angle=Math.atan2(across,along);
+    const spread=angle+Math.sign(angle)*Math.PI/18;
+    const distance=Math.hypot(across,along)*.55;
+    const wideAcross=Math.sin(spread)*distance;
+    const forward=Math.cos(spread)*distance;
+    const x = wideAcross * .98768834 - forward * .15643447;
+    const y = wideAcross * .15643447 + forward * .98768834;
     return (index?'L':'M')+(eyeX+x*glassScaleX)+' '+(eyeY+y*glassScaleY);
   }).join('')+'Z');
   $: impactMark = [[-20,-8],[-11,-21],[5,-17],[15,-4],[9,12],[-6,18],[-18,4]].map(([x,y],i)=>(i?'L':'M')+(eyeX+x*glassScaleX)+' '+(eyeY+y*glassScaleY)).join('');
@@ -233,8 +239,8 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V40 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V40 places the eye in the lower left with a white cutout field, photo-colored depth, and red-and-white selection accents." />
+  <title>Experimenting / V41 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V41 places the eye in the lower left with a white cutout field, photo-colored depth, and red-and-white selection accents." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} on:pointerdown|capture={unlockSound} />
 
@@ -242,7 +248,7 @@
   {#if switching}<RobotEyelids phase={lidPhase} />{/if}
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <button class="sound-toggle" type="button" aria-pressed={soundEnabled} aria-label={soundEnabled ? 'Mute menu sound' : 'Enable menu sound'} on:click={toggleSound}>SOUND {soundEnabled ? 'ON' : 'OFF'}</button><span class="version-number">V40</span>
+    <button class="sound-toggle" type="button" aria-pressed={soundEnabled} aria-label={soundEnabled ? 'Mute menu sound' : 'Enable menu sound'} on:click={toggleSound}>SOUND {soundEnabled ? 'ON' : 'OFF'}</button><span class="version-number">V41</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
@@ -298,6 +304,7 @@
 
   <footer class="experiment-footer">
     <span>{#if !isLeaf}<kbd>↑ ↓</kbd> SELECT <kbd>ENTER</kbd> CONFIRM {/if}<kbd>ESC</kbd> {section ? 'MAIN MENU' : 'RESUME'}</span>
+    <span class="design-credit">Experimental website design<br />inspired by Persona</span>
   </footer>
 </div>
 
@@ -506,7 +513,7 @@
   .gear-cutout { transform:translateY(-50%) perspective(calc(var(--eye-size) * 4)) rotateZ(12deg) rotateX(48deg) rotateY(-5deg); }
   @media(orientation:landscape) and (min-height:521px) { .main-robot-menu :global(.poster) { gap:10px; } }
   .impact-mark { fill:none; stroke:var(--scene-paper); stroke-width:1.3; opacity:.8; }
-  /* V40: composition measured against the 854 x 480 Reload reference. */
+  /* V41: composition measured against the 854 x 480 Reload reference. */
   .main-robot-menu { left:35%; width:32%; top:54%; }
   .gear-cutout { left:calc(21% - var(--eye-size) / 2); top:54%; }
   .record-hardware { inset:0; width:100%; height:100%; aspect-ratio:auto; }
@@ -529,6 +536,9 @@
   @media(min-aspect-ratio:21/9) { .gear-cutout { left:calc(22% - var(--eye-size) / 2); } }
   @media(orientation:portrait) { .gear-cutout { left:calc(17% - var(--eye-size) / 2); top:66%; } }
   @media(orientation:landscape) and (max-height:520px) { .gear-cutout { top:72%; } }
+  .experiment-footer { justify-content:space-between; gap:12px 24px; flex-wrap:wrap; }
+  .design-credit { margin-left:auto; text-align:right; font:italic 600 16px/1.2 var(--font-ui); letter-spacing:0; }
+  @media(max-width:700px) { .design-credit { font-size:13px; } }
 </style>
 
 
