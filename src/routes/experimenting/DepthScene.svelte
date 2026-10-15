@@ -109,7 +109,7 @@
   <svg class="water-ceiling" viewBox="0 0 1000 240" preserveAspectRatio="none"><rect x="-30" y="-20" width="1060" height="280" filter="url(#water-ceiling)"/></svg>
   <div class="white-field"></div>
   <div class="white-scene" style:background-image={photo ? `url("${photo}")` : 'none'}></div>
-  <div class="name-cutout"><span class="nameplate">NATEY KIM</span></div>
+  <div class="name-cutout"><svg class="nameplate" viewBox="0 0 300 1000" preserveAspectRatio="none"><text transform="translate(245 -8) rotate(90)" textLength="1016" lengthAdjust="spacingAndGlyphs">NATEY KIM</text></svg></div>
   <svg class="red-refractions" viewBox="0 0 1000 1000" preserveAspectRatio="none">
     <path d="M122 196L145 177L139 240L123 252Z"/><path d="M132 211L146 201L139 233Z" class="inset"/>
     <path d="M83 410L106 424L98 462L77 438Z"/><path d="M87 417L99 429L94 447Z" class="inset"/>
@@ -147,6 +147,6 @@
   @keyframes water-drift { to { transform:translate(1.5%,1%) scale(1.04,.92); opacity:.65; } }
   @media(prefers-reduced-motion:reduce) { .water-ceiling { animation:none; } }
   .name-cutout { position:absolute; inset:0; overflow:hidden; clip-path:polygon(0 0,var(--divide-top,35%) 0,var(--divide-bottom,20%) 100%,0 100%); }
-  .nameplate { position:absolute; left:7%; top:30%; color:#000; font:italic 900 clamp(130px,19svh,280px)/.8 var(--font-display); letter-spacing:-.045em; white-space:nowrap; transform:translate(-50%,-50%) rotate(90deg) scaleY(1.4) scaleX(.66); }
-  @media(orientation:portrait) { .nameplate { left:6%; top:30%; font-size:clamp(90px,15svh,150px); } }
+  .nameplate { position:absolute; left:-1%; top:0; width:clamp(140px,19vw,420px); height:100%; overflow:visible; fill:#000; font:italic 900 260px var(--font-display); letter-spacing:-.045em; }
+  @media(orientation:portrait) { .nameplate { width:clamp(115px,25vw,230px); } }
 </style>

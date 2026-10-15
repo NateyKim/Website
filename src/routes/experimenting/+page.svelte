@@ -239,8 +239,8 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V41 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V41 places the eye in the lower left with a white cutout field, photo-colored depth, and red-and-white selection accents." />
+  <title>Experimenting / V42 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V42 places the eye in the lower left with a white cutout field, photo-colored depth, and red-and-white selection accents." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} on:pointerdown|capture={unlockSound} />
 
@@ -248,7 +248,7 @@
   {#if switching}<RobotEyelids phase={lidPhase} />{/if}
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <button class="sound-toggle" type="button" aria-pressed={soundEnabled} aria-label={soundEnabled ? 'Mute menu sound' : 'Enable menu sound'} on:click={toggleSound}>SOUND {soundEnabled ? 'ON' : 'OFF'}</button><span class="version-number">V41</span>
+    <button class="sound-toggle" type="button" aria-pressed={soundEnabled} aria-label={soundEnabled ? 'Mute menu sound' : 'Enable menu sound'} on:click={toggleSound}>SOUND {soundEnabled ? 'ON' : 'OFF'}</button><span class="version-number">V42</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
@@ -513,7 +513,7 @@
   .gear-cutout { transform:translateY(-50%) perspective(calc(var(--eye-size) * 4)) rotateZ(12deg) rotateX(48deg) rotateY(-5deg); }
   @media(orientation:landscape) and (min-height:521px) { .main-robot-menu :global(.poster) { gap:10px; } }
   .impact-mark { fill:none; stroke:var(--scene-paper); stroke-width:1.3; opacity:.8; }
-  /* V41: composition measured against the 854 x 480 Reload reference. */
+  /* V42: composition measured against the 854 x 480 Reload reference. */
   .main-robot-menu { left:35%; width:32%; top:54%; }
   .gear-cutout { left:calc(21% - var(--eye-size) / 2); top:54%; }
   .record-hardware { inset:0; width:100%; height:100%; aspect-ratio:auto; }
