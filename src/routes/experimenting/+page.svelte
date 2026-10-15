@@ -47,8 +47,8 @@
     [[-55,407],[-93,521],[-43,551],[-12,474],[-22,429]]
   ];
   $: glassPanels = impactPieces.map(points => points.map(([across,along],index) => {
-    const x = across * .98768834 - along * .15643447;
-    const y = across * .15643447 + along * .98768834;
+    const x = (across * .98768834 - along * .15643447) * .55;
+    const y = (across * .15643447 + along * .98768834) * .55;
     return (index?'L':'M')+(eyeX+x*glassScaleX)+' '+(eyeY+y*glassScaleY);
   }).join('')+'Z');
   $: impactMark = [[-20,-8],[-11,-21],[5,-17],[15,-4],[9,12],[-6,18],[-18,4]].map(([x,y],i)=>(i?'L':'M')+(eyeX+x*glassScaleX)+' '+(eyeY+y*glassScaleY)).join('');
@@ -233,8 +233,8 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V38 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V38 refines the composition, directional glass impact, and menu spacing." />
+  <title>Experimenting / V39 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V39 places the eye in the lower left with a white cutout field, blue photographic depth, and red-and-white selection accents." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} on:pointerdown|capture={unlockSound} />
 
@@ -242,7 +242,7 @@
   {#if switching}<RobotEyelids phase={lidPhase} />{/if}
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <button class="sound-toggle" type="button" aria-pressed={soundEnabled} aria-label={soundEnabled ? 'Mute menu sound' : 'Enable menu sound'} on:click={toggleSound}>SOUND {soundEnabled ? 'ON' : 'OFF'}</button><span class="version-number">V38</span>
+    <button class="sound-toggle" type="button" aria-pressed={soundEnabled} aria-label={soundEnabled ? 'Mute menu sound' : 'Enable menu sound'} on:click={toggleSound}>SOUND {soundEnabled ? 'ON' : 'OFF'}</button><span class="version-number">V39</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
@@ -506,7 +506,7 @@
   .gear-cutout { transform:translateY(-50%) perspective(calc(var(--eye-size) * 4)) rotateZ(12deg) rotateX(48deg) rotateY(-5deg); }
   @media(orientation:landscape) and (min-height:521px) { .main-robot-menu :global(.poster) { gap:10px; } }
   .impact-mark { fill:none; stroke:var(--scene-paper); stroke-width:1.3; opacity:.8; }
-  /* V38: composition measured against the 854 x 480 Reload reference. */
+  /* V39: composition measured against the 854 x 480 Reload reference. */
   .main-robot-menu { left:35%; width:32%; top:54%; }
   .gear-cutout { left:calc(21% - var(--eye-size) / 2); top:54%; }
   .record-hardware { inset:0; width:100%; height:100%; aspect-ratio:auto; }
@@ -523,6 +523,12 @@
   @media(orientation:portrait) { .main-robot-menu { left:31%; width:64%; top:50%; } .gear-cutout { left:calc(17% - var(--eye-size) / 2); top:50%; } .main-robot-menu :global(.poster .word) { font-size:clamp(29px,7.5vw,62px); } }
   @media(max-width:700px) { .section-command-menu :global(.expressive) { gap:24px; } .section-command-menu :global(.expressive .word) { font-size:clamp(30px,8vw,44px); } }
   @media(orientation:landscape) and (max-height:520px) { .main-robot-menu { left:35%; width:51%; top:50%; } .gear-cutout { top:50%; } .main-robot-menu :global(.poster .word) { font-size:clamp(26px,7.1svh,38px); } .section-command-menu :global(.expressive) { gap:20px; } }
+  /* The inverted head in the reference sits low in the left third. */
+  .gear-cutout { left:calc(19% - var(--eye-size) / 2); top:73%; }
+  .glass-facets { stroke:#e7faff; filter:drop-shadow(1px 2px 0 #16268a99); }
+  @media(min-aspect-ratio:21/9) { .gear-cutout { left:calc(22% - var(--eye-size) / 2); } }
+  @media(orientation:portrait) { .gear-cutout { left:calc(17% - var(--eye-size) / 2); top:66%; } }
+  @media(orientation:landscape) and (max-height:520px) { .gear-cutout { top:72%; } }
 </style>
 
 

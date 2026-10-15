@@ -28,34 +28,15 @@
     frame={x:left/width*1000,y:top/height*1000,w:w/width*1000,h:h/height*1000};
     onScene(photo,frame);
   }
-  function palette(image: HTMLImageElement) {
-    const canvas=document.createElement('canvas'); canvas.width=32; canvas.height=32;
-    const ctx=canvas.getContext('2d'); if(!ctx) return;
-    ctx.drawImage(image,0,0,32,32);
-    const pixels=ctx.getImageData(0,0,32,32).data;
-    const hues=new Array(36).fill(0);
-    for(let i=0;i<pixels.length;i+=4) {
-      const r=pixels[i]/255,g=pixels[i+1]/255,b=pixels[i+2]/255;
-      const max=Math.max(r,g,b),min=Math.min(r,g,b),delta=max-min;
-      if(delta<.12 || max<.18 || min>.85) continue;
-      let hue=max===r?((g-b)/delta+6)%6:max===g?(b-r)/delta+2:(r-g)/delta+4;
-      hues[Math.floor(hue*6)] += delta*(1-Math.abs((max+min)/2-.5));
-    }
-    const hue=hues.indexOf(Math.max(...hues))*10+5;
+  function palette() {
     const root=scene.closest<HTMLElement>('.experiment');
-    root?.style.setProperty('--scene-cyan',`hsl(${hue} 75% 80%)`);
-    root?.style.setProperty('--scene-blue',`hsl(${hue} 62% 32%)`);
-    root?.style.setProperty('--scene-ink',`hsl(${hue} 55% 10%)`);
-    root?.style.setProperty('--scene-light',`hsl(${(hue+8)%360} 95% 73%)`);
-    root?.style.setProperty('--scene-deep',`hsl(${(hue+345)%360} 80% 8%)`);
-    root?.style.setProperty('--gear-body',`hsl(${hue} 72% 53%)`);
-    root?.style.setProperty('--gear-vinyl',`hsl(${hue} 60% 13%)`);
-    root?.style.setProperty('--gear-label',`hsl(${(hue+25)%360} 80% 78%)`);
-    root?.style.setProperty('--menu-a',`hsl(${hue} 75% 86%)`);
-    root?.style.setProperty('--menu-b',`hsl(${(hue+25)%360} 70% 82%)`);
-    root?.style.setProperty('--menu-c',`hsl(${(hue+335)%360} 65% 90%)`);
-    scene.style.setProperty('--photo-shadow',`hsl(${hue} 55% 12% / .83)`);
-    scene.style.setProperty('--photo-accent',`hsl(${hue} 80% 80%)`);
+    const colors: Record<string,string> = {
+      '--scene-cyan':'#64efff', '--scene-blue':'#1254dc', '--scene-ink':'#030d38',
+      '--scene-light':'#8effff', '--scene-deep':'#07136b', '--scene-paper':'#f7ffff',
+      '--gear-body':'#20bbf5', '--gear-vinyl':'#071740', '--gear-label':'#b3faff',
+      '--menu-a':'#8ffaff', '--menu-b':'#40dfff', '--menu-c':'#bbffff'
+    };
+    for(const [name,value] of Object.entries(colors)) root?.style.setProperty(name,value);
   }
   onMount(()=>{
     if(!visitPhoto) {
@@ -65,7 +46,7 @@
       try { sessionStorage.setItem('pause-photo',visitPhoto); } catch {}
     }
     photo='/photosilike/'+visitPhoto;
-    const image=new Image(); image.onload=()=>{ sourceImage=image; palette(image); crop(); }; image.src=photo;
+    const image=new Image(); image.onload=()=>{ sourceImage=image; palette(); crop(); }; image.src=photo;
     const motion=matchMedia('(prefers-reduced-motion: reduce)');
     function move(e:PointerEvent) {
       if(motion.matches || e.pointerType==='touch') return;
@@ -78,9 +59,28 @@
   });
 </script>
 <div class="depth-scene" bind:this={scene} aria-hidden="true" data-photo={photo}>
+  <svg class="filter-definitions" width="0" height="0"><defs>
+    <filter id="pause-photo-blue" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values=".2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 0 0 0 1 0"/>
+      <feComponentTransfer>
+        <feFuncR type="table" tableValues=".015 .025 .06 .17 .48"/>
+        <feFuncG type="table" tableValues=".025 .13 .35 .65 .98"/>
+        <feFuncB type="table" tableValues=".28 .59 .9 1 1"/>
+      </feComponentTransfer>
+    </filter>
+    <filter id="water-ceiling"><feTurbulence type="fractalNoise" baseFrequency=".012 .045" numOctaves="2" seed="14"/><feColorMatrix type="matrix" values="0 0 0 0 .4 0 0 0 0 1 0 0 0 0 1 0 0 0 6 -3"/><feGaussianBlur stdDeviation=".7"/></filter>
+  </defs></svg>
   <div class="architecture" style:background-image={photo ? `url("${photo}")` : 'none'}></div>
   <div class="tonal-depth"></div><div class="color-mask"></div>
   <div class="surface-reflection" style:background-image={photo ? `url("${photo}")` : 'none'}></div>
+  <svg class="water-ceiling" viewBox="0 0 1000 240" preserveAspectRatio="none"><rect x="-30" y="-20" width="1060" height="280" filter="url(#water-ceiling)"/></svg>
+  <div class="white-field"></div>
+  <div class="white-scene" style:background-image={photo ? `url("${photo}")` : 'none'}></div>
+  <svg class="red-refractions" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+    <path d="M122 196L145 177L139 240L123 252Z"/><path d="M132 211L146 201L139 233Z" class="inset"/>
+    <path d="M83 410L106 424L98 462L77 438Z"/><path d="M87 417L99 429L94 447Z" class="inset"/>
+    <path d="M49 701L70 679L78 726L61 738Z"/><path d="M58 705L67 691L70 723Z" class="inset"/>
+  </svg>
   <div class="volume-light"></div><div class="reading-shadow"></div><div class="print-tone"></div>
 </div>
 <style>
@@ -96,4 +96,20 @@
   @keyframes reflection-drift { to { transform:translate(2%,1%) scaleY(-.7) skewX(-10deg); opacity:.25; } }
   @keyframes light-breathe { to { transform:translate(2%,1%); opacity:.72; } }
   @media(prefers-reduced-motion:reduce) { .surface-reflection,.volume-light { animation:none; } .architecture { transform:none; transition:none; } }
+  .filter-definitions { position:absolute; }
+  .depth-scene { background:linear-gradient(180deg,#42edff 0%,#1587f5 24%,#1343d5 58%,#061172 100%); }
+  .architecture { opacity:.6; filter:url(#pause-photo-blue); mix-blend-mode:luminosity; }
+  .tonal-depth { background:linear-gradient(180deg,#80ffff3d 0%,#0854eb44 35%,#0614ba77 65%,#020c68e8 100%); }
+  .color-mask { opacity:.13; }
+  .surface-reflection { filter:url(#pause-photo-blue) contrast(1.6); opacity:.16; }
+  .white-field,.white-scene { position:absolute; inset:0; clip-path:polygon(0 0,var(--divide-top,35%) 0,var(--divide-bottom,20%) 100%,0 100%); }
+  .white-field { background:linear-gradient(155deg,#fff 0%,#f6fcff 67%,#bce6fb 100%); }
+  .white-scene { background-position:var(--photo-position,center); background-size:var(--photo-size,cover); filter:grayscale(1) contrast(2); opacity:.07; }
+  .water-ceiling { position:absolute; top:-2%; left:0; width:100%; height:29%; opacity:.5; mix-blend-mode:screen; mask-image:linear-gradient(180deg,#000 0%,#000b 50%,transparent 100%); transform-origin:50% 0; animation:water-drift 18s ease-in-out infinite alternate; }
+  .red-refractions { position:absolute; inset:0; width:100%; height:100%; fill:#f52248; opacity:.8; clip-path:polygon(0 0,var(--divide-top,35%) 0,var(--divide-bottom,20%) 100%,0 100%); }
+  .red-refractions .inset { fill:#ffe7ed; opacity:.75; }
+  .volume-light { background:radial-gradient(ellipse at 65% -8%,#85ffff77,transparent 58%); }
+  .print-tone { opacity:.1; }
+  @keyframes water-drift { to { transform:translate(1.5%,1%) scale(1.04,.92); opacity:.65; } }
+  @media(prefers-reduced-motion:reduce) { .water-ceiling { animation:none; } }
 </style>

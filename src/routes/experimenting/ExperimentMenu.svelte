@@ -144,5 +144,16 @@
   .expressive:not(.poster) .choice-row:nth-child(even) { transform:rotate(2deg) translateX(10px); }
   .expressive:not(.poster) .word { line-height:1.08; letter-spacing:-.015em; overflow-wrap:normal; }
   .expressive:not(.poster) .choice { padding:12px 14px; }
+  /* A white inset sits inside the red silhouette, with split-ink selected type. */
+  .expressive .choice-row.highlighted .selection-backing { background:#f51b42; inset:-7px -23px -8px -18px; clip-path:polygon(0 24%,100% 0,93% 100%,3% 88%); }
+  .expressive .choice-row.highlighted .selection-shape { background:#fff; inset:0 -8px -1px -5px; clip-path:polygon(0 28%,100% 2%,91% 92%,4% 86%); scale:1; }
+  .expressive .choice-row.highlighted .selection-shape::after { display:none; }
+  .expressive .choice-row:nth-child(even).highlighted .selection-backing { clip-path:polygon(0 0,100% 18%,94% 100%,3% 82%); }
+  .expressive .choice-row:nth-child(even).highlighted .selection-shape { clip-path:polygon(2% 9%,98% 23%,91% 91%,5% 77%); }
+  .expressive .choice-row.highlighted .word { color:transparent; background:linear-gradient(172deg,#020e37 0 49%,#ed133c 50% 100%); background-clip:text; -webkit-background-clip:text; }
+  .poster .choice-row.highlighted .selection-backing { scale:1.08 1.04; }
+  .expressive .choice-row.highlighted .selection-backing { inset:-10px -13% -9px -10%; }
+  .expressive .choice-row.highlighted .selection-shape { inset:-2px -8% -3px -6%; clip-path:polygon(0 18%,100% 0,98% 98%,1% 100%); }
+  .expressive .choice-row:nth-child(even).highlighted .selection-shape { clip-path:polygon(0 0,100% 12%,98% 100%,2% 88%); }
 </style>
 
