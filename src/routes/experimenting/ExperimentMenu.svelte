@@ -76,4 +76,14 @@
   .expressive .choice-row:nth-child(even) .word::before { transform:translate(6px,3px); opacity:.14; }
   .expressive .highlighted .word { color:white; opacity:1; }
   .expressive .highlighted .word::before { opacity:0; }
+  .choice { transition:translate 170ms cubic-bezier(.2,.8,.2,1); }
+  .highlighted .choice { translate:0 -3px; }
+  .expressive .word::before { color:var(--scene-ink); opacity:.65; transform:translate(3px,4px); }
+  .expressive .choice-row:nth-child(even) .word::before { transform:translate(-3px,4px); opacity:.65; }
+  .expressive .selection-shape { background:repeating-linear-gradient(0deg,transparent 0 3px,#ffffff0c 3px 4px),#f32949; clip-path:polygon(0 88%,92% 4%,96% 0,95% 12%,100% 100%,16% 94%,13% 100%); }
+  .expressive .choice-row:nth-child(even) .selection-shape { clip-path:polygon(0 0,92% 24%,100% 19%,97% 30%,9% 100%,10% 82%); }
+  .expressive .selection-shape::after { background:#ffbed0; opacity:.9; clip-path:polygon(89% 2%,100% 100%,83% 72%); }
+  .expressive .choice-row:nth-child(even) .selection-shape::after { clip-path:polygon(0 0,17% 15%,9% 100%); }
+  .expressive .highlighted .word::before { opacity:.35; }
+  @media(prefers-reduced-motion:reduce) { .choice { transition:none; } .highlighted .choice { translate:none; } }
 </style>

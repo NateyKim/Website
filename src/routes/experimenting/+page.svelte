@@ -167,20 +167,20 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V22 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V22 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V23 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V23 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
 <div class="experiment" class:subsection={!!section} bind:this={shell} tabindex="-1">
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="version-number">V22</span>
+    <span class="version-number">V23</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
       <div class="robot-plane" aria-hidden="true"></div><div class="human-plane" aria-hidden="true"></div>
-      <DepthScene /><div class="entry-beam" aria-hidden="true"></div>
+      <DepthScene /><div class="paper-edge" aria-hidden="true"></div><div class="entry-beam" aria-hidden="true"></div>
       <div class="signal-divider" aria-hidden="true"><ReactiveSignal vertical divider {menuImpulse} /></div>
       <div class="main-robot-menu" aria-label="Main menu"><ExperimentMenu items={mainChoices} onSelect={openMain} onActivity={updateGear} expressive /></div>
       <svg class="diffraction" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
@@ -334,6 +334,17 @@
     .contact-card { margin:35px auto; }
     .contact-link { min-height:80px; padding:15px 22px; }
   }
+  .paper-edge { position:absolute; z-index:1; pointer-events:none; left:-5%; top:-7%; width:16%; height:69%; background:#fff8ef; clip-path:polygon(0 0,88% 0,81% 9%,89% 13%,77% 23%,82% 25%,67% 36%,71% 39%,57% 53%,62% 57%,39% 72%,44% 77%,8% 100%,0 100%); transform:rotate(-8deg); filter:drop-shadow(7px 9px 0 #001347); }
+  .paper-edge::after { content:''; position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent 0 3px,#06153409 3px 4px); }
+  .cutout-shard { background:#fff8ef; }
+  .cutout-shard::after { background:linear-gradient(135deg,#fff8ef22,transparent 50%),var(--scene-cyan); }
+  .gear-cutout::before { transform:translate(12px,17px); background:var(--scene-ink); }
+  .gear-cutout::after { content:''; position:absolute; inset:-2% 1% 2% -1%; z-index:-1; background:var(--menu-b,#a7d9ff); clip-path:polygon(0 50%,21% 15%,45% 0,70% 13%,100% 51%,76% 84%,52% 100%,24% 84%); transform:rotate(-4deg) translate(-5px,-5px); }
+  .contact-link { position:relative; isolation:isolate; border-bottom:3px solid #06153422; clip-path:polygon(0 3%,96% 0,100% 12%,99% 95%,4% 100%,0 89%); transition:translate 160ms ease-out; }
+  .contact-link::after { content:''; position:absolute; right:0; top:0; width:25px; height:25px; background:var(--scene-cyan); clip-path:polygon(0 0,100% 100%,0 100%); }
+  .contact-link:hover { translate:0 -4px; }
+  @media(max-width:700px) { .paper-edge { width:22%; height:50%; opacity:.8; } }
+  @media(prefers-reduced-motion:reduce) { .contact-link { transition:none; } }
 </style>
 
 
