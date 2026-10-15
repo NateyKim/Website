@@ -130,5 +130,13 @@
   @keyframes letter-life { from { translate:0 -.7px; rotate:-.18deg; } to { translate:0 .7px; rotate:.18deg; } }
   @keyframes paper-life { from { transform:translate(-.8px,-.4px) rotate(-2.3deg); } to { transform:translate(.8px,.4px) rotate(-1.7deg); } }
   @media(prefers-reduced-motion:reduce) { .expressive .word,.expressive .choice-row.highlighted .word,.highlighted .selection-backing { animation:none; } }
+  .poster .word { animation:none; }
+  .poster .choice-row.highlighted .word { animation:persona-focus 200ms cubic-bezier(.18,.9,.25,1.15) forwards; transform-origin:center; }
+  .poster .choice-row.highlighted .selection-backing { scale:1.1 1.06; }
+  .poster .choice-row.highlighted .selection-shape { scale:1.1 1.06; }
+  @keyframes persona-focus { from { transform:translateX(0) skewX(-5deg) scale(1); } 70% { transform:translateX(3px) skewX(-6deg) scale(1.18); } to { transform:translateX(3px) skewX(-6deg) scale(1.14); } }
+  @media(max-width:700px) { .poster .choice-row.highlighted .word { animation-name:persona-focus-small; } }
+  @keyframes persona-focus-small { from { transform:skewX(-5deg) scale(1); } to { transform:skewX(-6deg) scale(1.07); } }
+  @media(prefers-reduced-motion:reduce) { .poster .choice-row.highlighted .word { animation:none; transform:skewX(-6deg) scale(1.04); } }
 </style>
 

@@ -11,6 +11,7 @@
   import PetSelector from './PetSelector.svelte';
   import ReactiveSignal from './ReactiveSignal.svelte';
   let menuImpulse = 0;
+  let switching = false;
   let eyeX = 330, eyeY = 700;
   const glassShards = [
     [[-8,12],[-52,31],[-26,58]], [[-58,34],[-99,20],[-85,75]],
@@ -95,11 +96,18 @@
   $: viewDescription = selectedPet?.body ?? selectedChoice?.body ?? section?.description;
 
   async function navigate(nextSection = '', nextPanel = '', nextItem = '') {
+    if (switching) return;
     const query = new URLSearchParams();
     if (nextSection) query.set('section', nextSection);
     if (nextPanel) query.set('panel', nextPanel);
     if (nextItem) query.set('item', nextItem);
+    if (nextSection !== sectionKey && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      switching = true;
+      menuImpulse += 1;
+      await new Promise(resolve => setTimeout(resolve,180));
+    }
     await goto('/experimenting' + (query.size ? '?' + query : ''), { noScroll: true, keepFocus: true });
+    switching = false;
     await tick();
     shell?.querySelector<HTMLElement>('#screen-title')?.focus({ preventScroll: true });
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -182,15 +190,16 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V28 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V28 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V29 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V29 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
-<div class="experiment" class:subsection={!!section} bind:this={shell} tabindex="-1">
+<div class="experiment" class:switching class:subsection={!!section} bind:this={shell} tabindex="-1">
+  {#if switching}<div class="scene-wash" aria-hidden="true"></div>{/if}
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="version-number">V28</span>
+    <span class="version-number">V29</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
@@ -243,7 +252,7 @@
 </div>
 
 <style>
-  .experiment { background:var(--scene-ink); color:var(--scene-paper); font-family:var(--font-reading); }
+  .experiment { overflow-x:clip; background:var(--scene-ink); color:var(--scene-paper); font-family:var(--font-reading); }
   .experiment,.experiment * { box-sizing:border-box; }
   .experiment:focus { outline:none; }
   .version-bar { position:relative; z-index:10; display:flex; align-items:center; gap:24px; min-height:56px; padding:4px 4%; background:var(--scene-ink); }
@@ -408,6 +417,12 @@
     .main-robot-menu :global(.poster .choice-row:nth-child(6)) { margin-top:0; }
     .main-robot-menu :global(.poster .word) { font-size:clamp(26px,7.5svh,38px); }
   }
+  .scene-wash { position:fixed; inset:0; z-index:40; pointer-events:none; background:#0754fa; mix-blend-mode:multiply; animation:scene-wash 180ms ease-in forwards; }
+  .switching .main-robot-menu { filter:contrast(1.1); }
+  @keyframes scene-wash { from { opacity:0; } to { opacity:.92; } }
+  .section-stage { animation:section-arrive 230ms cubic-bezier(.16,.85,.25,1); }
+  @keyframes section-arrive { from { opacity:.3; translate:12px 0; } to { opacity:1; translate:0 0; } }
+  @media(prefers-reduced-motion:reduce) { .scene-wash { display:none; } .section-stage { animation:none; } }
 </style>
 
 
