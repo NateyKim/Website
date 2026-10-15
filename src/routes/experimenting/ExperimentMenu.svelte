@@ -139,5 +139,10 @@
   @keyframes persona-focus-small { from { transform:skewX(-5deg) scale(1); } to { transform:skewX(-6deg) scale(1.07); } }
   @media(prefers-reduced-motion:reduce) { .poster .choice-row.highlighted .word { animation:none; transform:skewX(-6deg) scale(1.04); } }
   .expressive .word::before { display:none; }
+  .expressive:not(.poster) { gap:28px; }
+  .expressive:not(.poster) .choice-row:nth-child(n) { transform:rotate(-2deg); }
+  .expressive:not(.poster) .choice-row:nth-child(even) { transform:rotate(2deg) translateX(10px); }
+  .expressive:not(.poster) .word { line-height:1.08; letter-spacing:-.015em; overflow-wrap:normal; }
+  .expressive:not(.poster) .choice { padding:12px 14px; }
 </style>
 

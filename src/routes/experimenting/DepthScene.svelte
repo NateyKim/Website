@@ -4,9 +4,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   export let onScene: (photo:string, frame:{x:number;y:number;w:number;h:number}) => void = () => {};
-  export let impulse = 0;
-  export let irisX = 240;
-  export let irisY = 500;
   let scene: HTMLDivElement;
   let photo = '';
   let frame = {x:0,y:0,w:1000,h:1000};
@@ -60,23 +57,6 @@
     scene.style.setProperty('--photo-shadow',`hsl(${hue} 55% 12% / .83)`);
     scene.style.setProperty('--photo-accent',`hsl(${hue} 80% 80%)`);
   }
-  const fragmentGroups = [
-    {id:'biosignal',panes:[
-      'M130 174H165L178 157L190 195L206 128L222 204L235 172H306V180H241L223 225L205 155L190 214L176 176L169 182H130Z',
-      'M145 136a9 9 0 1 0 18 0a9 9 0 1 0-18 0Z',
-      'M167 119a7 7 0 1 0 14 0a7 7 0 1 0-14 0Z'
-    ]},
-    {id:'actuator',panes:[
-      'M756 136L850 184L863 209L846 218L744 158Z',
-      'M864 188L923 135L937 153L875 215L858 220L850 208Z',
-      'M840 203a16 16 0 1 0 32 0a16 16 0 1 0-32 0Z'
-    ]},
-    {id:'motion',panes:[
-      'M841 670A66 66 0 0 1 933 738L920 736A53 53 0 0 0 849 681Z',
-      'M869 719a10 10 0 1 0 20 0a10 10 0 1 0-20 0Z',
-      'M878 702L889 699L912 752L902 756Z'
-    ]}
-  ];
   onMount(()=>{
     if(!visitPhoto) {
       let previous=''; try { previous=sessionStorage.getItem('pause-photo') ?? ''; } catch {}
@@ -100,77 +80,20 @@
 <div class="depth-scene" bind:this={scene} aria-hidden="true" data-photo={photo}>
   <div class="architecture" style:background-image={photo ? `url("${photo}")` : 'none'}></div>
   <div class="tonal-depth"></div><div class="color-mask"></div>
-  <svg class="depth-planes" viewBox="0 0 1000 1000" preserveAspectRatio="none">
-    <defs>
-      <linearGradient id="plane-light" x2=".2" y2="1"><stop stop-color="var(--scene-light,var(--scene-cyan))" stop-opacity=".75"/><stop offset="1" stop-color="var(--scene-light,var(--scene-cyan))" stop-opacity="0"/></linearGradient>
-      <linearGradient id="plane-shadow" x2=".3" y2="1"><stop stop-color="var(--scene-ink)" stop-opacity="0"/><stop offset="1" stop-color="var(--scene-deep,var(--scene-ink))" stop-opacity=".85"/></linearGradient>
-      <filter id="ceiling-refraction"><feTurbulence baseFrequency=".015 .04" numOctaves="2" seed="8" result="ripple"/><feDisplacementMap in="SourceGraphic" in2="ripple" scale="20" xChannelSelector="R" yChannelSelector="G"/></filter>
-    </defs>
-    <g class="far-planes" fill="url(#plane-light)">
-      <path d="M0 0H1000V113L738 164L483 95L195 232L0 172Z"/>
-      <path d="M-50 215L263 130L572 185L1010 79V175L581 274L277 208L-50 329Z" opacity=".35"/>
-    </g>
-    <g class="middle-planes" fill="url(#plane-shadow)">
-      <path d="M0 543L252 694L501 613L783 746L1000 584V1000H0Z"/>
-      <path d="M0 1000L268 772L485 736L672 834L1000 735V1000Z" opacity=".65"/>
-    </g>
-    <g class="ceiling-reflections" fill="var(--scene-light,var(--scene-cyan))" filter="url(#ceiling-refraction)">
-      <path d="M-20 42L112 18L208 39L313 17L465 44L565 16L707 38L845 12L1020 34V59L854 44L715 76L569 48L472 81L315 53L209 71L113 46L-20 75Z"/>
-      <path d="M-20 107L89 83L248 115L377 78L493 101L641 72L792 103L891 71L1020 98V113L901 103L799 139L644 109L493 142L380 119L251 151L91 121L-20 138Z" opacity=".6"/>
-      <path d="M-20 186L158 153L298 174L436 142L596 170L742 136L910 169L1020 142V164L918 199L746 174L598 207L439 183L301 211L159 188L-20 220Z" opacity=".3"/>
-    </g>
-  </svg>
+  <div class="surface-reflection" style:background-image={photo ? `url("${photo}")` : 'none'}></div>
   <div class="volume-light"></div><div class="reading-shadow"></div><div class="print-tone"></div>
-  <svg class="interaction-path" viewBox="0 0 1000 1000" preserveAspectRatio="none">
-    <path d={'M154 145L174 119M174 119H250L'+irisX+' '+irisY} />
-    {#key impulse}{#if impulse>0}<path class="intent-pulse" d={'M174 119H250L'+irisX+' '+irisY} />{/if}{/key}
-  </svg>
-  <svg class="fragment-clusters" viewBox="0 0 1000 1000" preserveAspectRatio="none">
-    <defs>
-      <linearGradient id="window-glaze"><stop stop-color="#ffffff" stop-opacity=".3"/><stop offset=".5" stop-color="#ffffff" stop-opacity="0"/><stop offset="1" stop-color="var(--scene-cyan)" stop-opacity=".2"/></linearGradient>
-      {#each fragmentGroups as group}{#each group.panes as d,index}<clipPath id={'window-'+group.id+index}><path {d}/></clipPath>{/each}{/each}
-    </defs>
-    {#each fragmentGroups as group,groupIndex}
-      <g class="cluster-parallax" style:--depth={groupIndex*.4+.6}>
-        <g class="window-group" data-group={group.id} style:--phase={groupIndex*-3.3+'s'}>
-          {#each group.panes as d,index}<g class="photo-window" clip-path={'url(#window-'+group.id+index+')'}>
-            {#if photo}<image href={photo} x={frame.x} y={frame.y} width={frame.w} height={frame.h} preserveAspectRatio="none" opacity=".62"/>{/if}
-            <path {d} fill="url(#window-glaze)"/>
-          </g><path class="window-edge" {d}/>{/each}
-        </g>
-      </g>
-    {/each}
-  </svg>
 </div>
 <style>
   .depth-scene { --dx:0px; --dy:0px; position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden; isolation:isolate; background:var(--scene-blue); }
-  .architecture { position:absolute; inset:0; background-position:var(--photo-position,center); background-size:var(--photo-size,cover); background-repeat:no-repeat; opacity:.24; transform:translate(var(--dx),var(--dy)) scale(1.03); transition:transform 650ms ease-out; mask-image:linear-gradient(100deg,transparent,#000 28%,#000 60%,transparent); }
-  .tonal-depth { position:absolute; inset:0; background:radial-gradient(ellipse at 43% -12%,color-mix(in srgb,var(--scene-light,var(--scene-cyan)) 65%,transparent),transparent 67%),linear-gradient(180deg,transparent 10%,color-mix(in srgb,var(--scene-blue) 55%,transparent) 42%,var(--scene-deep,var(--scene-ink)) 100%); }
-  .color-mask { position:absolute; inset:0; background:var(--scene-ink); opacity:.37; clip-path:polygon(var(--divide-top,35%) 0,100% 0,100% 100%,var(--divide-bottom,20%) 100%); }
-  .depth-planes,.fragment-clusters { position:absolute; inset:0; width:100%; height:100%; }
-  .far-planes { opacity:.4; transform:translate(calc(var(--dx) * .35),calc(var(--dy) * .35)); transition:transform 900ms ease-out; }
-  .middle-planes { opacity:.7; transform:translate(calc(var(--dx) * -.4),calc(var(--dy) * -.4)); transition:transform 900ms ease-out; }
-  .ceiling-reflections { opacity:.28; animation:surface-light 16s ease-in-out infinite alternate; }
-  .volume-light { position:absolute; inset:-12%; background:radial-gradient(ellipse at 37% 8%,color-mix(in srgb,var(--scene-light,var(--scene-cyan)) 32%,transparent),transparent 52%),linear-gradient(118deg,transparent 35%,#eaffff12 39%,transparent 46%); mix-blend-mode:screen; animation:volume-light 19s ease-in-out infinite alternate; }
-  .reading-shadow { position:absolute; inset:0; background:radial-gradient(ellipse at 56% 58%,#000b 0%,#0005 20%,transparent 49%); opacity:.32; }
-  .print-tone { position:absolute; inset:0; background:radial-gradient(var(--scene-ink) 1.4px,transparent 1.8px) 0 0/7px 7px; opacity:.23; mask-image:linear-gradient(145deg,black,transparent 43%,transparent 72%,black); }
-  .cluster-parallax { transform:translate(calc(var(--dx) * var(--depth) * -1),calc(var(--dy) * var(--depth) * -1)); transition:transform 800ms ease-out; }
-  .window-group { animation:cluster-drift 11s ease-in-out infinite alternate; animation-delay:var(--phase); }
-  .window-edge { fill:none; stroke:var(--scene-paper); stroke-width:.55; opacity:.3; filter:drop-shadow(1px 2px 0 #0008); }
-  @keyframes surface-light { from { transform:translate(-10px,-3px); opacity:.22; } to { transform:translate(15px,7px); opacity:.35; } }
-  @keyframes volume-light { to { transform:translate(3%,1%) scale(1.04); opacity:.65; } }
-  @keyframes cluster-drift { from { transform:translate(0,-3px); } to { transform:translate(2px,3px); } }
-  @media(max-width:700px) { .fragment-clusters { opacity:.6; } .ceiling-reflections { opacity:.22; } }
-  @media(prefers-reduced-motion:reduce) {
-    .ceiling-reflections,.volume-light,.window-group { animation:none; }
-    .architecture,.far-planes,.middle-planes,.cluster-parallax { transform:none; transition:none; }
-  }
-  .interaction-path { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; fill:none; stroke:var(--scene-cyan); stroke-width:.6; }
-  .interaction-path>path:first-child { opacity:.13; stroke-dasharray:3 8; }
-  .intent-pulse { stroke-dasharray:12 1200; stroke-width:1.4; opacity:0; animation:intent-travel 700ms ease-out; }
-  @keyframes intent-travel { 0% { stroke-dashoffset:0; opacity:.6; } 80% { opacity:.6; } 100% { stroke-dashoffset:-700; opacity:0; } }
-  .window-group[data-group="biosignal"] { opacity:.65; }
-  .window-group[data-group="actuator"] { opacity:.5; }
-  .window-group[data-group="motion"] { opacity:.45; }
-  @media(prefers-reduced-motion:reduce) { .intent-pulse { animation:none; } }
+  .architecture { position:absolute; inset:0; background-position:var(--photo-position,center); background-size:var(--photo-size,cover); background-repeat:no-repeat; opacity:.35; transform:translate(var(--dx),var(--dy)) scale(1.03); transition:transform 650ms ease-out; mask-image:linear-gradient(180deg,#0008,#000 35%,#0008 70%,transparent); }
+  .tonal-depth { position:absolute; inset:0; background:radial-gradient(ellipse at 38% -15%,color-mix(in srgb,var(--scene-light,var(--scene-cyan)) 85%,transparent),transparent 67%),linear-gradient(180deg,transparent 8%,color-mix(in srgb,var(--scene-blue) 50%,transparent) 42%,var(--scene-deep,var(--scene-ink)) 100%); }
+  .color-mask { position:absolute; inset:0; background:var(--scene-ink); opacity:.32; clip-path:polygon(var(--divide-top,35%) 0,100% 0,100% 100%,var(--divide-bottom,20%) 100%); }
+  /* Reflected detail from the same photograph supplies the ceiling texture. */
+  .surface-reflection { position:absolute; inset:-8% -8% 47%; background-size:cover; background-position:50% 55%; mix-blend-mode:screen; opacity:.18; filter:grayscale(1) contrast(2.4); mask-image:linear-gradient(180deg,transparent 0%,#0006 25%,#0008 50%,transparent 100%); transform:scaleY(-.65) skewX(-14deg); animation:reflection-drift 18s ease-in-out infinite alternate; }
+  .volume-light { position:absolute; inset:-10%; background:radial-gradient(ellipse at 36% -8%,color-mix(in srgb,var(--scene-light,var(--scene-cyan)) 52%,transparent),transparent 58%); mix-blend-mode:screen; animation:light-breathe 14s ease-in-out infinite alternate; }
+  .reading-shadow { position:absolute; inset:0; background:radial-gradient(ellipse at 53% 60%,#0008,transparent 52%); opacity:.3; }
+  .print-tone { position:absolute; inset:0; background:radial-gradient(var(--scene-ink) .9px,transparent 1.3px) 0 0/6px 6px; opacity:.16; mask-image:linear-gradient(145deg,black,transparent 45%,transparent 75%,black); }
+  @keyframes reflection-drift { to { transform:translate(2%,1%) scaleY(-.7) skewX(-10deg); opacity:.25; } }
+  @keyframes light-breathe { to { transform:translate(2%,1%); opacity:.72; } }
+  @media(prefers-reduced-motion:reduce) { .surface-reflection,.volume-light { animation:none; } .architecture { transform:none; transition:none; } }
 </style>

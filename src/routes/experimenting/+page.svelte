@@ -34,33 +34,23 @@
   let scenePhoto = '';
   let photoFrame = { x:0, y:0, w:1000, h:1000 };
   let glassScaleX = .1, glassScaleY = .18;
+  // Shards continue along the incoming beam (-9 degrees from vertical).
+  // Local x is across the cone; local y is distance beyond the impact.
   const impactPieces = [
-    [[-10,-7],[-68,-26],[-60,11],[-29,26],[-17,15]],
-    [[-80,-29],[-215,-65],[-175,-14],[-117,4],[-92,-7]],
-    [[-48,-38],[-91,-132],[-141,-104],[-109,-56]],
-    [[-34,43],[-84,155],[-127,133],[-106,85],[-61,49]],
-    [[-148,29],[-177,59],[-146,70],[-131,44]],
-    [[-212,75],[-382,119],[-331,202],[-252,167],[-222,109]],
-    [[-154,-87],[-273,-158],[-250,-102],[-181,-64],[-169,-61]],
-    [[-132,161],[-226,329],[-155,284],[-111,213]],
-    [[-237,-31],[-349,-51],[-309,1],[-272,13],[-248,1]],
-    [[-262,190],[-430,320],[-341,308],[-292,270]],
-    [[-55,172],[-79,282],[-44,258],[-30,214]],
-    [[-320,-177],[-424,-241],[-405,-177],[-351,-130]],
-    [[-410,102],[-558,129],[-501,197],[-441,166],[-425,140]],
-    [[-235,352],[-328,501],[-251,452],[-202,395]],
-    [[-465,-48],[-552,-60],[-518,-15],[-482,1]],
-    [[-381,361],[-552,457],[-443,439],[-388,413]],
-    [[-108,-175],[-135,-230],[-159,-193],[-133,-157]],
-    [[-193,16],[-218,38],[-194,49],[-180,27]],
-    [[-340,51],[-359,79],[-325,85],[-317,66]],
-    [[-199,214],[-218,240],[-185,247],[-178,225]],
-    [[-370,-77],[-400,-95],[-389,-57],[-364,-49]],
-    [[-307,283],[-336,301],[-302,321],[-287,305]],
-    [[-22,82],[-35,110],[-8,124],[4,97]],
-    [[-476,273],[-517,286],[-484,316],[-456,294]]
+    [[-10,18],[-30,67],[-18,98],[2,56],[8,26]],
+    [[12,45],[37,105],[19,139],[0,112]],
+    [[-42,102],[-91,197],[-70,232],[-30,179],[-22,128]],
+    [[29,161],[77,275],[46,313],[12,241],[8,196]],
+    [[-19,232],[-48,335],[-13,372],[19,293],[7,260]],
+    [[-112,267],[-174,398],[-137,428],[-80,359],[-76,302]],
+    [[89,345],[141,476],[103,505],[62,413]],
+    [[-55,407],[-93,521],[-43,551],[-12,474],[-22,429]]
   ];
-  $: glassPanels = impactPieces.filter((_,index)=>[0,2,3,5,7,9,12,13].includes(index)).map(points => points.map(([x,y],index)=>(index?'L':'M')+(eyeX+x*glassScaleX)+' '+(eyeY+y*glassScaleY)).join('')+'Z');
+  $: glassPanels = impactPieces.map(points => points.map(([across,along],index) => {
+    const x = across * .98768834 - along * .15643447;
+    const y = across * .15643447 + along * .98768834;
+    return (index?'L':'M')+(eyeX+x*glassScaleX)+' '+(eyeY+y*glassScaleY);
+  }).join('')+'Z');
   $: impactMark = [[-20,-8],[-11,-21],[5,-17],[15,-4],[9,12],[-6,18],[-18,4]].map(([x,y],i)=>(i?'L':'M')+(eyeX+x*glassScaleX)+' '+(eyeY+y*glassScaleY)).join('');
   let gearAngle = 0;
   let gearSelection = -1;
@@ -243,8 +233,8 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V37 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V37 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V38 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V38 refines the composition, directional glass impact, and menu spacing." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} on:pointerdown|capture={unlockSound} />
 
@@ -252,12 +242,12 @@
   {#if switching}<RobotEyelids phase={lidPhase} />{/if}
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <button class="sound-toggle" type="button" aria-pressed={soundEnabled} aria-label={soundEnabled ? 'Mute menu sound' : 'Enable menu sound'} on:click={toggleSound}>SOUND {soundEnabled ? 'ON' : 'OFF'}</button><span class="version-number">V37</span>
+    <button class="sound-toggle" type="button" aria-pressed={soundEnabled} aria-label={soundEnabled ? 'Mute menu sound' : 'Enable menu sound'} on:click={toggleSound}>SOUND {soundEnabled ? 'ON' : 'OFF'}</button><span class="version-number">V38</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
       <div class="robot-plane" aria-hidden="true"></div><div class="human-plane" aria-hidden="true"></div>
-      <DepthScene impulse={menuImpulse} irisX={eyeX} irisY={eyeY} onScene={(photo,frame) => { scenePhoto=photo; photoFrame=frame; }} />
+      <DepthScene onScene={(photo,frame) => { scenePhoto=photo; photoFrame=frame; }} />
       <div class="signal-divider" aria-hidden="true"><ReactiveSignal vertical divider {menuImpulse} /></div>
       <div class="main-robot-menu" aria-label="Main menu"><ExperimentMenu items={mainChoices} onSelect={openMain} onActivity={updateGear} expressive poster /></div>
       <svg class="diffraction" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
@@ -275,8 +265,7 @@
         <g class="glass-facets">{#each glassPanels as d}<path {d}/>{/each}</g>
         <g class="glass-cracks">{#each glassPanels as d}<path {d}/>{/each}</g>
       </svg>
-      <div class="gear-cutout" aria-hidden="true"><div class="cutout-shard"></div><div class="main-gear"><PauseGear rotation={gearAngle} hardware={false} /></div></div>
-      <div class="record-hardware" aria-hidden="true"><RecordHardware /></div>
+      <div class="gear-cutout" aria-hidden="true"><div class="cutout-shard"></div><div class="main-gear"><PauseGear rotation={gearAngle} hardware={false} /><div class="record-hardware" aria-hidden="true"><RecordHardware /></div></div></div>
     </div>
   {:else}
     <div class="section-stage">
@@ -300,8 +289,8 @@
         <PetSelector items={activeChoices} onSelect={openSubmenu} onActivity={updateGear} />
       {:else}
         <div class="section-layout">
-          <div class="submenu" aria-label={viewTitle + ' submenu'}><ExperimentMenu items={activeChoices} onSelect={openSubmenu} onActivity={updateGear} expressive /></div>
-          <div class="submenu-gear"><PauseGear rotation={gearAngle} /></div>
+          <div class="submenu section-command-menu" aria-label={viewTitle + ' submenu'}><ExperimentMenu items={activeChoices} onSelect={openSubmenu} onActivity={updateGear} expressive /></div>
+          <div class="submenu-gear"><PauseGear rotation={gearAngle} hardware={false} /></div>
         </div>
       {/if}
     </div>
@@ -517,6 +506,23 @@
   .gear-cutout { transform:translateY(-50%) perspective(calc(var(--eye-size) * 4)) rotateZ(12deg) rotateX(48deg) rotateY(-5deg); }
   @media(orientation:landscape) and (min-height:521px) { .main-robot-menu :global(.poster) { gap:10px; } }
   .impact-mark { fill:none; stroke:var(--scene-paper); stroke-width:1.3; opacity:.8; }
+  /* V38: composition measured against the 854 x 480 Reload reference. */
+  .main-robot-menu { left:35%; width:32%; top:54%; }
+  .gear-cutout { left:calc(21% - var(--eye-size) / 2); top:54%; }
+  .record-hardware { inset:0; width:100%; height:100%; aspect-ratio:auto; }
+  .main-robot-menu :global(.poster .word) { font-size:clamp(34px,6.3svh,84px); }
+  .section-command-menu { transform:rotate(-2deg); padding:28px 0; }
+  .section-command-menu :global(.expressive) { gap:30px; }
+  .section-command-menu :global(.expressive .choice-row:nth-child(n)) { transform:rotate(-3deg); }
+  .section-command-menu :global(.expressive .choice-row:nth-child(even)) { transform:rotate(2deg) translateX(12px); }
+  .section-command-menu :global(.expressive .choice) { padding:12px 14px; }
+  .section-command-menu :global(.expressive .word) { font-size:clamp(30px,3.6vw,60px); line-height:1.08; letter-spacing:-.015em; overflow-wrap:normal; }
+  .glass-facets { stroke-width:.85; opacity:.7; filter:drop-shadow(1px 2px 0 #00134788); }
+  .glass-cracks { stroke-width:.35; opacity:.6; transform:translate(.6px,1px); }
+  @media(min-aspect-ratio:21/9) { .main-robot-menu { left:36%; width:30%; } .gear-cutout { left:calc(23% - var(--eye-size) / 2); } }
+  @media(orientation:portrait) { .main-robot-menu { left:31%; width:64%; top:50%; } .gear-cutout { left:calc(17% - var(--eye-size) / 2); top:50%; } .main-robot-menu :global(.poster .word) { font-size:clamp(29px,7.5vw,62px); } }
+  @media(max-width:700px) { .section-command-menu :global(.expressive) { gap:24px; } .section-command-menu :global(.expressive .word) { font-size:clamp(30px,8vw,44px); } }
+  @media(orientation:landscape) and (max-height:520px) { .main-robot-menu { left:35%; width:51%; top:50%; } .gear-cutout { top:50%; } .main-robot-menu :global(.poster .word) { font-size:clamp(26px,7.1svh,38px); } .section-command-menu :global(.expressive) { gap:20px; } }
 </style>
 
 
