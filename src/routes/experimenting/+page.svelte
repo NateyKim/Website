@@ -12,6 +12,21 @@
   import ReactiveSignal from './ReactiveSignal.svelte';
   let menuImpulse = 0;
   let eyeX = 330, eyeY = 700;
+  const glassShards = [
+    [[-8,12],[-52,31],[-26,58]], [[-58,34],[-99,20],[-85,75]],
+    [[-31,65],[-79,82],[-37,111]], [[-105,27],[-151,58],[-95,83]],
+    [[-87,89],[-148,69],[-119,131]], [[-37,120],[-91,106],[-72,166]],
+    [[-157,67],[-207,93],[-156,125]], [[-125,140],[-174,127],[-155,184]],
+    [[-80,174],[-135,157],[-113,218]], [[-23,144],[-62,175],[-29,210]],
+    [[-212,100],[-249,142],[-195,151]], [[-165,191],[-215,164],[-205,226]],
+    [[-119,228],[-175,210],[-143,268]], [[-36,220],[-94,231],[-59,281]],
+    [[-252,153],[-291,175],[-248,215]], [[-212,237],[-260,221],[-244,277]],
+    [[-151,279],[-196,260],[-177,319]], [[-67,290],[-123,277],[-100,342]],
+    [[-253,290],[-293,271],[-281,338]], [[-186,328],[-231,307],[-211,369]],
+    [[-110,352],[-161,334],[-141,403]], [[-224,381],[-272,356],[-254,426]],
+    [[-15,66],[18,91],[-6,113]], [[-110,-12],[-157,3],[-128,29]]
+  ];
+  function glassPath(points:number[][]) { return points.map(([x,y],i)=>(i?'L':'M')+(eyeX+x)+' '+(eyeY+y)).join('')+'Z'; }
   let gearAngle = 0;
   let gearSelection = -1;
   function updateGear(index: number) {
@@ -167,15 +182,15 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V27 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V27 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V28 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V28 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
 <div class="experiment" class:subsection={!!section} bind:this={shell} tabindex="-1">
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="version-number">V27</span>
+    <span class="version-number">V28</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
@@ -185,21 +200,10 @@
       <div class="main-robot-menu" aria-label="Main menu"><ExperimentMenu items={mainChoices} onSelect={openMain} onActivity={updateGear} expressive poster /></div>
       <svg class="diffraction" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
         <g class="glass-facets">
-          <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX-72)+' '+(eyeY+83)+'L'+(eyeX-169)+' '+(eyeY+64)+'Z'} />
-          <path d={'M'+(eyeX-72)+' '+(eyeY+83)+'L'+(eyeX-169)+' '+(eyeY+64)+'L'+(eyeX-235)+' '+(eyeY+172)+'Z'} />
-          <path d={'M'+(eyeX-84)+' '+(eyeY+107)+'L'+(eyeX-211)+' '+(eyeY+200)+'L'+(eyeX-124)+' '+(eyeY+221)+'Z'} />
-          <path d={'M'+(eyeX-121)+' '+(eyeY+235)+'L0 970L74 1000Z'} />
-          <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX-15)+' '+(eyeY+154)+'L'+(eyeX-77)+' '+(eyeY+120)+'Z'} />
-          <path d={'M'+(eyeX-30)+' '+(eyeY+165)+'L'+(eyeX-88)+' '+(eyeY+133)+'L'+(eyeX-94)+' 1000Z'} />
-          <path d={'M'+(eyeX-20)+' '+(eyeY+50)+'L'+(eyeX-115)+' '+(eyeY+58)+'L'+(eyeX-56)+' '+(eyeY+101)+'Z'} />
-          <path d={'M'+(eyeX-135)+' '+(eyeY+112)+'L'+(eyeX-265)+' '+(eyeY+134)+'L'+(eyeX-180)+' '+(eyeY+208)+'Z'} />
-          <path d={'M'+(eyeX-43)+' '+(eyeY+195)+'L'+(eyeX-80)+' '+(eyeY+270)+'L'+(eyeX-6)+' '+(eyeY+246)+'Z'} />
-          <path d={'M'+(eyeX-200)+' '+(eyeY+230)+'L'+(eyeX-280)+' '+(eyeY+285)+'L'+(eyeX-145)+' '+(eyeY+301)+'Z'} />
+          {#each glassShards as points}<path d={glassPath(points)} />{/each}
         </g>
         <g class="glass-cracks">
-          <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX-72)+' '+(eyeY+83)+'L'+(eyeX-235)+' '+(eyeY+172)+'L0 970'} />
-          <path d={'M'+(eyeX-72)+' '+(eyeY+83)+'L'+(eyeX-84)+' '+(eyeY+107)+'L'+(eyeX-124)+' '+(eyeY+221)+'L74 1000'} />
-          <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX-15)+' '+(eyeY+154)+'L'+(eyeX-94)+' 1000'} />
+          {#each glassShards.filter((_,index)=>index%3===0) as points}<path d={glassPath(points)} />{/each}
         </g>
       </svg>
       <div class="gear-cutout" aria-hidden="true"><div class="cutout-shard"></div><div class="main-gear"><PauseGear rotation={gearAngle} /></div></div>
