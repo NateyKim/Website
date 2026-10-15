@@ -35,32 +35,38 @@ export function createMenuAudio(initialEnabled = true) {
     voice.start(now); voice.stop(now+duration+.01);
     voice.onended=()=>{voice.disconnect();envelope.disconnect();};
   }
-  function servo(opening:boolean) {
+  function texture(start:number,end:number,duration:number,gain:number,delay=0) {
     if(!context) return;
-    const now=context.currentTime, source=context.createBufferSource();
-    const filter=context.createBiquadFilter(), envelope=context.createGain();
-    source.buffer=noise; filter.type='bandpass'; filter.Q.value=1.8;
-    filter.frequency.setValueAtTime(opening?600:1400,now);
-    filter.frequency.exponentialRampToValueAtTime(opening?1800:380,now+.21);
-    envelope.gain.setValueAtTime(.0001,now);
-    envelope.gain.linearRampToValueAtTime(.11,now+.025);
-    envelope.gain.exponentialRampToValueAtTime(.0001,now+.23);
+    const now=context.currentTime+delay;
+    const source=context.createBufferSource(),filter=context.createBiquadFilter(),envelope=context.createGain();
+    source.buffer=noise; filter.type='bandpass'; filter.Q.value=.85;
+    filter.frequency.setValueAtTime(start,now);filter.frequency.exponentialRampToValueAtTime(end,now+duration);
+    envelope.gain.setValueAtTime(.0001,now);envelope.gain.linearRampToValueAtTime(gain,now+.002);
+    envelope.gain.exponentialRampToValueAtTime(.0001,now+duration);
     source.connect(filter);filter.connect(envelope);envelope.connect(master);
-    source.start(now);source.stop(now+.24);
+    source.start(now);source.stop(now+duration+.005);
     source.onended=()=>{source.disconnect();filter.disconnect();envelope.disconnect();};
-    tone(opening?120:180,opening?200:85,.18,.15,0,'sine');
-    if(!opening) tone(1600,900,.025,.1,.21);
+  }
+  function servo(opening:boolean) {
+    texture(opening?650:1300,opening?1100:550,.21,.19);
+    tone(opening?95:130,opening?120:70,.15,.16,0,'sine');
+    if(!opening) { texture(3800,2300,.025,.23,.21);tone(160,90,.035,.12,.21,'sine'); }
   }
   function play(cue:Cue) {
     if(!enabled || !context || context.state==='closed') return;
     if(cue==='select') {
       if(performance.now()-lastSelect<65) return;
       lastSelect=performance.now();
-      tone(1150,850,.045,.18);tone(2300,1900,.025,.055);
+      texture(3100,2000,.048,.38);
+      tone(170,110,.032,.15,0,'sine');
     } else if(cue==='confirm') {
-      tone(660,990,.085,.22);tone(1320,1650,.09,.14,.035);
+      texture(4200,1800,.07,.4);
+      tone(115,65,.065,.25,0,'sine');
+      tone(530,500,.075,.065,.008,'sine');
+      tone(2130,1980,.055,.035,.012,'sine');
     } else if(cue==='back') {
-      tone(880,440,.105,.2);tone(220,165,.09,.08,0,'sine');
+      texture(1500,700,.065,.28);
+      tone(130,75,.065,.17,0,'sine');
     } else servo(cue==='open');
   }
   function setEnabled(value:boolean) {
@@ -74,4 +80,3 @@ export function createMenuAudio(initialEnabled = true) {
   function destroy() { if(context && context.state!=='closed') void context.close().catch(()=>{}); }
   return {unlock,play,setEnabled,destroy};
 }
-

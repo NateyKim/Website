@@ -4,6 +4,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   export let onScene: (photo:string, frame:{x:number;y:number;w:number;h:number}) => void = () => {};
+  export let impulse = 0;
+  export let irisX = 240;
+  export let irisY = 500;
   let scene: HTMLDivElement;
   let photo = '';
   let frame = {x:0,y:0,w:1000,h:1000};
@@ -58,17 +61,20 @@
     scene.style.setProperty('--photo-accent',`hsl(${hue} 80% 80%)`);
   }
   const fragmentGroups = [
-    {id:'canopy',panes:[
-      'M746 76L817 55L829 96L757 120Z','M825 53L885 69L872 116L835 96Z',
-      'M895 71L959 50L977 93L940 116L881 120Z','M770 133L830 110L859 127L813 161Z'
+    {id:'biosignal',panes:[
+      'M130 174H165L178 157L190 195L206 128L222 204L235 172H306V180H241L223 225L205 155L190 214L176 176L169 182H130Z',
+      'M145 136a9 9 0 1 0 18 0a9 9 0 1 0-18 0Z',
+      'M167 119a7 7 0 1 0 14 0a7 7 0 1 0-14 0Z'
     ]},
-    {id:'edge',panes:[
-      'M88 115L137 91L157 140L113 159Z','M145 88L181 104L193 148L164 144Z',
-      'M105 169L163 154L177 187L127 212Z'
+    {id:'actuator',panes:[
+      'M756 136L850 184L863 209L846 218L744 158Z',
+      'M864 188L923 135L937 153L875 215L858 220L850 208Z',
+      'M840 203a16 16 0 1 0 32 0a16 16 0 1 0-32 0Z'
     ]},
-    {id:'column',panes:[
-      'M871 632L917 609L942 646L899 680Z','M897 693L947 657L966 703L943 738L910 731Z',
-      'M859 719L893 700L903 748L877 771Z','M916 746L941 751L962 804L926 792Z'
+    {id:'motion',panes:[
+      'M841 670A66 66 0 0 1 933 738L920 736A53 53 0 0 0 849 681Z',
+      'M869 719a10 10 0 1 0 20 0a10 10 0 1 0-20 0Z',
+      'M878 702L889 699L912 752L902 756Z'
     ]}
   ];
   onMount(()=>{
@@ -115,6 +121,10 @@
     </g>
   </svg>
   <div class="volume-light"></div><div class="reading-shadow"></div><div class="print-tone"></div>
+  <svg class="interaction-path" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+    <path d={'M154 145L174 119M174 119H250L'+irisX+' '+irisY} />
+    {#key impulse}{#if impulse>0}<path class="intent-pulse" d={'M174 119H250L'+irisX+' '+irisY} />{/if}{/key}
+  </svg>
   <svg class="fragment-clusters" viewBox="0 0 1000 1000" preserveAspectRatio="none">
     <defs>
       <linearGradient id="window-glaze"><stop stop-color="#ffffff" stop-opacity=".3"/><stop offset=".5" stop-color="#ffffff" stop-opacity="0"/><stop offset="1" stop-color="var(--scene-cyan)" stop-opacity=".2"/></linearGradient>
@@ -155,4 +165,12 @@
     .ceiling-reflections,.volume-light,.window-group { animation:none; }
     .architecture,.far-planes,.middle-planes,.cluster-parallax { transform:none; transition:none; }
   }
+  .interaction-path { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; fill:none; stroke:var(--scene-cyan); stroke-width:.6; }
+  .interaction-path>path:first-child { opacity:.13; stroke-dasharray:3 8; }
+  .intent-pulse { stroke-dasharray:12 1200; stroke-width:1.4; opacity:0; animation:intent-travel 700ms ease-out; }
+  @keyframes intent-travel { 0% { stroke-dashoffset:0; opacity:.6; } 80% { opacity:.6; } 100% { stroke-dashoffset:-700; opacity:0; } }
+  .window-group[data-group="biosignal"] { opacity:.65; }
+  .window-group[data-group="actuator"] { opacity:.5; }
+  .window-group[data-group="motion"] { opacity:.45; }
+  @media(prefers-reduced-motion:reduce) { .intent-pulse { animation:none; } }
 </style>

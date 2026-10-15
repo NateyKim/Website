@@ -60,7 +60,7 @@
     [[-22,82],[-35,110],[-8,124],[4,97]],
     [[-476,273],[-517,286],[-484,316],[-456,294]]
   ];
-  $: glassPanels = impactPieces.map(points => points.map(([x,y],index)=>(index?'L':'M')+(eyeX+x*glassScaleX)+' '+(eyeY+y*glassScaleY)).join('')+'Z');
+  $: glassPanels = impactPieces.filter((_,index)=>[0,2,3,5,7,9,12,13].includes(index)).map(points => points.map(([x,y],index)=>(index?'L':'M')+(eyeX+x*glassScaleX)+' '+(eyeY+y*glassScaleY)).join('')+'Z');
   $: impactMark = [[-20,-8],[-11,-21],[5,-17],[15,-4],[9,12],[-6,18],[-18,4]].map(([x,y],i)=>(i?'L':'M')+(eyeX+x*glassScaleX)+' '+(eyeY+y*glassScaleY)).join('');
   let gearAngle = 0;
   let gearSelection = -1;
@@ -243,8 +243,8 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V36 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V36 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V37 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V37 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} on:pointerdown|capture={unlockSound} />
 
@@ -252,12 +252,12 @@
   {#if switching}<RobotEyelids phase={lidPhase} />{/if}
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <button class="sound-toggle" type="button" aria-pressed={soundEnabled} aria-label={soundEnabled ? 'Mute menu sound' : 'Enable menu sound'} on:click={toggleSound}>SOUND {soundEnabled ? 'ON' : 'OFF'}</button><span class="version-number">V36</span>
+    <button class="sound-toggle" type="button" aria-pressed={soundEnabled} aria-label={soundEnabled ? 'Mute menu sound' : 'Enable menu sound'} on:click={toggleSound}>SOUND {soundEnabled ? 'ON' : 'OFF'}</button><span class="version-number">V37</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
       <div class="robot-plane" aria-hidden="true"></div><div class="human-plane" aria-hidden="true"></div>
-      <DepthScene onScene={(photo,frame) => { scenePhoto=photo; photoFrame=frame; }} />
+      <DepthScene impulse={menuImpulse} irisX={eyeX} irisY={eyeY} onScene={(photo,frame) => { scenePhoto=photo; photoFrame=frame; }} />
       <div class="signal-divider" aria-hidden="true"><ReactiveSignal vertical divider {menuImpulse} /></div>
       <div class="main-robot-menu" aria-label="Main menu"><ExperimentMenu items={mainChoices} onSelect={openMain} onActivity={updateGear} expressive poster /></div>
       <svg class="diffraction" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
@@ -486,7 +486,7 @@
   @media(max-width:700px) { .sound-toggle { min-width:72px; font-size:12px; } .version-number { margin-left:0; } }
 
   /* One viewport composition: large left figure, compact central command stack. */
-  .split-main { display:block; height:calc(100svh - 108px); min-height:560px; --eye-size:clamp(340px,min(46vw,95svh),960px); }
+  .split-main { display:block; height:calc(100svh - 108px); min-height:560px; --eye-size:clamp(300px,min(34vw,78svh),720px); }
   .main-robot-menu { position:absolute; left:37%; top:50%; width:31%; margin:0; padding:0; transform:translateY(-50%) rotate(-5deg); }
   .gear-cutout { left:calc(24% - var(--eye-size) / 2); top:50%; bottom:auto; }
   .main-robot-menu :global(.poster .word) { font-size:clamp(34px,6.7svh,84px); }
@@ -495,7 +495,7 @@
   .main-robot-menu :global(.poster .choice-row:nth-child(n)) { margin-top:0; }
   .signal-divider { left:calc(var(--signal-x,24%) - 6%); top:calc(var(--signal-y,50%) - var(--signal-y,50%) / .98768834); width:12%; height:calc(var(--signal-y,50%) / .98768834); transform:rotate(9deg); transform-origin:50% 100%; }
   @media(min-aspect-ratio:21/9) {
-    .split-main { --eye-size:min(42vw,95svh,1100px); }
+    .split-main { --eye-size:min(32vw,76svh,800px); }
     .main-robot-menu { left:38%; width:29%; }
     .gear-cutout { left:calc(25% - var(--eye-size) / 2); }
   }
