@@ -27,12 +27,12 @@
   </div>
 </div>
 <style>
-  .folder-menu { position:relative; isolation:isolate; margin:35px 150px 55px 20px; padding:24px 24px 24px 36px; background:#1451b1; box-shadow:12px 15px 0 #001347; transform:perspective(1600px) rotateY(-6deg) rotateZ(-3deg); transform-origin:left top; }
-  .folder-spine { position:absolute; left:-18px; top:0; bottom:0; width:28px; background:#032877; }
+  .folder-menu { position:relative; isolation:isolate; margin:35px 150px 55px 20px; padding:24px 24px 24px 36px; background:var(--scene-blue); box-shadow:12px 15px 0 #001347; transform:perspective(1600px) rotateY(-6deg) rotateZ(-3deg); transform-origin:left top; }
+  .folder-spine { position:absolute; left:-18px; top:0; bottom:0; width:28px; background:var(--scene-ink); }
   .page-back { position:absolute; z-index:-1; inset:-18px 8px 8px 28px; background:#c4e7f6; transform:rotate(1.5deg); box-shadow:4px -6px 0 #eefbff; }
   .folder-tabs { position:absolute; left:100%; top:35px; display:grid; gap:24px; width:92px; }
-  .tab { width:92px; min-height:150px; border:0; padding:15px 12px; background:#2285ed; color:white; writing-mode:vertical-rl; font:italic 900 24px/1 var(--font-display); cursor:pointer; clip-path:polygon(0 0,78% 0,100% 12%,100% 90%,78% 100%,0 100%); }
-  .tab.active { background:#fffdf5; color:#001347; } .tab:hover { background:#8cf3ff; color:#001347; }
+  .tab { width:92px; min-height:150px; border:0; padding:15px 12px; background:var(--scene-blue); color:white; writing-mode:vertical-rl; font:italic 900 24px/1 var(--font-display); cursor:pointer; clip-path:polygon(0 0,78% 0,100% 12%,100% 90%,78% 100%,0 100%); }
+  .tab.active { background:#fffdf5; color:#001347; } .tab:hover { background:var(--scene-cyan); color:#001347; }
   .tab:focus-visible { outline:3px solid #ff3349; outline-offset:-6px; }
   .folder-sheet { min-height:480px; transform-origin:left center; }
   .flipping { animation:flip 260ms ease-in forwards; }
@@ -45,8 +45,8 @@
     .tab { width:58px; min-height:145px; font-size:21px; padding:12px 8px; }
     .folder-sheet { min-height:360px; }
   }
-  .folder-spine { background:radial-gradient(#5eeaff 1px,transparent 1.5px) 0 0/6px 6px,#032877; }
-  .tab { background:radial-gradient(#00134744 1px,transparent 1.5px) 0 0/6px 6px,#2285ed; }
+  .folder-spine { background:radial-gradient(#5eeaff 1px,transparent 1.5px) 0 0/6px 6px,var(--scene-ink); }
+  .tab { background:radial-gradient(#00134744 1px,transparent 1.5px) 0 0/6px 6px,var(--scene-blue); }
   .tab.active { background:#fffdf5; color:#001347; }
   .tab.active::after { content:''; position:absolute; left:0; top:0; width:22px; height:30px; background:#f32949; clip-path:polygon(0 0,100% 0,0 100%); }
   .tab { position:relative; }

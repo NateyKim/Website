@@ -3,6 +3,7 @@
 </script>
 <script lang="ts">
   import { onMount } from 'svelte';
+  export let onScene: (photo:string, frame:{x:number;y:number;w:number;h:number}) => void = () => {};
   let scene: HTMLDivElement;
   let photo = '';
   let sourceImage: HTMLImageElement | undefined;
@@ -23,6 +24,7 @@
     const top=Math.max(height-h,Math.min(0,height*.3-fy*h));
     scene.style.setProperty('--photo-size',w+'px '+h+'px');
     scene.style.setProperty('--photo-position',left+'px '+top+'px');
+    onScene(photo,{x:left/width*1000,y:top/height*1000,w:w/width*1000,h:h/height*1000});
   }
   function palette(image: HTMLImageElement) {
     const canvas=document.createElement('canvas'); canvas.width=32; canvas.height=32;

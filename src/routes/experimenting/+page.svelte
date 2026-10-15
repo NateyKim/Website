@@ -13,6 +13,20 @@
   let menuImpulse = 0;
   let switching = false;
   let eyeX = 330, eyeY = 700;
+  let scenePhoto = '';
+  let photoFrame = { x:0, y:0, w:1000, h:1000 };
+  $: glassPanels = [
+'M'+eyeX+' '+eyeY+'L'+(eyeX-72)+' '+(eyeY+83)+'L'+(eyeX-169)+' '+(eyeY+64)+'Z',
+'M'+(eyeX-72)+' '+(eyeY+83)+'L'+(eyeX-169)+' '+(eyeY+64)+'L'+(eyeX-235)+' '+(eyeY+172)+'Z',
+'M'+(eyeX-84)+' '+(eyeY+107)+'L'+(eyeX-211)+' '+(eyeY+200)+'L'+(eyeX-124)+' '+(eyeY+221)+'Z',
+'M'+(eyeX-121)+' '+(eyeY+235)+'L0 970L74 1000Z',
+'M'+eyeX+' '+eyeY+'L'+(eyeX-15)+' '+(eyeY+154)+'L'+(eyeX-77)+' '+(eyeY+120)+'Z',
+'M'+(eyeX-30)+' '+(eyeY+165)+'L'+(eyeX-88)+' '+(eyeY+133)+'L'+(eyeX-94)+' 1000Z',
+'M'+(eyeX-20)+' '+(eyeY+50)+'L'+(eyeX-115)+' '+(eyeY+58)+'L'+(eyeX-56)+' '+(eyeY+101)+'Z',
+'M'+(eyeX-135)+' '+(eyeY+112)+'L'+(eyeX-265)+' '+(eyeY+134)+'L'+(eyeX-180)+' '+(eyeY+208)+'Z',
+'M'+(eyeX-43)+' '+(eyeY+195)+'L'+(eyeX-80)+' '+(eyeY+270)+'L'+(eyeX-6)+' '+(eyeY+246)+'Z',
+'M'+(eyeX-200)+' '+(eyeY+230)+'L'+(eyeX-280)+' '+(eyeY+285)+'L'+(eyeX-145)+' '+(eyeY+301)+'Z'
+  ];
   let gearAngle = 0;
   let gearSelection = -1;
   function updateGear(index: number) {
@@ -175,8 +189,8 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V30 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V30 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V31 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V31 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
@@ -184,27 +198,26 @@
   {#if switching}<div class="scene-wash" aria-hidden="true"></div>{/if}
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="version-number">V30</span>
+    <span class="version-number">V31</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
       <div class="robot-plane" aria-hidden="true"></div><div class="human-plane" aria-hidden="true"></div>
-      <DepthScene /><div class="paper-edge" aria-hidden="true"></div>
+      <DepthScene onScene={(photo,frame) => { scenePhoto=photo; photoFrame=frame; }} /><div class="paper-edge" aria-hidden="true"></div>
       <div class="signal-divider" aria-hidden="true"><ReactiveSignal vertical divider {menuImpulse} /></div>
       <div class="main-robot-menu" aria-label="Main menu"><ExperimentMenu items={mainChoices} onSelect={openMain} onActivity={updateGear} expressive poster /></div>
       <svg class="diffraction" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
-        <g class="glass-facets">
-          <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX-72)+' '+(eyeY+83)+'L'+(eyeX-169)+' '+(eyeY+64)+'Z'} />
-          <path d={'M'+(eyeX-72)+' '+(eyeY+83)+'L'+(eyeX-169)+' '+(eyeY+64)+'L'+(eyeX-235)+' '+(eyeY+172)+'Z'} />
-          <path d={'M'+(eyeX-84)+' '+(eyeY+107)+'L'+(eyeX-211)+' '+(eyeY+200)+'L'+(eyeX-124)+' '+(eyeY+221)+'Z'} />
-          <path d={'M'+(eyeX-121)+' '+(eyeY+235)+'L0 970L74 1000Z'} />
-          <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX-15)+' '+(eyeY+154)+'L'+(eyeX-77)+' '+(eyeY+120)+'Z'} />
-          <path d={'M'+(eyeX-30)+' '+(eyeY+165)+'L'+(eyeX-88)+' '+(eyeY+133)+'L'+(eyeX-94)+' 1000Z'} />
-          <path d={'M'+(eyeX-20)+' '+(eyeY+50)+'L'+(eyeX-115)+' '+(eyeY+58)+'L'+(eyeX-56)+' '+(eyeY+101)+'Z'} />
-          <path d={'M'+(eyeX-135)+' '+(eyeY+112)+'L'+(eyeX-265)+' '+(eyeY+134)+'L'+(eyeX-180)+' '+(eyeY+208)+'Z'} />
-          <path d={'M'+(eyeX-43)+' '+(eyeY+195)+'L'+(eyeX-80)+' '+(eyeY+270)+'L'+(eyeX-6)+' '+(eyeY+246)+'Z'} />
-          <path d={'M'+(eyeX-200)+' '+(eyeY+230)+'L'+(eyeX-280)+' '+(eyeY+285)+'L'+(eyeX-145)+' '+(eyeY+301)+'Z'} />
+        <defs>
+          <linearGradient id="glass-glaze"><stop stop-color="#fff" stop-opacity=".55"/><stop offset=".22" stop-color="#fff" stop-opacity=".03"/><stop offset=".75" stop-color="#c9f4ff" stop-opacity=".08"/><stop offset="1" stop-color="#fff" stop-opacity=".4"/></linearGradient>
+          {#each glassPanels as d,index}<clipPath id={'glass-pane-'+index}><path {d}/></clipPath>{/each}
+        </defs>
+        <g class="glass-refraction">
+          {#each glassPanels as d,index}<g clip-path={'url(#glass-pane-'+index+')'}>
+            {#if scenePhoto}<image href={scenePhoto} x={photoFrame.x+(index%2?14:-14)} y={photoFrame.y+(index%3-1)*12} width={photoFrame.w} height={photoFrame.h} preserveAspectRatio="none" opacity=".38"/>{/if}
+            <path {d} fill="url(#glass-glaze)"/>
+          </g>{/each}
         </g>
+        <g class="glass-facets">{#each glassPanels as d}<path {d}/>{/each}</g>
         <g class="glass-cracks">
           <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX-72)+' '+(eyeY+83)+'L'+(eyeX-235)+' '+(eyeY+172)+'L0 970'} />
           <path d={'M'+(eyeX-72)+' '+(eyeY+83)+'L'+(eyeX-84)+' '+(eyeY+107)+'L'+(eyeX-124)+' '+(eyeY+221)+'L74 1000'} />
@@ -258,7 +271,7 @@
   .experiment-footer { position:relative; z-index:10; min-height:52px; display:flex; align-items:center; padding:8px 4%; background:var(--scene-ink); color:var(--scene-paper); font:600 13px var(--font-ui); letter-spacing:.055em; }
   kbd { display:inline-block; margin-right:6px; padding:2px 6px; border:1px solid #88c5ed88; background:transparent; color:var(--scene-paper); font:600 12px var(--font-ui); border-radius:2px; }
   .experiment-footer kbd:not(:first-child) { margin-left:18px; }
-  .section-stage { --scene-blue:#0754fa; --scene-cyan:#8cf3ff; --scene-ink:#001347; --menu-a:#b4faff; --menu-b:#70deff; --menu-c:#c6fdff; position:relative; isolation:isolate; min-height:calc(100svh - 108px); padding:32px 6% 64px; overflow:hidden; background:var(--scene-blue); }
+  .section-stage { position:relative; isolation:isolate; min-height:calc(100svh - 108px); padding:32px 6% 64px; overflow:hidden; background:var(--scene-blue); }
   .section-title { margin:12px 0 40px; }
   .section-title h1 { color:var(--scene-paper); margin:0; font:italic 900 clamp(54px,7vw,100px)/.95 var(--font-display); letter-spacing:-.03em;  }
   .section-title h1:focus { outline:none; }
@@ -310,8 +323,8 @@
   @media(prefers-reduced-motion:reduce) { .robot-plane,.robot-plane::after { animation:none; } }
   .experiment:not(.subsection) { --scene-cyan:#ffcea9; --scene-paper:#fff8ef; --scene-blue:#244d92; --scene-ink:#061534; }
   .diffraction { position:absolute; inset:0; width:100%; height:100%; z-index:4; pointer-events:none; }
-  .glass-facets { fill:var(--scene-cyan); stroke:var(--scene-paper); stroke-width:1.8; opacity:.48; filter:drop-shadow(2px 3px 0 #001347); }
-  .glass-facets path:nth-child(even) { fill:var(--scene-paper); opacity:.85; }
+  .glass-facets { fill:transparent; stroke:var(--scene-paper); stroke-width:1.5; opacity:.78; filter:drop-shadow(2px 3px 0 #001347); }
+  .glass-facets path:nth-child(even) { fill:#ffffff08; opacity:.85; }
   .glass-cracks { fill:none; stroke:var(--scene-paper); stroke-width:2.1; opacity:.9; filter:drop-shadow(1px 1px 0 #001347); }
   .contact-card { max-width:900px; margin:60px auto; transform:rotate(-4deg); }
   .contact-link { display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:space-between; min-height:110px; padding:20px 30px; color:var(--scene-ink); background:var(--scene-paper); margin-bottom:25px; box-shadow:8px 9px 0 var(--scene-ink); text-decoration:none; }
@@ -413,13 +426,15 @@
     .main-robot-menu :global(.poster .choice-row:nth-child(6)) { margin-top:0; }
     .main-robot-menu :global(.poster .word) { font-size:clamp(26px,7.5svh,38px); }
   }
-  .scene-wash { position:fixed; inset:0; z-index:40; pointer-events:none; background:#0754fa; mix-blend-mode:multiply; animation:scene-wash 180ms ease-in forwards; }
+  .scene-wash { position:fixed; inset:0; z-index:40; pointer-events:none; background:var(--scene-blue); mix-blend-mode:multiply; animation:scene-wash 180ms ease-in forwards; }
   .switching .main-robot-menu { filter:contrast(1.1); }
   @keyframes scene-wash { from { opacity:0; } to { opacity:.92; } }
   .section-stage { animation:section-arrive 230ms cubic-bezier(.16,.85,.25,1); }
   @keyframes section-arrive { from { opacity:.3; translate:12px 0; } to { opacity:1; translate:0 0; } }
   @media(prefers-reduced-motion:reduce) { .scene-wash { display:none; } .section-stage { animation:none; } }
+  .submenu-gear :global(.pause-gear) { color:var(--scene-cyan); }
 </style>
+
 
 
 
