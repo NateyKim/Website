@@ -167,20 +167,20 @@
 </script>
 
 <svelte:head>
-  <title>Experimenting / V26 — Natey Kim</title>
-  <meta name="description" content="Human intent meets robotic motion. V26 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
+  <title>Experimenting / V27 — Natey Kim</title>
+  <meta name="description" content="Human intent meets robotic motion. V27 brings human signals and robotic motion into a vivid Persona-inspired pause interface." />
 </svelte:head>
 <svelte:window on:keydown={handleKeys} />
 
 <div class="experiment" class:subsection={!!section} bind:this={shell} tabindex="-1">
   <header class="version-bar">
     {#if section}<button class="back-main" type="button" on:click={backToMain}>← MAIN MENU <kbd>ESC</kbd></button>{:else}<a class="resume" href="/home">← RESUME</a>{/if}
-    <span class="version-number">V26</span>
+    <span class="version-number">V27</span>
   </header>
   {#if !section}
     <div class="pause-stage split-main" use:alignSignal>
       <div class="robot-plane" aria-hidden="true"></div><div class="human-plane" aria-hidden="true"></div>
-      <DepthScene /><div class="paper-edge" aria-hidden="true"></div><div class="entry-beam" aria-hidden="true"></div>
+      <DepthScene /><div class="paper-edge" aria-hidden="true"></div>
       <div class="signal-divider" aria-hidden="true"><ReactiveSignal vertical divider {menuImpulse} /></div>
       <div class="main-robot-menu" aria-label="Main menu"><ExperimentMenu items={mainChoices} onSelect={openMain} onActivity={updateGear} expressive poster /></div>
       <svg class="diffraction" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
@@ -191,6 +191,10 @@
           <path d={'M'+(eyeX-121)+' '+(eyeY+235)+'L0 970L74 1000Z'} />
           <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX-15)+' '+(eyeY+154)+'L'+(eyeX-77)+' '+(eyeY+120)+'Z'} />
           <path d={'M'+(eyeX-30)+' '+(eyeY+165)+'L'+(eyeX-88)+' '+(eyeY+133)+'L'+(eyeX-94)+' 1000Z'} />
+          <path d={'M'+(eyeX-20)+' '+(eyeY+50)+'L'+(eyeX-115)+' '+(eyeY+58)+'L'+(eyeX-56)+' '+(eyeY+101)+'Z'} />
+          <path d={'M'+(eyeX-135)+' '+(eyeY+112)+'L'+(eyeX-265)+' '+(eyeY+134)+'L'+(eyeX-180)+' '+(eyeY+208)+'Z'} />
+          <path d={'M'+(eyeX-43)+' '+(eyeY+195)+'L'+(eyeX-80)+' '+(eyeY+270)+'L'+(eyeX-6)+' '+(eyeY+246)+'Z'} />
+          <path d={'M'+(eyeX-200)+' '+(eyeY+230)+'L'+(eyeX-280)+' '+(eyeY+285)+'L'+(eyeX-145)+' '+(eyeY+301)+'Z'} />
         </g>
         <g class="glass-cracks">
           <path d={'M'+eyeX+' '+eyeY+'L'+(eyeX-72)+' '+(eyeY+83)+'L'+(eyeX-235)+' '+(eyeY+172)+'L0 970'} />
@@ -278,7 +282,6 @@
   .cutout-shard { position:absolute; inset:0; background:#f1ffff; clip-path:polygon(0 50%,18% 18%,43% 3%,68% 12%,100% 50%,78% 81%,53% 97%,27% 85%); }
   .cutout-shard::after { content:''; position:absolute; inset:4%; background:var(--scene-cyan); clip-path:polygon(0 50%,18% 18%,43% 3%,68% 12%,100% 50%,78% 81%,53% 97%,27% 85%); }
   .main-gear { position:absolute; inset:4% 15%; }
-  .entry-beam { position:absolute; z-index:3; inset:0; pointer-events:none; background:linear-gradient(90deg,#d9ffff44,#8cf3ff08); clip-path:polygon(0 30%,var(--signal-x,33%) var(--signal-y,70%),0 65%); mix-blend-mode:screen; }
   .signal-divider { left:calc(var(--signal-x,33%) - 5%); top:0; width:12%; height:var(--signal-y,70%); transform:rotate(9deg); transform-origin:50% 100%; }
   .signal-divider :global(.reactive-signal) { height:100%; }
   .main-robot-menu :global(.choice) { margin:auto; justify-content:center; }
@@ -297,7 +300,6 @@
   @keyframes light-drift { to { transform:translate(70px,35px); } }
   @media(prefers-reduced-motion:reduce) { .robot-plane,.robot-plane::after { animation:none; } }
   .experiment:not(.subsection) { --scene-cyan:#ffcea9; --scene-paper:#fff8ef; --scene-blue:#244d92; --scene-ink:#061534; }
-  .entry-beam { background:linear-gradient(90deg,#fff0d455,#ffdabd12); }
   .diffraction { position:absolute; inset:0; width:100%; height:100%; z-index:4; pointer-events:none; }
   .glass-facets { fill:var(--scene-cyan); stroke:var(--scene-paper); stroke-width:1.8; opacity:.48; filter:drop-shadow(2px 3px 0 #001347); }
   .glass-facets path:nth-child(even) { fill:var(--scene-paper); opacity:.85; }
@@ -381,6 +383,27 @@
   .glass-facets path:nth-child(3n) { animation-delay:-4.5s; }
   @keyframes glass-light { from { fill-opacity:.5; } to { fill-opacity:.95; } }
   @media(prefers-reduced-motion:reduce) { .glass-facets path { animation:none; } }
+  .split-main { display:grid; grid-template-columns:36% 64%; align-items:center; --eye-size:clamp(240px,min(40vw,66svh),600px); }
+  .main-robot-menu { grid-column:2; width:90%; margin:0 auto; padding:35px 0; }
+  .gear-cutout { left:calc(24% - var(--eye-size) / 2); top:50%; bottom:auto; transform:translateY(-50%) perspective(1500px) rotateZ(12deg) rotateX(54deg) rotateY(-5deg); }
+  .main-robot-menu :global(.poster) { gap:7px; }
+  .main-robot-menu :global(.poster .choice-row) { margin-top:0; }
+  .main-robot-menu :global(.poster .word) { line-height:.96; letter-spacing:-.025em; }
+  .main-robot-menu :global(.poster .choice-row:nth-child(5)) { transform:rotate(-3deg); }
+  .main-robot-menu :global(.poster .choice-row:nth-child(6)) { transform:rotate(3deg); margin-top:8px; }
+  @media(orientation:portrait) and (max-width:700px) {
+    .split-main { grid-template-columns:29% 71%; --eye-size:clamp(145px,39vw,240px); }
+    .main-robot-menu { width:91%; margin:0 auto; padding:40px 0; }
+    .main-robot-menu :global(.poster .word) { font-size:clamp(28px,7.8vw,40px); }
+    .main-robot-menu :global(.poster) { gap:10px; }
+    .gear-cutout { left:calc(16% - var(--eye-size) / 2); top:50%; }
+  }
+  @media(orientation:landscape) and (max-height:520px) {
+    .main-robot-menu { padding:12px 0; }
+    .main-robot-menu :global(.poster) { gap:1px; }
+    .main-robot-menu :global(.poster .choice-row:nth-child(6)) { margin-top:0; }
+    .main-robot-menu :global(.poster .word) { font-size:clamp(26px,7.5svh,38px); }
+  }
 </style>
 
 
