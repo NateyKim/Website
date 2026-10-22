@@ -222,8 +222,8 @@
 
 <style>
   nav {
-    background-color: #333;
-    color: white;
+    background-color: #fff;
+    color: #245a81;
     display: flex;
     padding: calc(0.5rem + env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) 0.5rem max(1rem, env(safe-area-inset-left));
     position: fixed;
@@ -231,11 +231,11 @@
     left: 0;
     right: 0;
     z-index: 1000;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #dce5ed;
   }
 
   .nav-link {
-    color: white;
+    color: #245a81;
     padding: 0.5rem 1rem;
     text-decoration: none;
     cursor: pointer;
@@ -246,12 +246,12 @@
   }
 
   .nav-link.active {
-    border-bottom: 2px solid #fff;
+    border-bottom: 2px solid #245a81;
     font-weight: bold;
   }
 
   .nav-link:hover {
-    background-color: #444;
+    background-color: #edf3f8;
   }
 
   .linkedin-nav {
@@ -278,8 +278,9 @@
     width: min(24rem, 90vw);
     padding: 0.4rem;
     border-radius: 0 0 0.5rem 0.5rem;
-    background: #333;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+    background: #fff;
+    box-shadow: 0 6px 14px rgba(25, 55, 80, 0.08);
+    border: 1px solid #dce5ed;
   }
 
   .nav-item:hover .nav-menu,
@@ -294,7 +295,7 @@
     border: 0;
     border-radius: 0.3rem;
     background: transparent;
-    color: white;
+    color: #245a81;
     cursor: pointer;
     font-size: 0.92rem;
     text-align: left;
@@ -303,7 +304,7 @@
 
   .nav-menu button:hover,
   .nav-menu button:focus-visible {
-    background: #555;
+    background: #edf3f8;
   }
 
   main {
@@ -340,8 +341,6 @@
     left: 50%;
     width: 100vw;
     height: 84rem;
-    background-image: linear-gradient(rgba(55, 74, 99, 0.09) 1px, transparent 1px), linear-gradient(90deg, rgba(55, 74, 99, 0.09) 1px, transparent 1px);
-    background-size: 44px 44px;
     pointer-events: none;
     transform: translateX(-50%);
     mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.45) 8%, black 22%, rgba(0, 0, 0, 0.76) 48%, rgba(0, 0, 0, 0.25) 72%, transparent 92%);
@@ -356,11 +355,11 @@
     overflow: hidden;
   }
   .research-network-lines path { fill: none; stroke: #73829a; stroke-width: 1.15; opacity: 0.14; vector-effect: non-scaling-stroke; }
-  .research-network-nodes circle { fill: #7566ff; stroke: rgba(248, 250, 252, 0.9); stroke-width: 2.5; opacity: 0.22; vector-effect: non-scaling-stroke; }
+  .research-network-nodes circle { fill: #245a81; stroke: rgba(248, 250, 252, 0.9); stroke-width: 2.5; opacity: 0.22; vector-effect: non-scaling-stroke; }
 
   .beyond-cta {
     padding: 2.5rem 1rem 3.5rem;
-    background: #f5f5f5;
+    background: #f4f7fa;
     text-align: center;
   }
 
@@ -374,15 +373,15 @@
     display: inline-block;
     padding: 0.8rem 1.2rem;
     border-radius: 0.5rem;
-    background: #333;
-    color: white;
+    background: #fff;
+    color: #245a81;
     font-weight: 700;
     text-decoration: none;
   }
 
   .beyond-cta a:hover,
   .beyond-cta a:focus-visible {
-    background: #555;
+    background: #edf3f8;
   }
 
   :global(html) {
@@ -394,6 +393,8 @@
     margin: 0;
     overflow-x: hidden;
     overflow-anchor: none;
+    background: #fff;
+    color: #111820;
   }
 
   @media (max-width: 700px) {

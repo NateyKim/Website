@@ -739,28 +739,13 @@
   on:pointerleave={resetPointer}
   on:pointerdown={handleScenePress}
 >
-  <div class="grid-layer"></div>
-  <div class="ambient-light"></div>
 
   <svg class="emg-layer" viewBox="0 0 1200 180" preserveAspectRatio="none" aria-hidden="true">
-    <defs>
-      <linearGradient id="emg-gradient" x1="0" x2="1">
-        <stop offset="0" stop-color="#00a9ff" stop-opacity="0" />
-        <stop offset="0.18" stop-color="#00a9ff" />
-        <stop offset="0.52" stop-color="#7566ff" />
-        <stop offset="0.82" stop-color="#cf5fff" />
-        <stop offset="1" stop-color="#cf5fff" stop-opacity="0" />
-      </linearGradient>
-      <filter id="emg-glow" x="-20%" y="-100%" width="140%" height="300%">
-        <feGaussianBlur stdDeviation="4" result="blur" />
-        <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-      </filter>
-    </defs>
     <g class="emg-guides">
       <path d="M0 45 H1200 M0 90 H1200 M0 135 H1200" />
       <path d="M120 20 V160 M360 20 V160 M600 20 V160 M840 20 V160 M1080 20 V160" />
     </g>
-    <path class="emg-wave" class:moving={isMoving} d={emgPath} filter="url(#emg-glow)" />
+    <path class="emg-wave" class:moving={isMoving} d={emgPath} />
   </svg>
 
   <svg bind:this={leftRobot} class="robot robot-left" class:gripping viewBox="0 0 270 520" aria-hidden="true">
@@ -860,32 +845,8 @@
     padding: clamp(4rem, 9vh, 7rem) max(1rem, calc((100vw - 1200px) / 2)) 7rem;
     overflow-x: clip;
     overflow-y: visible;
-    background: linear-gradient(
-      to bottom,
-      #f8fafc 0%,
-      #f8fafc 58%,
-      rgba(248, 250, 252, 0.86) 74%,
-      rgba(248, 250, 252, 0.34) 91%,
-      transparent 100%
-    );
+    background: #fff;
     color: #111820;
-  }
-
-  .grid-layer {
-    position: absolute;
-    z-index: -5;
-    inset: 0;
-    background-image: linear-gradient(rgba(55, 74, 99, 0.11) 1px, transparent 1px), linear-gradient(90deg, rgba(55, 74, 99, 0.11) 1px, transparent 1px);
-    background-size: 44px 44px;
-    mask-image: linear-gradient(to bottom, black 0%, black 72%, rgba(0, 0, 0, 0.56) 91%, transparent 100%);
-    transform: scale(1.04);
-  }
-
-  .ambient-light {
-    position: absolute;
-    z-index: -4;
-    inset: 0;
-    background: radial-gradient(circle at 50% 31%, rgba(255, 255, 255, 0.96) 0 10%, rgba(224, 231, 255, 0.7) 30%, transparent 53%), radial-gradient(circle at 20% 42%, rgba(0, 169, 255, 0.1), transparent 28%), radial-gradient(circle at 80% 42%, rgba(207, 95, 255, 0.09), transparent 28%);
   }
 
   .emg-layer {
@@ -913,15 +874,15 @@
   }
 
   .emg-wave {
-    stroke: url(#emg-gradient);
-    stroke-width: 2.2;
-    opacity: 0.58;
+    stroke: #245a81;
+    stroke-width: 1.6;
+    opacity: 0.42;
     transition: opacity 120ms ease-out, stroke-width 120ms ease-out;
   }
 
   .emg-wave.moving {
-    opacity: 0.94;
-    stroke-width: 2.8;
+    opacity: 0.75;
+    stroke-width: 2;
   }
 
   .identity {
@@ -936,9 +897,8 @@
     margin: 0 0 1rem;
     color: #536174;
     font-size: clamp(0.68rem, 1.5vw, 0.82rem);
-    font-weight: 800;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.02em;
   }
 
   .name-row { display: flex; align-items: center; justify-content: center; gap: 1rem; }
@@ -953,14 +913,13 @@
     width: var(--robot-width);
     overflow: visible;
     opacity: 0.84;
-    filter: drop-shadow(0 20px 26px rgba(25, 32, 50, 0.13));
   }
   /* The wall rail is x=8 in a 270-unit viewBox. Offset by that exact scaled
      amount so the physical mount, not the SVG box, sits on the viewport edge. */
   .robot-left { left: 0; transform: translateX(-2.963%); }
   .robot-right { right: 0; transform: translateX(2.963%); }
-  .robot-mount path, .arm-segment path, .wrist path { fill: none; stroke: #222c38; stroke-width: 13; stroke-linecap: round; stroke-linejoin: round; }
-  .robot-mount circle, .arm-segment circle { fill: #f8fafc; stroke: #222c38; stroke-width: 7; }
+  .robot-mount path, .arm-segment path, .wrist path { fill: none; stroke: #245a81; stroke-width: 13; stroke-linecap: round; stroke-linejoin: round; }
+  .robot-mount circle, .arm-segment circle { fill: #fff; stroke: #245a81; stroke-width: 7; }
   .gripper-base { stroke-width: 8 !important; }
   .gripper-finger {
     stroke-width: 7 !important;
@@ -1010,11 +969,10 @@
     width: min(1200px, 100%);
     margin: 0 auto;
     padding: clamp(1.25rem, 3vw, 2rem);
-    border: 1px solid rgba(255, 255, 255, 0.85);
-    border-radius: 1.25rem;
-    background: rgba(255, 255, 255, 0.72);
-    box-shadow: 0 22px 60px rgba(32, 39, 63, 0.11);
-    backdrop-filter: blur(18px);
+    border-top: 1px solid #dce5ed;
+    border-radius: 0;
+    background: #fff;
+
   }
   .bio-panel p { margin: 0; font-size: clamp(1rem, 1.5vw, 1.12rem); line-height: 1.65; }
 
