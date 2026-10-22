@@ -741,10 +741,6 @@
 >
 
   <svg class="emg-layer" viewBox="0 0 1200 180" preserveAspectRatio="none" aria-hidden="true">
-    <g class="emg-guides">
-      <path d="M0 45 H1200 M0 90 H1200 M0 135 H1200" />
-      <path d="M120 20 V160 M360 20 V160 M600 20 V160 M840 20 V160 M1080 20 V160" />
-    </g>
     <path class="emg-wave" class:moving={isMoving} d={emgPath} />
   </svg>
 
@@ -864,13 +860,6 @@
     vector-effect: non-scaling-stroke;
     stroke-linecap: round;
     stroke-linejoin: round;
-  }
-
-  .emg-guides path {
-    fill: none;
-    stroke: rgba(83, 97, 116, 0.12);
-    stroke-width: 1;
-    vector-effect: non-scaling-stroke;
   }
 
   .emg-wave {
