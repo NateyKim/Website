@@ -878,7 +878,7 @@
     position: relative;
     z-index: 3;
     width: min(780px, 100%);
-    margin: clamp(10rem, 21vh, 14rem) auto clamp(13rem, 30vh, 22rem);
+    margin: clamp(10rem, 21vh, 14rem) auto clamp(10rem, calc(30vh - 3rem), 19rem);
     text-align: center;
   }
 
@@ -967,7 +967,7 @@
 
   @media (max-width: 850px) {
     .home-scene { padding-top: 2.5rem; padding-bottom: 2rem; }
-    .identity { margin-top: 7rem; margin-bottom: 16rem; }
+    .identity { margin-top: 7rem; margin-bottom: 14rem; }
     .robot { --robot-width: 180px; top: 12rem; opacity: 0.34; }
     .bio-panel { grid-template-columns: 1fr; }
   }
